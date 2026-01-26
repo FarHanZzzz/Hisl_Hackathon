@@ -26,43 +26,45 @@ if video_file:
     
     cap = cv2.VideoCapture(tfile.name)
     
-    # Layout using Columns
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.subheader("Live Analysis Feed")
-        video_placeholder = st.empty()
+    try:
+        # Layout using Columns
+        col1, col2 = st.columns(2)
         
-    with col2:
-        st.subheader("Joint Angles (Degrees)")
-        chart_placeholder = st.empty()
-        
-    left_angles = []
-    right_angles = []
-    
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
+        with col1:
+            st.subheader("Live Analysis Feed")
+            video_placeholder = st.empty()
             
-        # Process Frame
-        processed_frame, (left, right) = scanner.process_frame(frame)
+        with col2:
+            st.subheader("Joint Angles (Degrees)")
+            chart_placeholder = st.empty()
+            
+        left_angles = []
+        right_angles = []
         
-        # Convert BGR to RGB for Streamlit display
-        processed_frame_rgb = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2RGB)
-        
-        # Update Video Feed
-        video_placeholder.image(processed_frame_rgb, channels="RGB", use_container_width=True)
-        
-        # Update Data Lists
-        left_angles.append(left)
-        right_angles.append(right)
-        
-        # Update Charts
-        chart_data = {"Left Knee": left_angles, "Right Knee": right_angles}
-        chart_placeholder.line_chart(chart_data)
-        
-    cap.release()
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+                
+            # Process Frame
+            processed_frame, (left, right) = scanner.process_frame(frame)
+            
+            # Convert BGR to RGB for Streamlit display
+            processed_frame_rgb = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2RGB)
+            
+            # Update Video Feed
+            video_placeholder.image(processed_frame_rgb, channels="RGB", use_container_width=True)
+            
+            # Update Data Lists
+            left_angles.append(left)
+            right_angles.append(right)
+            
+            # Update Charts
+            chart_data = {"Left Knee": left_angles, "Right Knee": right_angles}
+            chart_placeholder.line_chart(chart_data)
+            
+    finally:
+        cap.release()
     
     # --- Phase 4: Medical Brain (Post-Analysis Report) ---
     st.markdown("---")
