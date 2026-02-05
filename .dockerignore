@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.pytest_cache/
+
+# Node
+node_modules/
+.next/
+.npm/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Uploads and results (mounted as volumes)
+uploads/
+results/
+
+# Environment
+.env
+.env.local
+*.env
+
+# Logs
+*.log
+
+# Tests
+*.test.py
+test_*.py
