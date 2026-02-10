@@ -12,7 +12,7 @@ Place MediaPipe model files here.
 2. Download `pose_landmarker_heavy.task` (recommended for accuracy)
 3. Place the file in this directory
 
-Alternatively, the model can also be placed in `Pedi-Growth/pose_landmarker_heavy.task`.
+The model path is configured in `backend/app/engine/scanner.py` — it resolves to `models/pose_landmarker_heavy.task` by default.
 
 ### Alternative Models
 

@@ -1,15 +1,23 @@
-# Backend API dependencies
+# Pedi-Growth — All Python dependencies (consolidated)
+# Install: pip install -r backend/requirements.txt
+
+# --- Core API ---
 fastapi>=0.109.0
 uvicorn[standard]>=0.27.0
 python-multipart>=0.0.6
 pydantic>=2.5.0
 aiofiles>=23.2.1
+python-dotenv>=1.0.0
 
-# Database (optional, for production)
-# sqlalchemy>=2.0.0
-# asyncpg>=0.29.0
-# alembic>=1.13.0
+# --- Supabase ---
+supabase>=2.0.0
 
-# Message queue (optional, for production)
-# redis>=5.0.0
-# celery>=5.3.0
+# --- Computer Vision & ML ---
+mediapipe>=0.10.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+scipy>=1.11.0
+
+# --- Testing (dev only) ---
+pytest>=7.0.0
+httpx>=0.24.0
