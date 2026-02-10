@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Analysis Results: Normal Gait</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3c83f6",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#101722",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 min-h-screen transition-colors duration-200">
+<div class="max-w-6xl mx-auto p-6 md:p-8 space-y-6">
+<!-- Top Status Banner -->
+<header class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/50 rounded-xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center text-white">
+<span class="material-icons text-3xl">check_circle</span>
+</div>
+<div>
+<h1 class="text-2xl font-bold text-emerald-700 dark:text-emerald-400">NORMAL</h1>
+<p class="text-emerald-600/80 dark:text-emerald-400/80 text-sm font-medium">Gait Analysis Result</p>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="text-center md:text-right border-l md:border-l-0 md:border-r border-emerald-200 dark:border-emerald-800 px-4 md:px-8">
+<p class="text-xs uppercase tracking-wider text-emerald-600/70 dark:text-emerald-400/60 font-semibold">Symmetry Index</p>
+<p class="text-xl font-bold text-emerald-700 dark:text-emerald-300 leading-tight">1.02</p>
+</div>
+<div class="text-center md:text-right">
+<p class="text-xs uppercase tracking-wider text-emerald-600/70 dark:text-emerald-400/60 font-semibold">Confidence</p>
+<p class="text-xl font-bold text-emerald-700 dark:text-emerald-300 leading-tight">90%</p>
+</div>
+</div>
+</header>
+<!-- Patient Info Bar -->
+<div class="bg-white dark:bg-slate-800/50 rounded-lg p-4 shadow-sm border border-slate-200 dark:border-slate-700/50 flex flex-wrap items-center gap-x-8 gap-y-2">
+<div class="flex items-center gap-2">
+<span class="material-icons text-slate-400 text-sm">person</span>
+<span class="font-semibold">John Doe</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-icons text-slate-400 text-sm">cake</span>
+<span>5 years</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-icons text-slate-400 text-sm">fingerprint</span>
+<span class="text-slate-500 dark:text-slate-400 text-sm">ID: #P-88219</span>
+</div>
+<div class="ml-auto text-sm text-slate-500 dark:text-slate-400">
+                Analysis Date: Oct 24, 2023
+            </div>
+</div>
+<!-- Metrics Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm">
+<p class="text-xs font-semibold text-slate-500 uppercase mb-1">Left Max Flexion</p>
+<div class="flex items-baseline gap-1">
+<span class="text-2xl font-bold">130.2</span>
+<span class="text-slate-400">°</span>
+</div>
+<div class="mt-2 h-1 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 75%"></div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm">
+<p class="text-xs font-semibold text-slate-500 uppercase mb-1">Right Max Flexion</p>
+<div class="flex items-baseline gap-1">
+<span class="text-2xl font-bold">128.1</span>
+<span class="text-slate-400">°</span>
+</div>
+<div class="mt-2 h-1 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-indigo-400" style="width: 73%"></div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm">
+<p class="text-xs font-semibold text-slate-500 uppercase mb-1">Asymmetry</p>
+<div class="flex items-center gap-2">
+<span class="text-2xl font-bold text-emerald-600">1.6%</span>
+<span class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 text-[10px] px-2 py-0.5 rounded-full font-bold">LOW</span>
+</div>
+<p class="text-[10px] text-slate-400 mt-2 uppercase tracking-tight">Within Clinical Margin</p>
+</div>
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm">
+<p class="text-xs font-semibold text-slate-500 uppercase mb-1">Detection Rate</p>
+<div class="flex items-baseline gap-1">
+<span class="text-2xl font-bold">95</span>
+<span class="text-slate-400">%</span>
+</div>
+<div class="flex gap-1 mt-2">
+<div class="h-1 flex-1 bg-emerald-500 rounded-full"></div>
+<div class="h-1 flex-1 bg-emerald-500 rounded-full"></div>
+<div class="h-1 flex-1 bg-emerald-500 rounded-full"></div>
+<div class="h-1 flex-1 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Main Chart Section -->
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6 shadow-sm">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h2 class="text-lg font-bold">Knee Flexion Angle — Left vs Right</h2>
+<p class="text-sm text-slate-500">Joint kinematics over a single gait cycle</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+<span class="text-xs font-medium text-slate-600 dark:text-slate-400">Left Knee</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-indigo-400"></span>
+<span class="text-xs font-medium text-slate-600 dark:text-slate-400">Right Knee</span>
+</div>
+</div>
+</div>
+<!-- SVG Chart Mockup -->
+<div class="relative h-64 w-full mb-6">
+<div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
+<div class="border-t border-slate-100 dark:border-slate-700 w-full h-0"></div>
+<div class="border-t border-slate-100 dark:border-slate-700 w-full h-0"></div>
+<div class="border-t border-slate-100 dark:border-slate-700 w-full h-0"></div>
+<div class="border-t border-slate-100 dark:border-slate-700 w-full h-0"></div>
+<div class="border-t border-slate-100 dark:border-slate-700 w-full h-0"></div>
+</div>
+<svg class="w-full h-full overflow-visible" viewbox="0 0 1000 200">
+<!-- Left Knee Curve -->
+<path d="M0,180 C100,180 200,20 300,20 C400,20 500,150 600,150 C700,150 800,50 900,50 L1000,100" fill="none" stroke="#3c83f6" stroke-linecap="round" stroke-width="3"></path>
+<!-- Right Knee Curve -->
+<path d="M0,175 C100,175 200,25 300,25 C400,25 500,155 600,155 C700,155 800,55 900,55 L1000,105" fill="none" stroke="#818cf8" stroke-dasharray="6,4" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<div class="absolute -left-8 top-0 bottom-0 flex flex-col justify-between text-[10px] text-slate-400 font-medium py-1">
+<span>140°</span>
+<span>105°</span>
+<span>70°</span>
+<span>35°</span>
+<span>0°</span>
+</div>
+</div>
+<div class="flex justify-between text-[10px] text-slate-400 font-medium px-2">
+<span>0% (Initial Contact)</span>
+<span>25%</span>
+<span>50% (Mid-Stance)</span>
+<span>75%</span>
+<span>100% (Terminal Swing)</span>
+</div>
+</div>
+<!-- Stats Row -->
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
+<table class="w-full text-left text-sm">
+<thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-500 uppercase text-[10px] font-bold">
+<tr>
+<th class="px-6 py-3">Kinematic Metric</th>
+<th class="px-6 py-3">Left Side</th>
+<th class="px-6 py-3">Right Side</th>
+<th class="px-6 py-3">Reference Range</th>
+<th class="px-6 py-3">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+<tr>
+<td class="px-6 py-4 font-medium">Range of Motion (ROM)</td>
+<td class="px-6 py-4">64.2°</td>
+<td class="px-6 py-4">63.1°</td>
+<td class="px-6 py-4 text-slate-400">60° - 70°</td>
+<td class="px-6 py-4">
+<span class="text-emerald-500 material-icons text-sm">check_circle</span>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4 font-medium">Stance Duration</td>
+<td class="px-6 py-4">0.62s</td>
+<td class="px-6 py-4">0.64s</td>
+<td class="px-6 py-4 text-slate-400">0.58s - 0.68s</td>
+<td class="px-6 py-4">
+<span class="text-emerald-500 material-icons text-sm">check_circle</span>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4 font-medium">Frames Processed</td>
+<td class="px-6 py-4" colspan="2">1,420 Frames</td>
+<td class="px-6 py-4 text-slate-400">Min 500</td>
+<td class="px-6 py-4">
+<span class="text-emerald-500 material-icons text-sm">check_circle</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Primary Actions -->
+<footer class="flex flex-col sm:flex-row items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+<button class="w-full sm:w-auto px-6 py-2.5 bg-background-light dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2">
+<span class="material-icons text-sm">add</span>
+                New Analysis
+            </button>
+<button class="w-full sm:w-auto px-8 py-2.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 shadow-md shadow-primary/20">
+<span class="material-icons text-sm">file_download</span>
+                Download PDF Report
+            </button>
+</footer>
+</div>
+</body></html>

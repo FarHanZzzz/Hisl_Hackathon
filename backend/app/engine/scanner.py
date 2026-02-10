@@ -11,13 +11,22 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-from backend.app.utils import calculate_angle, clean_angle_data, calculate_symmetry_index, get_diagnosis
+from backend.app.utils import calculate_angle
 from backend.app.schemas import (
     AnalysisMetrics,
     AngleData,
     DiagnosisInfo,
     AnalysisResult,
     PatientInfo,
+)
+from .video import validate_video
+from .smoothing import smooth_angles
+from .analysis import (
+    calculate_rom,
+    calculate_symmetry_index,
+    calculate_asymmetry,
+    calculate_confidence,
+    get_diagnosis,
 )
 
 
@@ -197,6 +206,11 @@ def process_video(
     """
     from datetime import datetime
 
+    # Step 0: Validate video
+    validation = validate_video(video_path)
+    if not validation["valid"]:
+        raise ValueError(f"Invalid video: {', '.join(validation['errors'])}")
+
     # Initialize scanner
     scanner = GaitScanner()
 
@@ -260,32 +274,45 @@ def process_video(
         if video_writer:
             video_writer.release()
 
-    # Calculate metrics
-    left_clean, left_max, left_min, left_rom = clean_angle_data(left_angles)
-    right_clean, right_max, right_min, right_rom = clean_angle_data(right_angles)
+    # Step 1: Smooth raw angle arrays
+    left_smooth = smooth_angles(left_angles)
+    right_smooth = smooth_angles(right_angles)
 
+    # Step 2: Calculate ROM from smoothed data
+    left_rom = calculate_rom(left_smooth)
+    right_rom = calculate_rom(right_smooth)
+
+    # Step 3: Calculate metrics with NEW directional SI formula
+    si = calculate_symmetry_index(left_rom, right_rom)
+    asymmetry_pct = calculate_asymmetry(si)
     detection_rate = (frames_detected / frames_processed * 100) if frames_processed > 0 else 0
-    symmetry_index = calculate_symmetry_index(left_max, right_max)
-    asymmetry_pct = abs(1.0 - symmetry_index) * 100
 
-    # Get diagnosis
-    diagnosis = get_diagnosis(symmetry_index, detection_rate)
+    # Step 4: Get diagnosis
+    diagnosis = get_diagnosis(si, detection_rate)
+
+    # Derive max/min from smoothed data for AngleData
+    left_valid = [a for a in left_smooth if a > 0]
+    right_valid = [a for a in right_smooth if a > 0]
+    left_max = max(left_valid) if left_valid else 0.0
+    left_min = min(left_valid) if left_valid else 0.0
+    right_max = max(right_valid) if right_valid else 0.0
+    right_min = min(right_valid) if right_valid else 0.0
 
     # Build result
     metrics = AnalysisMetrics(
         left_knee=AngleData(
-            values=left_clean,
+            values=left_smooth,
             max_flexion=left_max,
             min_flexion=left_min,
             range_of_motion=left_rom,
         ),
         right_knee=AngleData(
-            values=right_clean,
+            values=right_smooth,
             max_flexion=right_max,
             min_flexion=right_min,
             range_of_motion=right_rom,
         ),
-        symmetry_index=symmetry_index,
+        symmetry_index=si,
         asymmetry_percentage=asymmetry_pct,
         frames_processed=frames_processed,
         frames_detected=frames_detected,

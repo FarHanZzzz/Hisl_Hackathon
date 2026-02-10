@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pedi-Growth | Clinical Gait Analysis Tool</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#3c83f6",
+              "background-light": "#f5f7f8",
+              "background-dark": "#101722",
+              "success": "#10b981",
+              "warning": "#f59e0b",
+            },
+            fontFamily: {
+              "display": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen font-display transition-colors duration-200">
+<!-- Header -->
+<header class="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 sticky top-0 z-50">
+<div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-primary p-2 rounded-lg">
+<span class="material-icons text-white">straighten</span>
+</div>
+<div>
+<h1 class="text-2xl font-bold text-gray-900 dark:text-white leading-none">Pedi-Growth</h1>
+<p class="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wider">Clinical Gait Analysis Tool</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full">
+<span class="material-icons">notifications</span>
+</button>
+<div class="h-8 w-8 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold">
+                    DR
+                </div>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-6 py-8">
+<!-- Top Section: 2 Columns -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
+<!-- Left Column (35%): New Analysis Form -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
+<h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+<span class="material-icons text-primary">add_circle_outline</span>
+                        New Analysis
+                    </h2>
+<form class="space-y-5">
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Patient ID</label>
+<input class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg focus:ring-primary focus:border-primary text-gray-900 dark:text-white" placeholder="PG-2024-000" type="text"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</label>
+<input class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg focus:ring-primary focus:border-primary text-gray-900 dark:text-white" placeholder="John Doe" type="text"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Age (0-18 Years)</label>
+<div class="flex items-center gap-4">
+<input class="flex-grow accent-primary" max="18" min="0" type="range"/>
+<span class="bg-primary/10 text-primary px-3 py-1 rounded-md font-bold min-w-[3rem] text-center">8</span>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Clinical Notes</label>
+<textarea class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg focus:ring-primary focus:border-primary text-gray-900 dark:text-white" placeholder="Describe symptoms or medical history..." rows="3"></textarea>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300">Gait Video Upload</label>
+<div class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-8 text-center hover:border-primary/50 transition-colors cursor-pointer group bg-gray-50/50 dark:bg-gray-800/30">
+<span class="material-icons text-4xl text-gray-400 group-hover:text-primary mb-2">cloud_upload</span>
+<p class="text-sm text-gray-600 dark:text-gray-400">Drag &amp; drop MP4 or MOV</p>
+<p class="text-xs text-gray-500 mt-1">Maximum file size: 50MB</p>
+</div>
+</div>
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md shadow-primary/20" type="submit">
+<span class="material-icons">analytics</span>
+                            Start Analysis
+                        </button>
+</form>
+</div>
+</div>
+<!-- Right Column (65%): Empty State -->
+<div class="lg:col-span-8">
+<div class="bg-white dark:bg-gray-900 h-full min-h-[500px] rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col items-center justify-center text-center p-12">
+<div class="relative mb-8">
+<div class="absolute inset-0 bg-primary/10 blur-3xl rounded-full"></div>
+<img alt="walking silhouette illustration" class="w-64 h-64 object-contain opacity-20 grayscale brightness-125 relative z-10" data-alt="Abstract silhouette of a child walking showing bone structure" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMuoe3u0tY26SD98Mp9m3te9c5CbnTZLgaFm_INB8abaC2h-GCnxyiFZvUwPdp_dKVEphyvjxLt1TfcHM3vj33Nqqc9fKBdW-4Dcbymtozln_etZ1jmP03CGK3-l0Q7Ofe0FxHzQkZwc4BY-3dh-0hc2n1HkcbCnN97xat8h6XEL4Zk-m4E156xXQXBOK2L9Y83srfgCrvle3uqyt4kEShQHmO3IKibVBRx-W6dPyMZBEvngwjvxOBGhsyorpl_ofuUOrAI2x2gtU"/>
+<div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-2 bg-gray-200 dark:bg-gray-800 blur-sm rounded-full"></div>
+</div>
+<h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-3">Ready for Screening</h3>
+<p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto leading-relaxed">
+                        Complete the patient profile and upload a gait video to begin high-precision kinematic analysis.
+                    </p>
+<div class="mt-8 flex gap-6">
+<div class="flex flex-col items-center">
+<span class="material-icons text-primary/40 text-3xl mb-1">speed</span>
+<span class="text-xs font-bold text-gray-400 uppercase">AI-Powered</span>
+</div>
+<div class="w-px h-10 bg-gray-200 dark:bg-gray-800"></div>
+<div class="flex flex-col items-center">
+<span class="material-icons text-primary/40 text-3xl mb-1">security</span>
+<span class="text-xs font-bold text-gray-400 uppercase">HIPAA Ready</span>
+</div>
+<div class="w-px h-10 bg-gray-200 dark:bg-gray-800"></div>
+<div class="flex flex-col items-center">
+<span class="material-icons text-primary/40 text-3xl mb-1">timeline</span>
+<span class="text-xs font-bold text-gray-400 uppercase">Kinematics</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Analyses Table -->
+<div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+<div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
+<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Analyses</h3>
+<div class="flex gap-2">
+<button class="text-sm font-medium text-primary hover:underline px-3 py-1">View All</button>
+<button class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+<span class="material-icons text-sm">refresh</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
+<th class="px-6 py-4">Date</th>
+<th class="px-6 py-4">Patient ID</th>
+<th class="px-6 py-4">Status</th>
+<th class="px-6 py-4">Symmetry Index</th>
+<th class="px-6 py-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-sm">
+<!-- Row 1: Completed -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-6 py-4 text-gray-600 dark:text-gray-400">Oct 24, 2023</td>
+<td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">PG-2023-882</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success/10 text-success">
+<span class="w-1.5 h-1.5 rounded-full bg-success mr-1.5"></span>
+                                    Completed
+                                </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="font-bold text-gray-900 dark:text-white">94%</span>
+<div class="w-16 bg-gray-200 dark:bg-gray-700 h-1 rounded-full overflow-hidden">
+<div class="bg-success h-full" style="width: 94%"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="bg-primary/10 hover:bg-primary/20 text-primary px-4 py-1.5 rounded-lg text-xs font-bold transition-colors">View Report</button>
+</td>
+</tr>
+<!-- Row 2: Processing -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-6 py-4 text-gray-600 dark:text-gray-400">Oct 24, 2023</td>
+<td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">PG-2023-885</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary mr-1.5 animate-pulse"></span>
+                                    Processing
+                                </span>
+</td>
+<td class="px-6 py-4 text-gray-400 italic">Calculating...</td>
+<td class="px-6 py-4 text-right">
+<button class="text-gray-400 dark:text-gray-600 cursor-not-allowed px-4 py-1.5 rounded-lg text-xs font-bold border border-gray-100 dark:border-gray-800" disabled="">Pending</button>
+</td>
+</tr>
+<!-- Row 3: Queued -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-6 py-4 text-gray-600 dark:text-gray-400">Oct 23, 2023</td>
+<td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">PG-2023-881</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+<span class="w-1.5 h-1.5 rounded-full bg-gray-400 mr-1.5"></span>
+                                    Queued
+                                </span>
+</td>
+<td class="px-6 py-4 text-gray-400">--</td>
+<td class="px-6 py-4 text-right">
+<button class="text-gray-400 hover:text-red-500 px-4 py-1.5 rounded-lg text-xs font-bold transition-colors">Cancel</button>
+</td>
+</tr>
+<!-- Row 4: Completed Low Symmetry -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-6 py-4 text-gray-600 dark:text-gray-400">Oct 22, 2023</td>
+<td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">PG-2023-879</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success/10 text-success">
+<span class="w-1.5 h-1.5 rounded-full bg-success mr-1.5"></span>
+                                    Completed
+                                </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="font-bold text-warning">76%</span>
+<div class="w-16 bg-gray-200 dark:bg-gray-700 h-1 rounded-full overflow-hidden">
+<div class="bg-warning h-full" style="width: 76%"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="bg-primary/10 hover:bg-primary/20 text-primary px-4 py-1.5 rounded-lg text-xs font-bold transition-colors">View Report</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="mt-12 py-8 px-6 border-t border-gray-200 dark:border-gray-800">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-2 text-gray-400 dark:text-gray-500">
+<span class="material-icons text-sm">verified_user</span>
+<p class="text-[10px] md:text-xs uppercase tracking-widest font-semibold">Medical Device Grade Software v2.4.1</p>
+</div>
+<p class="text-center text-[10px] md:text-xs text-gray-400 dark:text-gray-500 max-w-2xl">
+<strong class="text-gray-500 dark:text-gray-400">Medical Disclaimer:</strong> Pedi-Growth is a clinical support tool intended for use by qualified healthcare professionals. Analysis results are indicative and should be verified through clinical observation and professional medical judgment before diagnosis or treatment decisions.
+            </p>
+<div class="text-gray-400 dark:text-gray-500 text-[10px] uppercase font-bold tracking-tighter">
+                © 2023 Pedi-Growth Systems
+            </div>
+</div>
+</footer>
+</body></html>

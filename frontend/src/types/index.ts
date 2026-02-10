@@ -1,0 +1,64 @@
+/**
+ * Shared TypeScript types matching the backend Supabase schema.
+ * Keep in sync with backend/app/schemas.py and database tables.
+ */
+
+// --- Patient ---
+export interface PatientInput {
+  patient_id: string;
+  patient_name?: string;
+  age?: number;
+  notes?: string;
+}
+
+// --- Job ---
+export type JobStatus = 'queued' | 'processing' | 'completed' | 'failed';
+
+export interface Job {
+  id: string;
+  patient_ref: string;
+  status: JobStatus;
+  progress: number;
+  video_filename: string;
+  error_message?: string;
+  created_at: string;
+  completed_at?: string;
+  results?: Result[];  // Nested from Supabase join
+}
+
+// --- Result ---
+export type DiagnosisType = 'normal' | 'high_risk' | 'insufficient_data';
+
+export interface Result {
+  id: string;
+  job_id: string;
+  left_max_flexion: number;
+  left_min_flexion: number;
+  left_rom: number;
+  right_max_flexion: number;
+  right_min_flexion: number;
+  right_rom: number;
+  symmetry_index: number;
+  asymmetry_percentage: number;
+  diagnosis: DiagnosisType;
+  is_high_risk: boolean;
+  confidence: number;
+  detection_rate: number;
+  frames_processed: number;
+  frames_detected: number;
+  left_angle_series: number[];
+  right_angle_series: number[];
+  created_at: string;
+}
+
+// --- API Responses ---
+export interface UploadResponse {
+  filename: string;
+  size_mb: number;
+}
+
+export interface CreateJobResponse {
+  job_id: string;
+  status: 'queued';
+  message: string;
+}

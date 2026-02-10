@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pediatric Gait Analysis - Processing</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .scanning-line {
+            animation: scan 2s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 0%; opacity: 0; }
+            50% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+        .spinner-rotate {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark min-h-screen">
+<!-- Mock Background Page (Home Page Content) -->
+<div class="p-8 max-w-7xl mx-auto opacity-40 select-none pointer-events-none">
+<header class="flex justify-between items-center mb-12">
+<div class="flex items-center gap-2">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+<span class="material-icons-round text-white">directions_run</span>
+</div>
+<h1 class="text-2xl font-bold text-slate-800 dark:text-slate-100">GaitPath AI</h1>
+</div>
+<div class="flex gap-4">
+<div class="h-10 w-32 bg-slate-200 dark:bg-slate-800 rounded"></div>
+<div class="h-10 w-10 bg-slate-200 dark:bg-slate-800 rounded-full"></div>
+</div>
+</header>
+<div class="grid grid-cols-12 gap-6">
+<div class="col-span-8 space-y-6">
+<div class="h-64 bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm"></div>
+<div class="grid grid-cols-2 gap-6">
+<div class="h-40 bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm"></div>
+<div class="h-40 bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm"></div>
+</div>
+</div>
+<div class="col-span-4 h-[500px] bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm"></div>
+</div>
+</div>
+<!-- Semi-transparent Dark Overlay -->
+<div class="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-[2px] z-40 flex items-center justify-center p-6">
+<!-- Processing State Card -->
+<div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-xl shadow-2xl border border-white/10 overflow-hidden relative">
+<div class="p-8">
+<!-- Header: Icon & Titles -->
+<div class="flex flex-col items-center mb-8">
+<!-- Modern Medical Scanning Icon Container -->
+<div class="w-24 h-24 mb-6 relative bg-primary/5 dark:bg-primary/10 rounded-2xl flex items-center justify-center border border-primary/20">
+<!-- Abstract Skeleton Icon -->
+<svg class="w-16 h-16 text-primary opacity-80" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24">
+<circle cx="12" cy="4" r="2"></circle>
+<path d="M12 6v8m0 0l-4 4m4-4l4 4M9 9h6"></path>
+</svg>
+<!-- Scanning Line Animation -->
+<div class="scanning-line absolute left-0 right-0 h-0.5 bg-primary shadow-[0_0_10px_#137fec] z-10"></div>
+</div>
+<h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-1">Analyzing Gait Pattern...</h2>
+<p class="text-slate-500 dark:text-slate-400 font-medium">Patient: <span class="text-primary">P001 — John Doe</span></p>
+</div>
+<!-- Progress Section -->
+<div class="mb-10">
+<div class="flex justify-between items-end mb-2">
+<span class="text-sm font-semibold text-slate-600 dark:text-slate-300">Analysis Progress</span>
+<span class="text-2xl font-bold text-primary tabular-nums">65%</span>
+</div>
+<!-- Progress Bar -->
+<div class="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full w-[65%] bg-gradient-to-r from-primary to-[#10b981] rounded-full transition-all duration-500 ease-out"></div>
+</div>
+<div class="flex justify-between mt-3">
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Processing frame 156 of 240</span>
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400">Estimated time: ~15 seconds remaining</span>
+</div>
+</div>
+<!-- Status Timeline -->
+<div class="space-y-6">
+<!-- Step 1: Completed -->
+<div class="flex items-center gap-4 group">
+<div class="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+<span class="material-icons-round text-emerald-500 text-sm">check</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-medium text-slate-700 dark:text-slate-200">Video uploaded successfully</p>
+</div>
+<div class="h-px bg-slate-100 dark:bg-slate-800 flex-1 hidden group-last:hidden"></div>
+</div>
+<!-- Step 2: Completed -->
+<div class="flex items-center gap-4 group">
+<div class="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+<span class="material-icons-round text-emerald-500 text-sm">check</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-medium text-slate-700 dark:text-slate-200">Pose detection initialized</p>
+</div>
+</div>
+<!-- Step 3: In Progress -->
+<div class="flex items-center gap-4 group">
+<div class="w-6 h-6 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center shrink-0">
+<span class="material-icons-round text-primary text-sm spinner-rotate">sync</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-semibold text-primary">Extracting joint angles</p>
+</div>
+</div>
+<!-- Step 4: Pending -->
+<div class="flex items-center gap-4 opacity-50">
+<div class="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+<div class="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
+</div>
+<div class="flex-1">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Computing symmetry metrics</p>
+</div>
+</div>
+<!-- Step 5: Pending -->
+<div class="flex items-center gap-4 opacity-50">
+<div class="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+<div class="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
+</div>
+<div class="flex-1">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Generating comprehensive report</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Card Footer -->
+<div class="bg-slate-50 dark:bg-slate-900/50 px-8 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-center items-center gap-2">
+<span class="material-icons-round text-slate-400 text-sm">info</span>
+<span class="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em]">Do not close this page during processing</span>
+</div>
+</div>
+<!-- Abstract Background Decorative Elements -->
+<div class="absolute top-10 left-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute bottom-10 right-10 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+</div>
+</body></html>
