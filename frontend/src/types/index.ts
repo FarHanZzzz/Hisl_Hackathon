@@ -62,3 +62,12 @@ export interface CreateJobResponse {
   status: 'queued';
   message: string;
 }
+
+// --- AI Summary ---
+export interface AISummary {
+  overview: string;
+  key_findings: string[];
+  risk_assessment: string;
+  recommendations: string[];
+  disclaimer: string;
+}

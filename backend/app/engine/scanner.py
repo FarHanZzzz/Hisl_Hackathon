@@ -231,8 +231,8 @@ def process_video(
     if output_dir:
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
-        output_video_path = output_dir / f"{job_id}_processed.mp4"
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        output_video_path = output_dir / f"{job_id}_processed.webm"
+        fourcc = cv2.VideoWriter_fourcc(*"vp09")
         video_writer = cv2.VideoWriter(str(output_video_path), fourcc, fps, (width, height))
 
     # Data collection
@@ -325,7 +325,7 @@ def process_video(
         metrics=metrics,
         diagnosis=diagnosis,
         video_filename=Path(video_path).name,
-        processed_video_url=f"/results/{job_id}_processed.mp4" if output_video_path else None,
+        processed_video_url=f"/results/{job_id}_processed.webm" if output_video_path else None,
         created_at=datetime.utcnow(),
         completed_at=datetime.utcnow(),
     )

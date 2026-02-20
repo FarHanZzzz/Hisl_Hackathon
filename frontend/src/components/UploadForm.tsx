@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Upload, FileVideo, Loader2 } from 'lucide-react';
+import { Upload, Loader2, PlusCircle, Activity } from 'lucide-react';
 import type { PatientInput } from '../types';
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 export function UploadForm({ onSubmit, disabled }: Props) {
   const [patientId, setPatientId] = useState('');
   const [patientName, setPatientName] = useState('');
-  const [age, setAge] = useState('');
+  const [age, setAge] = useState<string>('8');
   const [notes, setNotes] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -23,8 +23,8 @@ export function UploadForm({ onSubmit, disabled }: Props) {
       setError('Please select a valid video file (MP4, MOV, AVI, WebM)');
       return;
     }
-    if (file.size > 100 * 1024 * 1024) {
-      setError('File size must be under 100MB');
+    if (file.size > 50 * 1024 * 1024) {
+      setError('File size must be under 50MB');
       return;
     }
     setSelectedFile(file);
@@ -71,115 +71,109 @@ export function UploadForm({ onSubmit, disabled }: Props) {
   const isLoading = submitting || disabled;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <h2 className="text-lg font-bold text-gray-900 mb-1">New Analysis</h2>
-      <p className="text-sm text-gray-500 mb-6">Enter patient details and upload a gait video</p>
-
+    <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+        <PlusCircle className="w-5 h-5 text-primary-500" />
+        New Analysis
+      </h2>
+      
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Patient ID */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Patient ID <span className="text-danger-500">*</span>
-          </label>
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Patient ID</label>
           <input
             type="text"
             value={patientId}
             onChange={(e) => setPatientId(e.target.value)}
-            placeholder="e.g. PED-001"
-            className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-colors"
+            placeholder="PG-2024-000"
+            className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-white text-sm transition-colors"
             required
             disabled={isLoading}
           />
         </div>
 
-        {/* Patient Name */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Patient Name
-          </label>
-          <input
+        {/* Full Name */}
+        <div className="space-y-1.5">
+           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</label>
+           <input
             type="text"
             value={patientName}
             onChange={(e) => setPatientName(e.target.value)}
-            placeholder="Full name (optional)"
-            className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-colors"
+            placeholder="John Doe"
+            className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-white text-sm transition-colors"
             disabled={isLoading}
           />
         </div>
 
-        {/* Age + Notes row */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Age</label>
+        {/* Age */}
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Age (0-18 Years)</label>
+          <div className="flex items-center gap-4">
             <input
-              type="number"
+              type="range"
               value={age}
               onChange={(e) => setAge(e.target.value)}
-              placeholder="Years"
               min="0"
               max="18"
-              className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-colors"
+              className="flex-grow accent-primary-500 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
               disabled={isLoading}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Notes</label>
-            <input
-              type="text"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Optional notes"
-              className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-colors"
-              disabled={isLoading}
-            />
+            <span className="bg-primary-50 text-primary-600 px-3 py-1 rounded-md font-bold min-w-[3rem] text-center shrink-0">
+               {age}
+            </span>
           </div>
         </div>
 
-        {/* Upload Zone */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Gait Video <span className="text-danger-500">*</span>
-          </label>
-          <div
+        {/* Clinical Notes */}
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Clinical Notes</label>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Describe symptoms or medical history..."
+            rows={3}
+            className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-white text-sm transition-colors resize-none"
+            disabled={isLoading}
+          />
+        </div>
+
+        {/* Gait Video Upload */}
+        <div className="space-y-1.5">
+           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Gait Video Upload <span className="text-danger-500">*</span></label>
+           <div
             onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
-            className={`relative mt-1 flex justify-center px-6 pt-6 pb-7 border-2 border-dashed rounded-xl transition-all cursor-pointer ${
-              isDragging
-                ? 'border-primary-400 bg-primary-50'
-                : selectedFile
-                  ? 'border-success-300 bg-success-50'
-                  : 'border-gray-300 hover:border-primary-300 hover:bg-gray-50'
-            }`}
+            className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer group bg-gray-50/50 dark:bg-gray-800/30
+              ${isDragging ? 'border-primary-400 bg-primary-50' : 
+                selectedFile ? 'border-success-400 bg-success-50' : 'border-gray-300 dark:border-gray-700 hover:border-primary-500/50'
+              }`}
           >
-            <div className="space-y-2 text-center">
-              {selectedFile ? (
-                <>
-                  <FileVideo className="mx-auto h-12 w-12 text-success-500" />
-                  <p className="text-sm font-medium text-gray-700">{selectedFile.name}</p>
-                  <p className="text-xs text-gray-500">
-                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                  </p>
-                  <button
+             {selectedFile ? (
+               <div className="space-y-2">
+                 <div className="mx-auto w-12 h-12 bg-success-100 rounded-full flex items-center justify-center">
+                    <Activity className="h-6 w-6 text-success-600" />
+                 </div>
+                 <p className="text-sm font-medium text-gray-900">{selectedFile.name}</p>
+                 <p className="text-xs text-center text-gray-500">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                 <button
                     type="button"
                     onClick={() => setSelectedFile(null)}
-                    className="text-xs text-primary-600 hover:underline"
+                    className="text-xs text-primary-600 hover:underline relative z-10"
                   >
                     Change file
                   </button>
-                </>
-              ) : (
-                <>
-                  <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium text-primary-600">Click to upload</span> or drag & drop
-                  </p>
-                  <p className="text-xs text-gray-400">MP4, MOV, AVI up to 100MB</p>
-                </>
-              )}
-              <input
+               </div>
+             ) : (
+                <div className="space-y-2">
+                  <Upload className="mx-auto h-10 w-10 text-gray-400 group-hover:text-primary-500 transition-colors mb-2" />
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Drag & drop MP4 or MOV</p>
+                  <p className="text-xs text-gray-500 mt-1">Maximum file size: 50MB</p>
+                </div>
+             )}
+             <input
                 type="file"
-                accept="video/*"
+                accept="video/mp4,video/quicktime,video/x-msvideo,video/webm"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) handleFileSelect(file);
@@ -187,31 +181,31 @@ export function UploadForm({ onSubmit, disabled }: Props) {
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 disabled={isLoading}
               />
-            </div>
           </div>
         </div>
 
-        {/* Error */}
+        {/* Error State */}
         {error && (
-          <div className="bg-danger-50 text-danger-700 px-4 py-3 rounded-lg text-sm border border-danger-100">
+          <div className="p-3 bg-danger-50 border border-danger-100 rounded-lg text-sm text-danger-700 flex items-center gap-2">
+            <Activity className="w-4 h-4 shrink-0" />
             {error}
           </div>
         )}
 
-        {/* Submit */}
+        {/* Submit Button */}
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-primary-500 text-white py-3 px-4 rounded-lg hover:bg-primary-600 active:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium text-sm transition-colors shadow-sm"
+          className="w-full bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md shadow-primary-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? (
+           {isLoading ? (
             <>
-              <Loader2 className="h-5 w-5 animate-spin" />
-              Processing...
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Processing Video...
             </>
           ) : (
             <>
-              <Upload className="h-5 w-5" />
+              <Activity className="w-5 h-5" />
               Start Analysis
             </>
           )}

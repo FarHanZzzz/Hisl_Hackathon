@@ -4,7 +4,7 @@
  * Next.js rewrites /api/* to backend, so we use relative paths.
  */
 import axios from 'axios';
-import type { UploadResponse, CreateJobResponse, Job, PatientInput } from '../types';
+import type { UploadResponse, CreateJobResponse, Job, PatientInput, AISummary } from '../types';
 
 const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
@@ -58,4 +58,14 @@ export async function listJobs(status?: string, limit: number = 50): Promise<Job
  */
 export async function deleteJob(jobId: string): Promise<void> {
   await api.delete(`/api/v1/jobs/${jobId}`);
+}
+
+/**
+ * Generate AI clinical summary for a completed job.
+ */
+export async function getAISummary(jobId: string): Promise<AISummary> {
+  const res = await api.post<AISummary>(`/api/v1/summary/${jobId}`, {}, {
+    timeout: 60000, // AI calls can take longer
+  });
+  return res.data;
 }

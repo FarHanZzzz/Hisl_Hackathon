@@ -18,14 +18,14 @@ module.exports = {
           200: '#bfdbfe',
           300: '#93c5fd',
           400: '#60a5fa',
-          500: '#3B82F6',
+          500: '#3c83f6', // Updated from Stitch #3c83f6
           600: '#2563eb',
           700: '#1d4ed8',
         },
         success: {
           50: '#ecfdf5',
           100: '#d1fae5',
-          500: '#10B981',
+          500: '#10b981', // Stitch success
           600: '#059669',
           700: '#047857',
         },
@@ -39,9 +39,12 @@ module.exports = {
         warning: {
           50: '#fffbeb',
           100: '#fef3c7',
-          500: '#F59E0B',
+          500: '#f59e0b', // Stitch warning
           600: '#d97706',
         },
+        'background-light': '#f5f7f8',
+        'background-dark': '#101722',
+        surface: '#F9FAFB',
       },
       borderRadius: {
         'xl': '0.75rem',

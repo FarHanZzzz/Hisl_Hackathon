@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from backend.app.config import UPLOAD_DIR, RESULTS_DIR, CORS_ORIGINS
-from backend.app.routes import health_router, upload_router, jobs_router
+from backend.app.routes import health_router, upload_router, jobs_router, ai_summary_router
 
 # =============================================================================
 # FASTAPI APP
@@ -45,6 +45,7 @@ app.mount("/results", StaticFiles(directory=str(RESULTS_DIR)), name="results")
 app.include_router(health_router)
 app.include_router(upload_router)
 app.include_router(jobs_router)
+app.include_router(ai_summary_router)
 
 # =============================================================================
 # RUN SERVER

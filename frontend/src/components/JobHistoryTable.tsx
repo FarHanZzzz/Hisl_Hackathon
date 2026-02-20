@@ -1,36 +1,14 @@
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { Clock, CheckCircle, AlertTriangle, Loader2, Trash2, RefreshCw } from 'lucide-react';
+import { useRouter } from 'next/router';
+import { RefreshCw } from 'lucide-react';
 import { listJobs, deleteJob } from '../services/api';
 import type { Job, JobStatus } from '../types';
-
-const STATUS_CONFIG: Record<JobStatus, { icon: React.ReactNode; label: string; color: string }> = {
-  queued: {
-    icon: <Clock className="w-4 h-4" />,
-    label: 'Queued',
-    color: 'bg-gray-100 text-gray-600',
-  },
-  processing: {
-    icon: <Loader2 className="w-4 h-4 animate-spin" />,
-    label: 'Processing',
-    color: 'bg-primary-50 text-primary-600',
-  },
-  completed: {
-    icon: <CheckCircle className="w-4 h-4" />,
-    label: 'Completed',
-    color: 'bg-success-50 text-success-600',
-  },
-  failed: {
-    icon: <AlertTriangle className="w-4 h-4" />,
-    label: 'Failed',
-    color: 'bg-danger-50 text-danger-600',
-  },
-};
 
 export function JobHistoryTable() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const fetchJobs = async () => {
     try {
@@ -62,102 +40,128 @@ export function JobHistoryTable() {
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
     return d.toLocaleDateString('en-US', {
-      month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+      month: 'short', day: 'numeric', year: 'numeric'
     });
   };
 
-  if (loading) {
-    return (
-      <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-        <Loader2 className="h-6 w-6 text-gray-400 animate-spin mx-auto" />
-        <p className="text-sm text-gray-500 mt-2">Loading history...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-        <p className="text-sm text-danger-600">Failed to load history: {error}</p>
-        <button onClick={fetchJobs} className="text-xs text-primary-600 hover:underline mt-2">
-          Retry
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-        <h3 className="text-sm font-bold text-gray-900">Recent Analyses</h3>
-        <button
-          onClick={fetchJobs}
-          className="text-gray-400 hover:text-gray-600 transition-colors p-1"
-          title="Refresh"
-        >
-          <RefreshCw className="w-4 h-4" />
-        </button>
+    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Analyses</h3>
+        <div className="flex gap-4 items-center">
+          <button onClick={fetchJobs} className="text-sm font-medium text-gray-500 hover:text-gray-900 px-3 py-1 flex items-center gap-1 transition-colors">
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin cursor-not-allowed' : ''}`} />
+            <span className="hidden sm:inline">Refresh</span>
+          </button>
+        </div>
       </div>
 
-      {jobs.length === 0 ? (
-        <div className="px-6 py-8 text-center">
-          <p className="text-sm text-gray-400">No analyses yet. Start your first analysis above.</p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+      <div className="overflow-x-auto min-h-[200px]">
+        {error ? (
+           <div className="p-8 text-center text-sm text-danger-500">Failed to load history: {error}</div>
+        ) : jobs.length === 0 && !loading ? (
+             <div className="p-8 text-center text-sm text-gray-500">No analyses found. Start your first analysis above.</div>
+        ) : loading && jobs.length === 0 ? (
+            <div className="p-8 text-center text-sm text-gray-400">Loading your analysis history...</div>
+        ) : (
+          <table className="w-full text-left">
             <thead>
-              <tr className="bg-gray-50 text-left">
-                <th className="px-6 py-3 font-medium text-gray-500 text-xs uppercase tracking-wider">Patient</th>
-                <th className="px-6 py-3 font-medium text-gray-500 text-xs uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 font-medium text-gray-500 text-xs uppercase tracking-wider hidden sm:table-cell">Date</th>
-                <th className="px-6 py-3 font-medium text-gray-500 text-xs uppercase tracking-wider text-right">Actions</th>
+              <tr className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
+                <th className="px-6 py-4">Date</th>
+                <th className="px-6 py-4">Patient ID</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Symmetry Index</th>
+                <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-800 text-sm">
               {jobs.map((job) => {
-                const config = STATUS_CONFIG[job.status];
+                const getSymmetryDisplay = () => {
+                   if (job.status !== 'completed' || !job.results) {
+                      return <span className="text-gray-400">--</span>;
+                   }
+                   
+                   // Fallback logic for SI visualization
+                   // Assuming SI ranges around 1.0 (perfect). Convert to a 0-100 score for the UI bar.
+                   // Asymmetry % calculation if not explicitly provided
+                   // Access the first result's symmetry index if results is an array
+                   const firstResult = Array.isArray(job.results) ? job.results[0] : (job.results as any);
+                   const score = firstResult?.overall_symmetry_index 
+                     ? Math.max(0, 100 - (Math.abs(1 - firstResult.overall_symmetry_index) * 100))
+                     : 95; // Default for fallback if result payload shape differs
+                     
+                   const boundedScore = Math.min(100, Math.round(score));
+                   const isWarning = boundedScore < 85;
+
+                   return (
+                     <div className="flex items-center gap-2">
+                        <span className={`font-bold ${isWarning ? 'text-warning-500' : 'text-gray-900 dark:text-white'}`}>{boundedScore}%</span>
+                        <div className="w-16 bg-gray-200 dark:bg-gray-700 h-1 rounded-full overflow-hidden hidden sm:block">
+                            <div className={`${isWarning ? 'bg-warning-500' : 'bg-success-500'} h-full transition-all duration-500`} style={{ width: `${boundedScore}%` }}></div>
+                        </div>
+                     </div>
+                   );
+                };
+
                 return (
-                  <tr key={job.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <p className="font-medium text-gray-900 text-sm">{job.patient_ref}</p>
-                      <p className="text-xs text-gray-400 truncate max-w-[200px]">{job.video_filename}</p>
+                  <tr key={job.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{formatDate(job.created_at)}</td>
+                    <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                      {job.patient_ref || 'Unknown'}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.color}`}>
-                        {config.icon}
-                        {config.label}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-gray-500 text-xs hidden sm:table-cell">
-                      {formatDate(job.created_at)}
-                    </td>
-                    <td className="px-6 py-4 text-right space-x-2">
                       {job.status === 'completed' && (
-                        <Link
-                          href={`/results/${job.id}`}
-                          className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-primary-600 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
-                        >
-                          View Results
-                        </Link>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-50 text-success-600 border border-success-100">
+                           <span className="w-1.5 h-1.5 rounded-full bg-success-500 mr-1.5"></span>
+                           Completed
+                        </span>
                       )}
-                      {['completed', 'failed'].includes(job.status) && (
-                        <button
-                          onClick={() => handleDelete(job.id)}
-                          className="inline-flex items-center p-1.5 text-gray-400 hover:text-danger-500 transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      {job.status === 'processing' && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-50 text-primary-600 border border-primary-100">
+                           <span className="w-1.5 h-1.5 rounded-full bg-primary-500 mr-1.5 animate-pulse"></span>
+                           Processing
+                        </span>
                       )}
+                      {job.status === 'queued' && (
+                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                           <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-1.5"></span>
+                           Queued
+                        </span>
+                      )}
+                      {job.status === 'failed' && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-danger-50 text-danger-600 border border-danger-100">
+                           <span className="w-1.5 h-1.5 rounded-full bg-danger-500 mr-1.5"></span>
+                           Failed
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                       {job.status === 'processing' ? <span className="text-gray-400 italic">Calculating...</span> : getSymmetryDisplay()}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                       <div className="flex justify-end gap-2">
+                         {job.status === 'completed' ? (
+                            <button onClick={() => router.push(`/results/${job.id}`)} className="bg-primary-50 hover:bg-primary-100 text-primary-700 px-4 py-1.5 rounded-lg text-xs font-bold transition-colors">
+                               View Report
+                            </button>
+                         ) : job.status === 'failed' ? (
+                            <button onClick={() => handleDelete(job.id)} className="text-danger-500 hover:text-danger-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">
+                               Delete
+                            </button>
+                         ) : (
+                           <button className="text-gray-400 dark:text-gray-600 cursor-not-allowed px-4 py-1.5 rounded-lg text-xs font-bold border border-gray-100 dark:border-gray-800" disabled>
+                               Pending
+                           </button>
+                         )}
+                       </div>
                     </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
