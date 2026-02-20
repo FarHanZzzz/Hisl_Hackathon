@@ -1,0 +1,14 @@
+{
+    "name": "hisl-hackathon-project",
+    "version": "1.0.0",
+    "description": "Full-stack application with Next.js frontend and FastAPI backend",
+    "scripts": {
+        "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+        "dev:frontend": "cd frontend && npm run dev",
+        "dev:backend": ". venv/bin/activate && uvicorn backend.app.main:app --reload --port 8000",
+        "install:all": "npm install && cd frontend && npm install && cd .. && pip install -r backend/requirements.txt"
+    },
+    "devDependencies": {
+        "concurrently": "^8.2.2"
+    }
+}
