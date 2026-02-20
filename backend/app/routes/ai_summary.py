@@ -1,88 +1,137 @@
 """
 AI-powered clinical summary endpoint.
 
-Uses Google Gemini to interpret raw gait analysis metrics and produce
-a structured, human-readable clinical summary.
+Uses OpenRouter API (via httpx) to interpret raw gait analysis
+metrics and produce a structured, human-readable clinical summary.
 """
 import json
-import traceback
+import re
+import httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
-from ..config import GEMINI_API_KEY
+from typing import List
+from ..config import OPENROUTER_API_KEY, OPENROUTER_MODEL
 from ..services.database import JobService, ResultService
 
 router = APIRouter(prefix="/api/v1/summary", tags=["ai-summary"])
+
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 
 # --- Response Model ---
 
 class AISummaryResponse(BaseModel):
     overview: str
+    what_this_means: str
     key_findings: List[str]
     risk_assessment: str
     recommendations: List[str]
     disclaimer: str
 
 
-# --- Gemini Prompt ---
+# --- Prompt ---
 
-SYSTEM_PROMPT = """You are a pediatric gait analysis AI assistant for clinicians. 
-You will receive structured kinematic data from a gait analysis session of a pediatric patient.
-Your job is to interpret the raw numbers and produce a clear, structured clinical summary.
+SYSTEM_PROMPT = """You are a pediatric gait analysis AI assistant that explains results to PARENTS and NON-MEDICAL people.
+
+Your audience is NOT doctors — they are parents, caregivers, and everyday people who want to understand what their child's gait analysis means in SIMPLE, CLEAR language.
 
 IMPORTANT RULES:
-- Write in clear, professional medical language that a clinician would understand.
-- Be specific about which values are concerning and why.
-- Reference normal pediatric ranges where applicable.
-- Do NOT diagnose — only screen and recommend further evaluation.
-- Always include the disclaimer that this is an AI-assisted screening tool.
+- Write like you are explaining to a worried parent. Use everyday language, not medical jargon.
+- When mentioning angles or numbers, ALWAYS explain what they mean in practical terms.
+  Example: Instead of "Left knee ROM is 26.86 degrees" say "The left knee only bends about 27 degrees during walking, which is much less than the normal range of 40-60 degrees. This means the knee is stiffer than expected."
+- Explain what symmetry/asymmetry means: "The left and right legs move differently from each other, which can cause an uneven walk."
+- Use analogies and comparisons to make things relatable.
+- Be empathetic but honest. Don't sugarcoat concerning findings, but don't be alarming either.
+- ALWAYS explain what each finding means for the child's daily life (walking, running, playing).
+- Include a "what_this_means" section that gives a simple 3-4 sentence plain-English summary a parent can quickly understand.
 
 OUTPUT FORMAT — You MUST respond with valid JSON only, no markdown, no extra text:
 {
-  "overview": "A 2-3 sentence summary of the overall gait pattern observed.",
+  "overview": "A 3-4 sentence summary written in simple language explaining what was observed in the child's walking pattern. Avoid medical jargon.",
+  "what_this_means": "A 3-4 sentence plain-English explanation a parent can understand. What does this mean for my child? Is this something to worry about? What should I do next? Be specific and practical.",
   "key_findings": [
-    "Finding 1 with specific metric reference",
-    "Finding 2 with specific metric reference",
-    "Finding 3..."
+    "Finding 1: Explain the measurement AND what it means in simple terms. Example: 'The left knee bends about 27 degrees during walking — this is less than the normal 40-60 degrees, meaning the knee appears stiffer than expected and may cause the child to walk with a limp.'",
+    "Finding 2: Same format — number + plain explanation",
+    "Finding 3: Same format",
+    "Finding 4: Same format"
   ],
-  "risk_assessment": "A paragraph explaining the risk level and what the asymmetry/symmetry values mean clinically.",
+  "risk_assessment": "A detailed paragraph explaining the overall risk level in plain language. What does 'high risk' or 'normal' actually mean? What should the parent understand? Be specific about what the asymmetry percentage and symmetry index tell us about the child's walking.",
   "recommendations": [
-    "Recommendation 1",
-    "Recommendation 2",
-    "Recommendation 3..."
+    "Recommendation 1: Specific, actionable step written for a parent (not a doctor)",
+    "Recommendation 2: Another clear next step",
+    "Recommendation 3: Another clear next step",
+    "Recommendation 4: Another clear next step"
   ]
 }
 """
 
 
 def _build_user_prompt(result: dict) -> str:
-    """Build the Gemini prompt from a result dict."""
-    return f"""Analyze the following pediatric gait analysis data:
+    """Build the prompt from a result dict."""
+    return f"""Analyze the following pediatric gait analysis data and explain it in simple terms for a parent:
 
-KINEMATIC MEASUREMENTS:
-- Left Knee Max Flexion: {result.get('left_max_flexion', 'N/A')}°
-- Left Knee Min Flexion: {result.get('left_min_flexion', 'N/A')}°
-- Left Knee Range of Motion: {result.get('left_rom', 'N/A')}°
-- Right Knee Max Flexion: {result.get('right_max_flexion', 'N/A')}°
-- Right Knee Min Flexion: {result.get('right_min_flexion', 'N/A')}°
-- Right Knee Range of Motion: {result.get('right_rom', 'N/A')}°
+WHAT WAS MEASURED (Knee Angles During Walking):
+- Left Knee Maximum Bend: {result.get('left_max_flexion', 'N/A')} degrees
+- Left Knee Minimum Bend: {result.get('left_min_flexion', 'N/A')} degrees
+- Left Knee Range of Motion (how much it bends/straightens): {result.get('left_rom', 'N/A')} degrees
+- Right Knee Maximum Bend: {result.get('right_max_flexion', 'N/A')} degrees
+- Right Knee Minimum Bend: {result.get('right_min_flexion', 'N/A')} degrees
+- Right Knee Range of Motion: {result.get('right_rom', 'N/A')} degrees
 
-SYMMETRY ANALYSIS:
-- Symmetry Index (L/R Ratio): {result.get('symmetry_index', 'N/A')} (1.0 = perfect symmetry)
-- Asymmetry Percentage: {result.get('asymmetry_percentage', 'N/A')}%
+HOW EVENLY THE LEGS MOVE:
+- Symmetry Index: {result.get('symmetry_index', 'N/A')} (1.0 means both legs move identically, further from 1.0 means more difference between legs)
+- Asymmetry Percentage: {result.get('asymmetry_percentage', 'N/A')}% (0% = perfectly even, higher = more uneven)
 
-CLASSIFICATION:
-- AI Diagnosis: {result.get('diagnosis', 'N/A')}
-- High Risk Flag: {result.get('is_high_risk', 'N/A')}
-- Confidence Score: {result.get('confidence', 'N/A')}
+AI CLASSIFICATION:
+- Diagnosis: {result.get('diagnosis', 'N/A')}
+- High Risk: {result.get('is_high_risk', 'N/A')}
+- Confidence: {result.get('confidence', 'N/A')}
 
-DATA QUALITY:
+VIDEO QUALITY:
 - Detection Rate: {result.get('detection_rate', 'N/A')}%
-- Frames Processed: {result.get('frames_processed', 'N/A')}
-- Frames Detected: {result.get('frames_detected', 'N/A')}
+- Frames Analyzed: {result.get('frames_processed', 'N/A')}
+- Frames with Clear Detection: {result.get('frames_detected', 'N/A')}
 
-Please provide your structured clinical interpretation as JSON."""
+Normal pediatric knee ROM during walking is typically 40-60 degrees. A symmetry index near 1.0 is normal; anything below 0.9 or above 1.1 suggests notable asymmetry.
+
+Please explain these results in simple, parent-friendly language. Be specific about what each number means for the child's walking and daily life. Respond ONLY with JSON."""
+
+
+def _extract_json(text: str) -> dict:
+    """Robust JSON extraction from AI response text."""
+    text = text.strip()
+
+    # Try 1: Direct parse
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+
+    # Try 2: Strip markdown code fences
+    if "```" in text:
+        cleaned = re.sub(r"```(?:json)?\s*", "", text)
+        cleaned = cleaned.strip()
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError:
+            pass
+
+    # Try 3: Extract first { ... } block via brace matching
+    start = text.find("{")
+    if start != -1:
+        depth = 0
+        for i in range(start, len(text)):
+            if text[i] == "{":
+                depth += 1
+            elif text[i] == "}":
+                depth -= 1
+                if depth == 0:
+                    try:
+                        return json.loads(text[start : i + 1])
+                    except json.JSONDecodeError:
+                        break
+
+    raise json.JSONDecodeError("Could not extract JSON from AI response", text, 0)
 
 
 # --- Endpoint ---
@@ -91,12 +140,11 @@ Please provide your structured clinical interpretation as JSON."""
 async def generate_summary(job_id: str):
     """
     Generate an AI clinical summary for a completed gait analysis job.
-    Calls Gemini to interpret the raw metrics.
     """
-    if not GEMINI_API_KEY:
+    if not OPENROUTER_API_KEY:
         raise HTTPException(
             status_code=500,
-            detail="GEMINI_API_KEY is not configured. Add it to your .env file."
+            detail="OPENROUTER_API_KEY is not configured. Add it to your .env file."
         )
 
     # 1. Fetch the job and its results
@@ -109,7 +157,6 @@ async def generate_summary(job_id: str):
     if job.get("status") != "completed":
         raise HTTPException(status_code=400, detail="Job is not completed yet")
 
-    # Get results for this job
     results = result_svc.get_by_job(job_id)
     if not results:
         raise HTTPException(status_code=404, detail="No results found for this job")
@@ -119,38 +166,41 @@ async def generate_summary(job_id: str):
     # 2. Build the prompt
     user_prompt = _build_user_prompt(result)
 
-    # 3. Call Gemini
+    # 3. Call OpenRouter via httpx (OpenAI-compatible)
     try:
-        from google import genai
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            resp = await client.post(
+                OPENROUTER_URL,
+                headers={
+                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": OPENROUTER_MODEL,
+                    "messages": [
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    "temperature": 0.3,
+                    "max_tokens": 2000,
+                },
+            )
 
-        client = genai.Client(api_key=GEMINI_API_KEY)
+        if resp.status_code != 200:
+            detail = resp.text[:300]
+            raise HTTPException(status_code=resp.status_code, detail=f"OpenRouter error: {detail}")
 
-        response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=user_prompt,
-            config=genai.types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                temperature=0.3,
-                max_output_tokens=1500,
-            ),
-        )
-
-        # Parse the JSON response
-        raw_text = response.text.strip()
-        # Strip markdown code fences if present
-        if raw_text.startswith("```"):
-            raw_text = raw_text.split("\n", 1)[1]  # Remove first line
-            raw_text = raw_text.rsplit("```", 1)[0]  # Remove last fence
-            raw_text = raw_text.strip()
-
-        summary_data = json.loads(raw_text)
+        data = resp.json()
+        raw_text = data["choices"][0]["message"]["content"]
+        summary_data = _extract_json(raw_text)
 
         return AISummaryResponse(
             overview=summary_data.get("overview", "Summary unavailable."),
+            what_this_means=summary_data.get("what_this_means", ""),
             key_findings=summary_data.get("key_findings", []),
             risk_assessment=summary_data.get("risk_assessment", "Assessment unavailable."),
             recommendations=summary_data.get("recommendations", []),
-            disclaimer="This is an AI-assisted screening tool and does not constitute a medical diagnosis. All findings should be interpreted by a qualified healthcare professional."
+            disclaimer="This is an AI-assisted screening tool and does not constitute a medical diagnosis. All findings should be verified through clinical observation and professional medical judgment."
         )
 
     except json.JSONDecodeError as e:
@@ -158,6 +208,8 @@ async def generate_summary(job_id: str):
             status_code=500,
             detail=f"Failed to parse AI response: {str(e)}"
         )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=500,

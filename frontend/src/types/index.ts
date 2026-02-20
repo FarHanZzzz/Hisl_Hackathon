@@ -66,6 +66,7 @@ export interface CreateJobResponse {
 // --- AI Summary ---
 export interface AISummary {
   overview: string;
+  what_this_means: string;
   key_findings: string[];
   risk_assessment: string;
   recommendations: string[];
