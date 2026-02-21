@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 
@@ -7,6 +8,29 @@ interface LayoutProps {
 }
 
 export function Layout({ children, title = 'Pedi-Growth | Clinical Gait Analysis Tool' }: LayoutProps) {
+  const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    // Check localStorage or system preference on mount
+    const stored = localStorage.getItem('pedigrowth-theme');
+    if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      setDarkMode(true);
+      document.documentElement.classList.replace('light', 'dark');
+    }
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    if (newMode) {
+      document.documentElement.classList.replace('light', 'dark');
+      localStorage.setItem('pedigrowth-theme', 'dark');
+    } else {
+      document.documentElement.classList.replace('dark', 'light');
+      localStorage.setItem('pedigrowth-theme', 'light');
+    }
+  };
+
   return (
     <>
       <Head>
@@ -28,7 +52,17 @@ export function Layout({ children, title = 'Pedi-Growth | Clinical Gait Analysis
                     <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wider">Clinical Gait Analysis Tool</p>
                  </div>
               </Link>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
+                 {/* Dark Mode Toggle */}
+                 <button
+                   onClick={toggleDarkMode}
+                   className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+                   aria-label="Toggle dark mode"
+                 >
+                    <span className="material-icons">
+                      {darkMode ? 'light_mode' : 'dark_mode'}
+                    </span>
+                 </button>
                  <button className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
                     <span className="material-icons">notifications</span>
                  </button>
