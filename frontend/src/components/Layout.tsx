@@ -15,7 +15,9 @@ export function Layout({ children, title = 'Pedi-Growth | Clinical Gait Analysis
     const stored = localStorage.getItem('pedigrowth-theme');
     if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
       setDarkMode(true);
-      document.documentElement.classList.replace('light', 'dark');
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
     }
   }, []);
 
@@ -23,10 +25,10 @@ export function Layout({ children, title = 'Pedi-Growth | Clinical Gait Analysis
     const newMode = !darkMode;
     setDarkMode(newMode);
     if (newMode) {
-      document.documentElement.classList.replace('light', 'dark');
+      document.documentElement.classList.add('dark');
       localStorage.setItem('pedigrowth-theme', 'dark');
     } else {
-      document.documentElement.classList.replace('dark', 'light');
+      document.documentElement.classList.remove('dark');
       localStorage.setItem('pedigrowth-theme', 'light');
     }
   };
