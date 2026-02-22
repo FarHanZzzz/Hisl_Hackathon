@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "description": "Full-stack application with Next.js frontend and FastAPI backend",
     "scripts": {
+        "predev": "pkill -f 'next-server' 2>/dev/null; pkill -f 'uvicorn' 2>/dev/null; sleep 1; echo '✅ Cleaned up old processes'",
         "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
         "dev:frontend": "cd frontend && npm run dev",
         "dev:backend": ". venv/bin/activate && uvicorn backend.app.main:app --reload --port 8000",

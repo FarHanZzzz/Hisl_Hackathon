@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pedi-Growth - AI Pediatric Gait Analysis</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3c83f6",
+                        "accent": "#06b6d4",
+                        "background-light": "#0a0a1a", // Overriding for this specific dark theme request
+                        "background-dark": "#0a0a1a",
+                        "surface": "#121226",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "sans": ["Space Grotesk", "sans-serif"],
+                    },
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                        'hero-glow': 'conic-gradient(from 180deg at 50% 50%, #1a1a40 0deg, #0a0a1a 180deg, #1a1a40 360deg)',
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-glow': 'pulse-glow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        'pulse-glow': {
+                            '0%, 100%': { opacity: '0.5' },
+                            '50%': { opacity: '1' },
+                        }
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .glass-card {
+                @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)];
+            }
+            .neon-text {
+                text-shadow: 0 0 10px rgba(60, 131, 246, 0.5), 0 0 20px rgba(60, 131, 246, 0.3);
+            }
+            .neon-border {
+                box-shadow: 0 0 5px theme('colors.primary'), inset 0 0 5px theme('colors.primary');
+            }
+            .grid-bg {
+                background-size: 50px 50px;
+                background-image: linear-gradient(to right, rgba(60, 131, 246, 0.05) 1px, transparent 1px),
+                                  linear-gradient(to bottom, rgba(60, 131, 246, 0.05) 1px, transparent 1px);
+            }
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-slate-100 font-display overflow-x-hidden selection:bg-primary selection:text-white">
+<!-- Background Effects -->
+<div class="fixed inset-0 z-0 pointer-events-none">
+<div class="absolute inset-0 grid-bg opacity-30"></div>
+<div class="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/20 blur-[120px]"></div>
+<div class="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-accent/20 blur-[100px]"></div>
+</div>
+<!-- Navigation -->
+<header class="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-background-dark/80 backdrop-blur-md">
+<div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-10 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-white text-2xl">accessibility_new</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight">Pedi-Growth</h1>
+</div>
+<nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+<a class="hover:text-primary transition-colors" href="#">Platform</a>
+<a class="hover:text-primary transition-colors" href="#">Technology</a>
+<a class="hover:text-primary transition-colors" href="#">Research</a>
+<a class="hover:text-primary transition-colors" href="#">Pricing</a>
+</nav>
+<button class="hidden md:flex items-center justify-center h-10 px-6 rounded-lg bg-primary hover:bg-primary/90 text-white text-sm font-bold transition-all shadow-[0_0_15px_rgba(60,131,246,0.5)] hover:shadow-[0_0_25px_rgba(60,131,246,0.7)]">
+                Dashboard Login
+            </button>
+<!-- Mobile Menu Icon -->
+<button class="md:hidden text-white">
+<span class="material-symbols-outlined text-3xl">menu</span>
+</button>
+</div>
+</header>
+<main class="relative z-10 pt-20">
+<!-- Hero Section -->
+<section class="relative min-h-[90vh] flex flex-col items-center justify-center px-6 py-20 overflow-hidden">
+<div class="max-w-7xl w-full grid lg:grid-cols-2 gap-12 items-center">
+<!-- Hero Content -->
+<div class="flex flex-col gap-6 text-left relative z-20">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-card w-fit border-primary/30">
+<span class="size-2 rounded-full bg-accent animate-pulse"></span>
+<span class="text-xs font-semibold text-accent uppercase tracking-wider">v2.0 MediaPipe Engine Live</span>
+</div>
+<h1 class="text-5xl lg:text-7xl font-bold leading-[1.1] tracking-tight">
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-primary to-accent">AI-Powered</span><br/>
+                        Pediatric Gait Screening
+                    </h1>
+<p class="text-lg text-slate-400 max-w-xl leading-relaxed">
+                        Transform video into precise clinical biomechanics. Next-generation MediaPipe analysis providing knee flexion, stride length, and posture data in seconds.
+                    </p>
+<div class="flex flex-col sm:flex-row gap-4 pt-4">
+<button class="flex items-center justify-center h-14 px-8 rounded-xl bg-gradient-to-r from-primary to-blue-600 text-white font-bold text-lg shadow-[0_0_20px_rgba(60,131,246,0.4)] hover:shadow-[0_0_30px_rgba(60,131,246,0.6)] transition-all group">
+                            Start Analysis 
+                            <span class="material-symbols-outlined ml-2 transition-transform group-hover:translate-x-1">arrow_forward</span>
+</button>
+<button class="flex items-center justify-center h-14 px-8 rounded-xl glass-card text-white font-medium hover:bg-white/10 transition-colors border border-white/10">
+<span class="material-symbols-outlined mr-2">play_circle</span>
+                            View Demo
+                        </button>
+</div>
+<!-- Trust Badges -->
+<div class="pt-8 flex items-center gap-6 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+<!-- Abstract Logo representation -->
+<div class="h-8 w-24 bg-white/10 rounded flex items-center justify-center text-xs font-bold">CLINIC A</div>
+<div class="h-8 w-24 bg-white/10 rounded flex items-center justify-center text-xs font-bold">MEDTECH</div>
+<div class="h-8 w-24 bg-white/10 rounded flex items-center justify-center text-xs font-bold">HEALTHAI</div>
+</div>
+</div>
+<!-- Hero Visual - 3D Skeleton Abstract -->
+<div class="relative h-[500px] w-full flex items-center justify-center perspective-[1000px]">
+<!-- Placeholder for 3D element - Using CSS to create a holographic effect -->
+<div class="absolute inset-0 bg-gradient-radial from-primary/10 to-transparent opacity-50"></div>
+<div class="relative w-full h-full max-w-md mx-auto animate-float">
+<!-- Holographic Card Container -->
+<div class="absolute inset-0 rounded-3xl border border-primary/20 bg-gradient-to-b from-primary/5 to-transparent backdrop-blur-sm overflow-hidden flex items-center justify-center">
+<!-- Skeleton representation using an image with specific styling -->
+<div class="relative w-full h-full flex items-center justify-center">
+<img alt="Abstract wireframe representing human anatomy and motion tracking data" class="object-cover opacity-60 mix-blend-screen h-[80%] w-auto filter contrast-150 brightness-150 hue-rotate-180" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB__HF1uc0hZDtOmto4JYnERcb1O1nQJXCtTu6KrqOiEwYKVyyNCXN_otOd-4k7hzaE4AAu0jjN02VjrY6DieOBDdxJG5GG_NZ3dvFX-89TwUFy0MyGf-yaSbxFsqVuxuLlQ1zqBl4xRNSVqihY_Rx7t_Cm-qhK0BVOqUHOMTCb7wbMS2LMossNrB23dhXyd2J8g9_cAXrUVavvnP_1l_xPmD5qcDwUnumciJ8WIZ8J_lZKHQSoxVqM7ZBNfMgnDStEp3Jxi00VulS0"/>
+<!-- Overlay UI Elements on top of image -->
+<div class="absolute top-1/4 left-1/4 size-3 bg-accent rounded-full shadow-[0_0_15px_#06b6d4] animate-pulse"></div>
+<div class="absolute top-1/4 right-1/4 size-3 bg-accent rounded-full shadow-[0_0_15px_#06b6d4] animate-pulse delay-75"></div>
+<div class="absolute bottom-1/3 left-1/3 size-3 bg-primary rounded-full shadow-[0_0_15px_#3c83f6] animate-pulse delay-150"></div>
+<div class="absolute bottom-1/3 right-1/3 size-3 bg-primary rounded-full shadow-[0_0_15px_#3c83f6] animate-pulse delay-300"></div>
+<!-- Connecting Lines SVG -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none stroke-accent/40" style="stroke-width: 1;">
+<line x1="25%" x2="75%" y1="25%" y2="25%"></line>
+<line x1="25%" x2="33%" y1="25%" y2="66%"></line>
+<line x1="75%" x2="66%" y1="25%" y2="66%"></line>
+</svg>
+<!-- Floating Data Tags -->
+<div class="absolute top-[20%] right-[10%] glass-card px-3 py-1 rounded text-xs text-accent font-mono border-l-2 border-l-accent">
+                                    Flexion: 45°
+                                </div>
+<div class="absolute bottom-[30%] left-[10%] glass-card px-3 py-1 rounded text-xs text-primary font-mono border-l-2 border-l-primary">
+                                    Stride: 0.8m
+                                </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Stats Section -->
+<section class="py-10 border-y border-white/5 bg-black/20">
+<div class="max-w-7xl mx-auto px-6">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+<div class="glass-card p-6 rounded-xl flex flex-col items-center justify-center text-center gap-2 group hover:border-primary/40 transition-colors">
+<span class="text-3xl font-bold text-white group-hover:neon-text transition-all">33</span>
+<span class="text-sm text-slate-400 font-medium">Landmarks Tracked</span>
+</div>
+<div class="glass-card p-6 rounded-xl flex flex-col items-center justify-center text-center gap-2 group hover:border-accent/40 transition-colors">
+<span class="text-3xl font-bold text-white group-hover:neon-text transition-all">&lt; 2 min</span>
+<span class="text-sm text-slate-400 font-medium">Processing Time</span>
+</div>
+<div class="glass-card p-6 rounded-xl flex flex-col items-center justify-center text-center gap-2 group hover:border-primary/40 transition-colors">
+<span class="text-3xl font-bold text-white group-hover:neon-text transition-all">H.264</span>
+<span class="text-sm text-slate-400 font-medium">Video Support</span>
+</div>
+<div class="glass-card p-6 rounded-xl flex flex-col items-center justify-center text-center gap-2 group hover:border-accent/40 transition-colors">
+<span class="text-3xl font-bold text-white group-hover:neon-text transition-all">HIPAA</span>
+<span class="text-sm text-slate-400 font-medium">Compliant Ready</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Feature Cards -->
+<section class="py-24 px-6 relative">
+<div class="max-w-7xl mx-auto">
+<div class="text-center mb-16">
+<h2 class="text-3xl md:text-5xl font-bold mb-4">Advanced Clinical Features</h2>
+<p class="text-slate-400 max-w-2xl mx-auto text-lg">Leverage state-of-the-art computer vision to automate gait analysis without the need for wearable sensors.</p>
+</div>
+<div class="grid md:grid-cols-3 gap-8">
+<!-- Feature 1 -->
+<div class="glass-card p-8 rounded-2xl border border-white/5 hover:border-primary/50 transition-all duration-300 group hover:-translate-y-2">
+<div class="size-14 rounded-xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-primary text-3xl group-hover:scale-110 transition-transform">videocam</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-3">AI Video Analysis</h3>
+<p class="text-slate-400 leading-relaxed">
+                            Automated joint tracking using computer vision. Upload standard video from any device and get mocap-quality data instantly.
+                        </p>
+</div>
+<!-- Feature 2 -->
+<div class="glass-card p-8 rounded-2xl border border-white/5 hover:border-accent/50 transition-all duration-300 group hover:-translate-y-2 relative">
+<!-- Glow effect behind -->
+<div class="absolute inset-0 bg-accent/5 blur-2xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
+<div class="size-14 rounded-xl bg-accent/10 flex items-center justify-center mb-6 group-hover:bg-accent/20 transition-colors">
+<span class="material-symbols-outlined text-accent text-3xl group-hover:scale-110 transition-transform">monitoring</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-3">Clinical Metrics</h3>
+<p class="text-slate-400 leading-relaxed">
+                            Detailed knee flexion, cadence, &amp; stride length data visualized in interactive charts for immediate clinical assessment.
+                        </p>
+</div>
+<!-- Feature 3 -->
+<div class="glass-card p-8 rounded-2xl border border-white/5 hover:border-primary/50 transition-all duration-300 group hover:-translate-y-2">
+<div class="size-14 rounded-xl bg-purple-500/10 flex items-center justify-center mb-6 group-hover:bg-purple-500/20 transition-colors">
+<span class="material-symbols-outlined text-purple-400 text-3xl group-hover:scale-110 transition-transform">neurology</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-3">AI Clinical Summary</h3>
+<p class="text-slate-400 leading-relaxed">
+                            LLM-generated patient reports and insights. Our models synthesize data into readable summaries for patient records.
+                        </p>
+</div>
+</div>
+</div>
+</section>
+<!-- How It Works Section -->
+<section class="py-24 px-6 bg-gradient-to-b from-transparent to-black/40">
+<div class="max-w-7xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+<div>
+<h2 class="text-3xl md:text-5xl font-bold mb-4">How It Works</h2>
+<p class="text-slate-400">From upload to insight in four simple steps.</p>
+</div>
+<button class="text-primary hover:text-accent font-semibold flex items-center gap-2 transition-colors">
+                        View Documentation <span class="material-symbols-outlined text-sm">open_in_new</span>
+</button>
+</div>
+<!-- Timeline Container -->
+<div class="relative">
+<!-- Connecting Line (Desktop) -->
+<div class="hidden md:block absolute top-8 left-0 right-0 h-0.5 bg-gradient-to-r from-slate-800 via-primary to-slate-800 z-0"></div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-12 relative z-10">
+<!-- Step 1 -->
+<div class="flex flex-col gap-6 group">
+<div class="flex items-center gap-4 md:block">
+<div class="size-16 rounded-full bg-surface border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)] flex items-center justify-center group-hover:border-primary transition-colors relative">
+<span class="text-xl font-bold text-slate-500 group-hover:text-primary">01</span>
+<div class="absolute inset-0 rounded-full border border-primary/20 scale-110 group-hover:scale-125 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+</div>
+<h3 class="text-xl font-bold mt-0 md:mt-6 text-white md:hidden">Upload Video</h3>
+</div>
+<div class="glass-card p-6 rounded-xl border-l-4 border-l-primary/50 md:border-l-0 md:border-t-4 md:border-t-primary/50 hover:bg-white/5 transition-colors">
+<div class="hidden md:block mb-3">
+<span class="material-symbols-outlined text-primary text-3xl">upload_file</span>
+</div>
+<h3 class="hidden md:block text-lg font-bold text-white mb-2">Upload Video</h3>
+<p class="text-sm text-slate-400">Securely upload patient footage via our HIPAA-compliant portal. Supports standard formats.</p>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="flex flex-col gap-6 group">
+<div class="flex items-center gap-4 md:block">
+<div class="size-16 rounded-full bg-surface border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)] flex items-center justify-center group-hover:border-accent transition-colors relative">
+<span class="text-xl font-bold text-slate-500 group-hover:text-accent">02</span>
+<div class="absolute inset-0 rounded-full border border-accent/20 scale-110 group-hover:scale-125 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+</div>
+<h3 class="text-xl font-bold mt-0 md:mt-6 text-white md:hidden">AI Processing</h3>
+</div>
+<div class="glass-card p-6 rounded-xl border-l-4 border-l-accent/50 md:border-l-0 md:border-t-4 md:border-t-accent/50 hover:bg-white/5 transition-colors">
+<div class="hidden md:block mb-3">
+<span class="material-symbols-outlined text-accent text-3xl">memory</span>
+</div>
+<h3 class="hidden md:block text-lg font-bold text-white mb-2">AI Processing</h3>
+<p class="text-sm text-slate-400">Our engine identifies 33 skeletal landmarks and tracks movement frame-by-frame.</p>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="flex flex-col gap-6 group">
+<div class="flex items-center gap-4 md:block">
+<div class="size-16 rounded-full bg-surface border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)] flex items-center justify-center group-hover:border-purple-500 transition-colors relative">
+<span class="text-xl font-bold text-slate-500 group-hover:text-purple-500">03</span>
+<div class="absolute inset-0 rounded-full border border-purple-500/20 scale-110 group-hover:scale-125 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+</div>
+<h3 class="text-xl font-bold mt-0 md:mt-6 text-white md:hidden">Get Results</h3>
+</div>
+<div class="glass-card p-6 rounded-xl border-l-4 border-l-purple-500/50 md:border-l-0 md:border-t-4 md:border-t-purple-500/50 hover:bg-white/5 transition-colors">
+<div class="hidden md:block mb-3">
+<span class="material-symbols-outlined text-purple-400 text-3xl">analytics</span>
+</div>
+<h3 class="hidden md:block text-lg font-bold text-white mb-2">Get Results</h3>
+<p class="text-sm text-slate-400">View interactive biomechanical charts and replay video with overlay skeletons.</p>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="flex flex-col gap-6 group">
+<div class="flex items-center gap-4 md:block">
+<div class="size-16 rounded-full bg-surface border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)] flex items-center justify-center group-hover:border-green-500 transition-colors relative">
+<span class="text-xl font-bold text-slate-500 group-hover:text-green-500">04</span>
+<div class="absolute inset-0 rounded-full border border-green-500/20 scale-110 group-hover:scale-125 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+</div>
+<h3 class="text-xl font-bold mt-0 md:mt-6 text-white md:hidden">AI Explanation</h3>
+</div>
+<div class="glass-card p-6 rounded-xl border-l-4 border-l-green-500/50 md:border-l-0 md:border-t-4 md:border-t-green-500/50 hover:bg-white/5 transition-colors">
+<div class="hidden md:block mb-3">
+<span class="material-symbols-outlined text-green-400 text-3xl">description</span>
+</div>
+<h3 class="hidden md:block text-lg font-bold text-white mb-2">AI Explanation</h3>
+<p class="text-sm text-slate-400">Receive an automatically generated textual summary highlighting abnormalities.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="py-20 px-6 relative overflow-hidden">
+<div class="absolute inset-0 bg-primary/5"></div>
+<div class="absolute -top-1/2 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-[500px] bg-primary/20 blur-[150px] rounded-full"></div>
+<div class="max-w-4xl mx-auto text-center relative z-10 glass-card p-12 rounded-3xl border border-white/10 shadow-2xl shadow-primary/10">
+<h2 class="text-3xl md:text-5xl font-bold mb-6 text-white">Ready to modernize your pediatric analysis?</h2>
+<p class="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">Join the leading clinics using Pedi-Growth for faster, more accurate gait assessments.</p>
+<div class="flex flex-col sm:flex-row gap-4 justify-center">
+<button class="h-14 px-8 rounded-xl bg-primary text-white font-bold text-lg shadow-[0_0_20px_rgba(60,131,246,0.4)] hover:bg-primary/90 transition-all">
+                        Get Started Now
+                    </button>
+<button class="h-14 px-8 rounded-xl bg-transparent border border-white/20 text-white font-medium hover:bg-white/5 transition-all">
+                        Schedule Demo
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="border-t border-white/5 bg-background-dark py-12 px-6 relative z-10">
+<div class="max-w-7xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
+<div class="flex items-center gap-2">
+<div class="size-8 bg-gradient-to-br from-primary to-accent rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-lg">accessibility_new</span>
+</div>
+<span class="text-lg font-bold tracking-tight text-white">Pedi-Growth</span>
+</div>
+<div class="flex gap-8 text-sm text-slate-400">
+<a class="hover:text-white transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-white transition-colors" href="#">Terms of Service</a>
+<a class="hover:text-white transition-colors" href="#">HIPAA Compliance</a>
+<a class="hover:text-white transition-colors" href="#">Contact Support</a>
+</div>
+</div>
+<div class="text-center md:text-left text-xs text-slate-600">
+                © 2023 Pedi-Growth Inc. All rights reserved.
+            </div>
+</div>
+</footer>
+</body></html>
