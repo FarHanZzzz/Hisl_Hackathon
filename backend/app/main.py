@@ -13,6 +13,10 @@ from fastapi.staticfiles import StaticFiles
 from backend.app.config import UPLOAD_DIR, RESULTS_DIR, CORS_ORIGINS
 from backend.app.routes import health_router, upload_router, jobs_router, ai_summary_router
 
+import mimetypes
+mimetypes.add_type("video/webm", ".webm")
+mimetypes.add_type("video/mp4", ".mp4")
+
 # =============================================================================
 # FASTAPI APP
 # =============================================================================

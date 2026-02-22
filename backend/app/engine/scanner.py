@@ -5,6 +5,8 @@ Migrated from worker/processor.py — GaitScanner class + process_video function
 
 import cv2
 import numpy as np
+import subprocess
+import tempfile
 from pathlib import Path
 from typing import Tuple, Optional, Callable
 import mediapipe as mp
@@ -228,12 +230,16 @@ def process_video(
     # Setup output video writer (optional)
     output_video_path = None
     video_writer = None
+    temp_video_path = None
     if output_dir:
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
-        output_video_path = output_dir / f"{job_id}_processed.webm"
-        fourcc = cv2.VideoWriter_fourcc(*"vp09")
-        video_writer = cv2.VideoWriter(str(output_video_path), fourcc, fps, (width, height))
+        # Write to a temporary AVI file first (OpenCV is reliable with raw AVI)
+        # We'll convert to browser-compatible MP4 with ffmpeg afterwards
+        temp_video_path = output_dir / f"{job_id}_temp.avi"
+        output_video_path = output_dir / f"{job_id}_processed.mp4"
+        fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+        video_writer = cv2.VideoWriter(str(temp_video_path), fourcc, fps, (width, height))
 
     # Data collection
     left_angles = []
@@ -273,6 +279,32 @@ def process_video(
         cap.release()
         if video_writer:
             video_writer.release()
+
+    # Post-process: Convert temp AVI to browser-compatible MP4 using ffmpeg
+    if temp_video_path and temp_video_path.exists():
+        try:
+            ffmpeg_cmd = [
+                "ffmpeg", "-y",
+                "-i", str(temp_video_path),
+                "-c:v", "libx264",
+                "-preset", "fast",
+                "-crf", "23",
+                "-pix_fmt", "yuv420p",
+                "-movflags", "+faststart",  # Enables progressive download in browser
+                "-an",  # No audio
+                str(output_video_path),
+            ]
+            subprocess.run(ffmpeg_cmd, check=True, capture_output=True, timeout=300)
+            # Remove the temporary AVI file
+            temp_video_path.unlink(missing_ok=True)
+            # Also remove any old .webm file for this job
+            old_webm = output_dir / f"{job_id}_processed.webm"
+            old_webm.unlink(missing_ok=True)
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError) as e:
+            print(f"Warning: ffmpeg post-processing failed: {e}")
+            # Fallback: rename the AVI as-is (won't play in browser but won't crash)
+            if temp_video_path.exists() and not output_video_path.exists():
+                temp_video_path.rename(output_video_path)
 
     # Step 1: Smooth raw angle arrays
     left_smooth = smooth_angles(left_angles)
@@ -325,7 +357,7 @@ def process_video(
         metrics=metrics,
         diagnosis=diagnosis,
         video_filename=Path(video_path).name,
-        processed_video_url=f"/results/{job_id}_processed.webm" if output_video_path else None,
+        processed_video_url=f"/results/{job_id}_processed.mp4" if output_video_path else None,
         created_at=datetime.utcnow(),
         completed_at=datetime.utcnow(),
     )
