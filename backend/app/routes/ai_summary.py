@@ -7,11 +7,25 @@ metrics and produce a structured, human-readable clinical summary.
 import json
 import re
 import httpx
+import httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List
 from ..config import OPENROUTER_API_KEY, OPENROUTER_MODEL
 from ..services.database import JobService, ResultService
+
+# Hardcoded fallbacks if the primary model gets rate-limited
+FREE_MODEL_FALLBACKS = [
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "google/gemma-3-27b-it:free",
+    "nvidia/nemotron-3-nano-30b-a3b:free",
+    "google/gemma-3-4b-it:free",
+    "deepseek/deepseek-r1-0528:free"
+]
+
+print("AI SUMMARY MODULE LOADED:")
+print(f"  KEY length: {len(OPENROUTER_API_KEY)}")
+print(f"  MODEL: {OPENROUTER_MODEL}")
 
 router = APIRouter(prefix="/api/v1/summary", tags=["ai-summary"])
 
@@ -101,6 +115,9 @@ def _extract_json(text: str) -> dict:
     """Robust JSON extraction from AI response text."""
     text = text.strip()
 
+    # Strip reasoning model <think>...</think> blocks (e.g. DeepSeek R1)
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+
     # Try 1: Direct parse
     try:
         return json.loads(text)
@@ -167,41 +184,60 @@ async def generate_summary(job_id: str):
     user_prompt = _build_user_prompt(result)
 
     # 3. Call OpenRouter via httpx (OpenAI-compatible)
+    # We will try the user's configured model first, then fallback to others if rate-limited
     try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            resp = await client.post(
-                OPENROUTER_URL,
-                headers={
-                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": OPENROUTER_MODEL,
-                    "messages": [
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {"role": "user", "content": user_prompt},
-                    ],
-                    "temperature": 0.3,
-                    "max_tokens": 2000,
-                },
-            )
+        models_to_try = [OPENROUTER_MODEL] + [m for m in FREE_MODEL_FALLBACKS if m != OPENROUTER_MODEL]
+        
+        last_error_detail = "Failed to connect to OpenRouter"
+        
+        for attempt, model_id in enumerate(models_to_try):
+            try:
+                async with httpx.AsyncClient(timeout=120.0) as client:
+                    resp = await client.post(
+                        OPENROUTER_URL,
+                        headers={
+                            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                            "Content-Type": "application/json",
+                        },
+                        json={
+                            "model": model_id,
+                            "messages": [
+                                {"role": "system", "content": SYSTEM_PROMPT},
+                                {"role": "user", "content": user_prompt},
+                            ],
+                            "temperature": 0.3,
+                            "max_tokens": 2000,
+                        },
+                    )
+                
+                # If rate limited (429) or model missing (404/400), try the next model
+                if resp.status_code in [429, 404, 400]:
+                    last_error_detail = f"Model {model_id} failed: {resp.text[:200]}"
+                    continue
+                    
+                if resp.status_code != 200:
+                    detail = resp.text[:300]
+                    raise HTTPException(status_code=resp.status_code, detail=f"OpenRouter error: {detail}")
 
-        if resp.status_code != 200:
-            detail = resp.text[:300]
-            raise HTTPException(status_code=resp.status_code, detail=f"OpenRouter error: {detail}")
+                data = resp.json()
+                raw_text = data["choices"][0]["message"]["content"]
+                summary_data = _extract_json(raw_text)
 
-        data = resp.json()
-        raw_text = data["choices"][0]["message"]["content"]
-        summary_data = _extract_json(raw_text)
+                return AISummaryResponse(
+                    overview=summary_data.get("overview", "Summary unavailable."),
+                    what_this_means=summary_data.get("what_this_means", ""),
+                    key_findings=summary_data.get("key_findings", []),
+                    risk_assessment=summary_data.get("risk_assessment", "Assessment unavailable."),
+                    recommendations=summary_data.get("recommendations", []),
+                    disclaimer="This is an AI-assisted screening tool and does not constitute a medical diagnosis. All findings should be verified through clinical observation and professional medical judgment."
+                )
+                
+            except httpx.RequestError as e:
+                last_error_detail = f"Network error trying {model_id}: {str(e)}"
+                continue
 
-        return AISummaryResponse(
-            overview=summary_data.get("overview", "Summary unavailable."),
-            what_this_means=summary_data.get("what_this_means", ""),
-            key_findings=summary_data.get("key_findings", []),
-            risk_assessment=summary_data.get("risk_assessment", "Assessment unavailable."),
-            recommendations=summary_data.get("recommendations", []),
-            disclaimer="This is an AI-assisted screening tool and does not constitute a medical diagnosis. All findings should be verified through clinical observation and professional medical judgment."
-        )
+        # If all models failed
+        raise HTTPException(status_code=500, detail=f"All models rate-limited or failed. Last error: {last_error_detail}")
 
     except json.JSONDecodeError as e:
         raise HTTPException(
