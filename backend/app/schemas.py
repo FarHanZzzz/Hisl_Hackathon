@@ -24,6 +24,13 @@ class DiagnosisResult(str, Enum):
     INSUFFICIENT_DATA = "insufficient_data"
 
 
+class VideoViewType(str, Enum):
+    """Type of video view captured for analysis."""
+    SAGITTAL = "sagittal"
+    FRONTAL = "frontal"
+    POSTERIOR = "posterior"
+
+
 # =============================================================================
 # REQUEST SCHEMAS
 # =============================================================================
@@ -41,6 +48,10 @@ class AnalysisRequest(BaseModel):
     patient: PatientInfo
     video_filename: str = Field(..., description="Uploaded video filename")
     enable_sam3: bool = Field(False, description="Enable background removal optimization")
+    video_view_type: VideoViewType = Field(
+        VideoViewType.SAGITTAL,
+        description="Camera view type: sagittal (side), frontal (front), posterior (back)"
+    )
 
 
 # =============================================================================
@@ -64,6 +75,16 @@ class AnalysisMetrics(BaseModel):
     frames_processed: int = Field(0, description="Total frames analyzed")
     frames_detected: int = Field(0, description="Frames with successful detection")
     detection_rate: float = Field(0.0, description="Detection rate percentage")
+    # --- Multi-view optional fields (frontal / posterior) ---
+    frontal_symmetry_index: Optional[float] = Field(
+        None, description="Frontal-view symmetry index score"
+    )
+    shoulder_asymmetry_angle: Optional[float] = Field(
+        None, description="Shoulder tilt asymmetry angle in degrees"
+    )
+    hip_knee_ankle_angle: Optional[float] = Field(
+        None, description="Hip-Knee-Ankle alignment angle in degrees"
+    )
 
 
 class DiagnosisInfo(BaseModel):
@@ -102,6 +123,25 @@ class JobCreateResponse(BaseModel):
     job_id: str
     status: JobStatus = JobStatus.QUEUED
     message: str = "Job created successfully"
+
+
+# =============================================================================
+# PATIENT HISTORY (LONGITUDINAL TRACKING)
+# =============================================================================
+
+class SymmetryScore(BaseModel):
+    """A single symmetry-index entry for longitudinal tracking."""
+    symmetry_index: float = Field(..., description="Symmetry index value")
+    recorded_at: datetime = Field(..., description="Timestamp of the analysis")
+
+
+class PatientHistory(BaseModel):
+    """Longitudinal history of symmetry scores for a patient."""
+    patient_id: str = Field(..., description="Patient UUID")
+    scores: List[SymmetryScore] = Field(
+        default_factory=list,
+        description="Chronologically ordered symmetry scores"
+    )
 
 
 # =============================================================================
