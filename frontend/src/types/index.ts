@@ -48,6 +48,20 @@ export interface Result {
   frames_detected: number;
   left_angle_series: number[];
   right_angle_series: number[];
+  
+  // --- Orthopedic Features ---
+  knee_valgus_angle?: number;
+  knee_valgus_angle_array?: number[];
+
+  pelvic_tilt?: number;
+  pelvic_tilt_array?: number[];
+
+  foot_progression_angle?: number;
+  foot_progression_angle_array?: number[];
+
+  ankle_dorsiflexion?: number;
+  ankle_dorsiflexion_array?: number[];
+
   created_at: string;
 }
 

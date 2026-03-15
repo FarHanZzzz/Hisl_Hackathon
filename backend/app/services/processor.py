@@ -84,6 +84,15 @@ def process_job_async(job_id: str) -> None:
                 frames_detected=m.frames_detected,
                 left_angle_series=m.left_knee.values,
                 right_angle_series=m.right_knee.values,
+                # --- Orthopedic Features ---
+                knee_valgus_angle=m.knee_valgus_angle,
+                knee_valgus_angle_array=m.knee_valgus_angle_array,
+                pelvic_tilt=m.pelvic_tilt,
+                pelvic_tilt_array=m.pelvic_tilt_array,
+                foot_progression_angle=m.foot_progression_angle,
+                foot_progression_angle_array=m.foot_progression_angle_array,
+                ankle_dorsiflexion=m.ankle_dorsiflexion,
+                ankle_dorsiflexion_array=m.ankle_dorsiflexion_array,
             )
         if analysis_result.diagnosis:
             d = analysis_result.diagnosis

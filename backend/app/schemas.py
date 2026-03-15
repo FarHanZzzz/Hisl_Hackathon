@@ -85,6 +85,32 @@ class AnalysisMetrics(BaseModel):
     hip_knee_ankle_angle: Optional[float] = Field(
         None, description="Hip-Knee-Ankle alignment angle in degrees"
     )
+    
+    # --- Orthopedic Features ---
+    knee_valgus_angle: Optional[float] = Field(
+        None, description="Average test knee valgus angle (Genu Varum/Valgum)"
+    )
+    knee_valgus_angle_array: Optional[List[float]] = Field(
+        None, description="Knee valgus angle per frame"
+    )
+    pelvic_tilt: Optional[float] = Field(
+        None, description="Average or variance of pelvic tilt (LLD)"
+    )
+    pelvic_tilt_array: Optional[List[float]] = Field(
+        None, description="Pelvic tilt per frame"
+    )
+    foot_progression_angle: Optional[float] = Field(
+        None, description="Foot progression angle (Clubfoot)"
+    )
+    foot_progression_angle_array: Optional[List[float]] = Field(
+        None, description="Foot progression angle per frame"
+    )
+    ankle_dorsiflexion: Optional[float] = Field(
+        None, description="Average Ankle Dorsiflexion (Equinus / Calcaneus)"
+    )
+    ankle_dorsiflexion_array: Optional[List[float]] = Field(
+        None, description="Ankle dorsiflexion angle per frame"
+    )
 
 
 class DiagnosisInfo(BaseModel):

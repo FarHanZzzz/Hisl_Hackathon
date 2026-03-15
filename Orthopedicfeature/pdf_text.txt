@@ -1,0 +1,637 @@
+AI-Driven Markerless Kinematics in 
+Pediatric Orthopedics: A 
+Comprehensive Synthesis of 
+Open-Source Frameworks and Clinical 
+Deformity Analysis 
+The landscape of clinical gait analysis is undergoing a transformative shift as artificial 
+intelligence and computer vision frameworks challenge the long-standing dominance of 
+marker-based optoelectronic systems. In pediatric orthopedics, where patient compliance is 
+often limited and the physical application of retroreflective markers can be cumbersome or 
+distressing, markerless pose estimation offers a non-intrusive, scalable, and cost-effective 
+alternative.1 This report provides an exhaustive technical analysis of the state-of-the-art in 
+markerless gait assessment, specifically tailored to the management of structural deformities 
+such as genu varum/valgum, leg length discrepancy (LLD), and congenital talipes equinovarus 
+(clubfoot). By synthesizing findings from recent clinical validations and exploring the underlying 
+computational architectures of open-source libraries like MediaPipe Pose, OpenPose, and 
+MMPose, this document outlines a technical roadmap for deep research and clinical 
+implementation. 
+Computational Architectures of Markerless Pose 
+Estimation 
+The efficacy of AI-driven gait analysis relies on the precision of human pose estimation (HPE) 
+algorithms, which are broadly categorized into top-down and bottom-up methodologies. 
+Understanding these mechanisms is fundamental for selecting the appropriate tech stack for 
+specific orthopedic interventions.4 
+MediaPipe Pose and the BlazePose Pipeline 
+MediaPipe Pose, developed by Google, has emerged as a premier framework for real-time 
+tracking on resource-constrained devices, including mobile phones and tablets.6 The 
+framework utilizes a top-down, two-stage pipeline consisting of a lightweight person detector 
+followed by a pose landmarker model.7 The detector first localizes the region of interest (ROI) 
+by identifying facial and torso landmarks, which significantly reduces the computational search 
+space for subsequent joint localization.8 
+What distinguishes MediaPipe Pose from traditional models is its comprehensive 33-landmark 
+
+topology, which extends beyond the 17 standard COCO keypoints to include detailed 
+landmarks for the hands, feet, and face.6 In clinical gait analysis, this extended set provides 
+higher fidelity for lower-limb assessment, particularly at the ankle and foot segments.10 The 
+model outputs 3D Cartesian coordinates 
+, where 
+ and 
+ are normalized to the 
+image dimensions and 
+ represents the estimated depth relative to the midpoint of the hips.9 
+OpenPose and Bottom-Up Association 
+OpenPose remains a foundational framework due to its pioneering use of Part Affinity Fields 
+(PAFs) for multi-person 2D pose detection.13 Unlike top-down models, OpenPose employs a 
+bottom-up approach that identifies all joint candidates in an image simultaneously and then 
+uses vector fields to associate joints with individual human skeletons.4 This architecture is 
+particularly robust in scenarios involving multiple subjects or significant self-occlusion, 
+common in clinics where parents or therapists may be in the camera’s view to support a 
+pediatric patient.4 
+The OpenPose BODY_25 model is frequently cited in gait research for its inclusion of 
+specialized foot keypoints, allowing for the calculation of the foot progression angle and 
+metatarsophalangeal (MTP) joint dynamics.15 Although computationally more demanding than 
+MediaPipe, OpenPose’s ability to handle complex spatial relationships makes it a preferred 
+choice for high-precision laboratory settings using monocular or multi-camera setups.16 
+MMPose and Modular Deep Learning 
+MMPose, part of the OpenMMLab project, offers a highly modular PyTorch-based toolkit that 
+allows researchers to implement and compare a wide variety of state-of-the-art (SOTA) 
+models, including HRNet and RTMPose.19 RTMPose, in particular, represents a breakthrough in 
+top-down pose estimation, delivering unprecedented accuracy and real-time performance on 
+edge devices.6 Recent comparative studies have highlighted MMPose as the most effective 
+framework for tracking lower-limb kinematics during walking tasks, demonstrating a high 
+correlation 
+ with 3D motion capture systems.21 
+Landmark 
+Architecture 
+Landmark Count 
+Core Mechanism 
+Optimized Platform 
+MediaPipe Pose 
+33 
+Top-down 
+(Detector-Tracker) 
+Mobile/Edge CPU 
+
+OpenPose 
+25 - 135 
+Bottom-up (PAF) 
+Desktop GPU 
+MMPose (RTMPose) 
+Customizable 
+Top-down/Transform
+er-based 
+Cross-platform 
+YOLO-Pose 
+17 (COCO) 
+One-stage 
+(End-to-end) 
+Embedded Systems 
+Clinical Validation in Genu Varum and Valgum 
+The measurement of knee joint angles in the frontal and sagittal planes is critical for diagnosing 
+and monitoring deformities such as bowlegs (genu varum) and knock-knees (genu valgum), 
+which frequently arise from nutritional deficiencies like rickets.4 Markerless systems must 
+provide reliable data comparable to goniometry or optoelectronic gold standards to be viable 
+in a clinical setting.4 
+Sagittal Plane Flexion and Extension 
+The analysis of knee flexion and extension during the gait cycle serves as a primary metric for 
+assessing joint mobility and tracking the correction of bone bowing.4 Validation studies utilizing 
+MediaPipe Pose have demonstrated a high Pearson correlation (
+) with Kinovea, a 
+standard marker-based 2D video analysis tool.4 The mean absolute error (MAE) for knee angle 
+measurement via MediaPipe Pose is approximately 5.88 degrees.4 
+Mathematically, the knee angle 
+ is derived using the 3D coordinates of the hip 
+, 
+knee 
+, and ankle 
+. If we define vectors 
+ and 
+, the angle is calculated as: 
+ 
+This approach allows for the extraction of full range-of-motion (ROM) curves throughout the 
+gait cycle, identifying specific points of peak flexion or extension that may indicate residual 
+
+stiffness or compensatory patterns.15 
+Frontal Plane Deformity and Dynamic Knee Valgus 
+Assessing genu valgum and varum requires frontal plane analysis to measure the excursion of 
+the knee relative to the mechanical axis of the limb.26 OpenPose has been rigorously validated 
+for calculating the knee valgus angle during high-intensity tasks like drop vertical jumps, 
+showing no significant difference in precision when compared to expert human-manual 
+analysis (
+ degrees).27 
+However, frontal plane measurements are highly susceptible to camera parallax and lens 
+distortion. Research indicates that if the observer (camera) is positioned more than 15 degrees 
+from the knee perpendicular, the "true" angle can be significantly obscured, with perceived 
+angles reaching up to 121 degrees for a true 90-degree flexion.23 This highlights the necessity 
+of standardized camera placement protocols—ideally at a height of 1000 mm and a distance of 
+2000 mm from the subject—to ensure inter-session reliability in clinical monitoring.4 
+Quantifying Asymmetry in Leg Length Discrepancy 
+(LLD) 
+Leg length discrepancy (LLD) presents a unique challenge, as it forces the patient to adopt 
+compensatory mechanisms such as unilateral pelvic tilt, equinus gait on the shorter side, or 
+knee flexion on the longer side.16 Markerless pose estimation allows for the objective 
+quantification of these spatiotemporal and kinematic asymmetries without the labor-intensive 
+setup of a traditional gait lab.16 
+Spatiotemporal Parameter Derivation 
+In moving toward decentralized clinical applications, researchers have developed versatile 
+workflows that can accommodate various camera perspectives, such as sagittal (side) and 
+frontal (front/back) views.16 While sagittal views generally provide more accurate 
+spatiotemporal data, frontal plane recordings are essential for analyzing pelvic tilt and hip 
+abduction/adduction.28 
+To dimensionalize pixel distances in frontal-view videos, a trigonometric approach is employed 
+to estimate depth-change based on the subject's pixel height. The size ratio 
+ between 
+a reference depth and an instantaneous depth allows for the estimation of depth change 
+ as: 
+
+ 
+where 
+ is the camera's focal length, 
+ is the subject's height in pixels at a known 
+reference distance, and 
+ is their current height.16 This depth information is then used to 
+calculate step length and gait speed on a stride-by-stride basis, revealing the discrete spatial 
+asymmetries indicative of LLD.16 
+Pelvic and Trunk Kinematics 
+Compensatory pelvic tilt is a hallmark of LLD. Markerless HPE frameworks can track the 
+medial-lateral and vertical trajectories of the hip landmarks (23 and 24 in MediaPipe) to derive 
+the pelvic orientation.24 While reliability for pelvic tilt (ICC = 0.41) and trunk tilt (ICC = 0.24) is 
+lower than for joint angles, recent advances in body-centric elevation mapping and dense 
+scene reconstruction (e.g., EgoHDM) are improving the stability of these global kinematic 
+measures in real-world environments.32 
+Spatiotemporal Parameter 
+Mean Error (MAE) 
+Correlation (r) 
+Step Length (Sagittal) 
+0.02 m 
+0.99 
+Step Length (Frontal) 
+0.07 m 
+0.96 
+Step Time 
+0.01 s 
+Strong 
+Gait Speed 
+0.03 m/s 
+Strong 
+Stride Duration 
+2% Error 
+High 
+Markerless 3D Analysis for Clubfoot (Talipes 
+
+Equinovarus) 
+Clubfoot management relies on the Ponseti method of manipulation and casting, often 
+followed by surgical tendon transfers to prevent dynamic recurrence.34 Markerless 3D 
+kinematics are particularly valuable here, as they allow for the longitudinal tracking of 
+foot-ankle mechanics during and after the casting phase.1 
+Multi-Segment Foot Modeling with RGB-D Sensors 
+Standard HPE models often treat the foot as a single rigid segment, failing to capture the 
+articulation of the metatarsophalangeal (MTP) joint, which is crucial for identifying pathological 
+foot loading and supination in clubfoot.1 To bridge this gap, researchers at Politecnico di Torino 
+developed a 3D markerless protocol using single RGB-Depth (RGB-D) cameras like the Azure 
+Kinect.1 
+This method involves creating a subject-specific 2D foot template from multiple static views, 
+which is then mapped to a two-segment 3D foot model (mid-rear foot and forefoot).3 The 
+algorithm reconstructs 3D trajectories by matching the template to dynamic point clouds using 
+the Iterative Closest Point (ICP) algorithm.3 This enables the measurement of sagittal ankle and 
+MTP kinematics with an angular offset of only 3.5 to 3.8 degrees compared to marker-based 
+gold standards.1 
+Monitoring the Post-Casting Correction Process 
+Longitudinal gait analysis in children with clubfoot reveals specific success indicators, such as 
+the normalization of peak ankle power at push-off and the reduction of internal foot 
+progression angles.39 Markerless systems facilitate frequent, low-cost assessments to detect 
+early signs of "calcaneus gait" (excessive dorsiflexion) or residual "equinus" (limited 
+dorsiflexion).39 By integrating these findings into a clinical dashboard, surgeons can monitor the 
+recovery of the MTP joint’s role in foot loading and ensure that post-casting orthoses are 
+effectively maintaining the correction.3 
+Integration with Biomechanical Modeling: The 
+OpenSim Pipeline 
+To transform pose estimation landmarks into actionable clinical insights, it is necessary to move 
+from surface-level tracking to biomechanical modeling. OpenSim serves as the primary 
+open-source platform for this transition, enabling the calculation of joint moments and muscle 
+forces.42 
+Pose2Sim: From OpenPose to OpenSim 
+Pose2Sim is an open-source Python package that provides a robust, unified workflow for 3D 
+
+markerless kinematics.42 The framework integrates multiple calibrated video views to 
+reconstruct 3D joint positions and then constrains these coordinates to a physically consistent 
+OpenSim skeletal model.42 
+The Pose2Sim pipeline involves: 
+1.​ Camera Calibration: Utilizing checkerboards or QTM-based calibration data to establish 
+the camera matrix and distortion coefficients.42 
+2.​ 3D Triangulation and Filtering: Reconstructing 3D coordinates from multiple 2D views 
+and applying Butterworth or median filters to remove noise.42 
+3.​ Model Scaling: Adjusting a generic musculoskeletal model to match the participant’s 
+specific limb lengths and segment masses.46 
+4.​ Inverse Kinematics (IK): Solving for joint angles that minimize the error between the 
+triangulated markers and the model's virtual markers.42 
+This integration is particularly powerful for pediatric populations, as it allows clinicians to 
+simulate the biomechanical effects of surgical modifications—such as an Achilles tenotomy in 
+clubfoot—before actual intervention.43 
+Differentiable Musculoskeletal Models (Diff-MSM) 
+A nascent but high-potential area of research is the development of Differentiable 
+MusculoSkeletal Models (Diff-MSM).49 Unlike traditional IK, which treats the body as a set of 
+rigid links, Diff-MSM uses automatic differentiation to simultaneously identify muscle and bone 
+parameters from observable motion.49 By training a deep neural network to integrate these 
+physical constraints directly into the pose estimation process, researchers can resolve depth 
+ambiguities and ensure that the estimated gait parameters are physiologically plausible.50 
+Open Source Link Matrix for Deep Research 
+The following categorized links provide the codebases, documentation, and data structures 
+necessary to implement a professional-grade clinical gait analysis workflow. 
+I. Core Pose Estimation Frameworks 
+●​ MediaPipe Pose Landmarker (Google): The primary solution for real-time 33-landmark 
+3D pose extraction on mobile devices. 
+○​ https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker 
+●​ OpenPose (CMU): The gold standard for multi-person bottom-up pose detection with 
+Part Affinity Fields. 
+○​ https://github.com/CMU-Perceptual-Computing-Lab/openpose 
+●​ MMPose (OpenMMLab): A comprehensive modular toolkit for PyTorch-based HPE, 
+including RTMPose and HRNet. 
+○​ https://github.com/open-mmlab/mmpose 
+
+●​ ViTPose: A high-precision transformer-based pose estimation model suitable for complex 
+clinical tracking. 
+○​ (https://github.com/ViTAE-Transformer/ViTPose) 
+●​ DeepLabCut: Markerless tracking for user-defined features, highly customizable for 
+specific orthopedic landmarks. 
+○​ (https://github.com/DeepLabCut/DeepLabCut) 
+II. Biomechanical Modeling and Clinical Workflows 
+●​ Pose2Sim (Pagnon et al.): The essential bridge for connecting pose estimation landmarks 
+to the OpenSim biomechanical engine. 
+○​ https://github.com/perfanalytics/pose2sim 
+●​ OpenSim Python API: Documentation and resources for running musculoskeletal 
+simulations in a Python environment. 
+○​ https://simtk.org/projects/opensim 
+●​ GaitAnalysis-PoseEstimation (Stenum et al.): The official MATLAB/Python workflow for 
+the PLOS Digital Health 2024 study on multi-perspective gait analysis. 
+○​ https://github.com/janstenum/GaitAnalysis-PoseEstimation 
+●​ AutoGaitA: An automated kinematic analysis toolbox capable of handling groups and 
+longitudinal data. 
+○​ https://github.com/mahan-hosseini/AutoGaitA 
+●​ vGait: A specialized tool for markerless motion data filtering, direction estimation, and 
+step event detection. 
+○​ (https://github.com/DSGZ-MotionLab/vGait) 
+III. Angle Estimation and Clinical Goniometers 
+●​ Mediapipe2DAngle: A specific implementation for calculating knee and hip joint angles 
+from MediaPipe output files. 
+○​ https://github.com/brunobedo/mediapipe2dangle 
+●​ Goniometer-Mediapipe: A test-driven Python architecture for serving real-time 
+joint-angle measurements via a Flask API. 
+○​ https://github.com/vaishakk/goniometer-mediapipe 
+●​ MotionQuantification: A dashboard system for extracting pose data and visualizing 
+symmetry trends for rehabilitation tracking. 
+○​ https://github.com/krmstrong322/MotionQuantification 
+●​ Knee Bend Detection: A real-time webcam system for quantifying knee joint angles 
+during exercises. 
+○​ https://github.com/zohairbadshah/Knee_bend_detection 
+IV. Specialized Research Datasets 
+●​ Health&Gait (Zenodo): Multimodal dataset featuring 1,564 videos of 398 participants with 
+pose estimation and OptoGait ground truth. 
+
+○​ https://doi.org/10.5281/zenodo.14039922 
+●​ GaitRec (Figshare): Large-scale ground reaction force dataset for patients with 
+musculo-skeletal impairments at the hip, knee, and ankle. 
+○​ https://doi.org/10.6084/m9.figshare.c.4788012 
+●​ Typically Developing (TD) Children Gait Data: Publicly shared treadmill biomechanics 
+data for age-matched control comparisons. 
+○​ (https://mcri.figshare.com/articles/dataset/Gait_dataset_-_Typically_developing_childr
+en_processed_with_CGM2/28216448) 
+●​ Foot3D: High-resolution foot scans and multiview images for evaluating 3D foot 
+optimization and reconstruction. 
+○​ (https://github.com/OllieBoyne/Foot3D) 
+●​ AddBiomechanics Dataset: A cloud-based platform for biomechanical data sharing and 
+analysis. 
+○​ https://addbiomechanics.org/ 
+Technical Challenges and Optimization Strategies 
+Implementation of these frameworks in a clinical setting requires addressing systematic biases 
+and environmental constraints that can compromise the validity of the orthopedic 
+assessment.4 
+Temporal Smoothing and Signal Filtering 
+Pose estimation landmarks frequently exhibit high-frequency jitter, particularly in the depth 
+ axis or under poor lighting.9 Clinical standard workflows implement low-pass Butterworth 
+filters to smooth joint trajectories.10 A 4th-order Butterworth filter with a 5-6 Hz cutoff 
+frequency is recommended for gait and sit-to-stand movements, as these behaviors have 
+dominant frequency content below 5 Hz.10 
+In Python, this is implemented using scipy.signal.filtfilt() to achieve zero-phase 
+forward-backward filtering, which prevents temporal shifts in gait event detection: 
+ 
+Python 
+ 
+ 
+from scipy.signal import butter, filtfilt​
+​
+def apply_smoothing(data, cutoff=6, fs=30, order=4):​
+    nyquist = 0.5 * fs​
+    normal_cutoff = cutoff / nyquist​
+    b, a = butter(order, normal_cutoff, btype='low', analog=False)​
+
+    return filtfilt(b, a, data)​
+ 
+Gap Filling and Outlier Correction 
+Occlusions—such as a pediatric patient’s arm crossing their leg during walking—can lead to 
+missing landmarks.9 Systems like "vailá" and the Stenum workflow employ linear or cubic spline 
+interpolation for gaps spanning up to 0.12 seconds.9 For larger gaps, more advanced "pose 
+tracking" logic is required to distinguish between left and right limbs and prevent 
+limb-swapping errors.16 
+Resolution of Depth Ambiguity 
+Monocular 3D HPE is an inherently ill-posed problem because different 3D poses can project to 
+identical 2D images.55 To mitigate this in orthopedic screening, practitioners are encouraged to 
+use a multi-view approach, where two sets of 2D coordinates from different smartphone 
+angles are matched through convolutional networks or direct triangulation to reconstruct true 
+3D space.42 If only a single camera is available, adding a physical constraint—such as ensuring 
+the subject's center of mass stays within their supporting feet—can significantly resolve depth 
+inaccuracies.55 
+Future Horizons: State-Space Models and Foundation 
+Gait Models 
+The next generation of AI-driven gait analysis is moving toward sequence modeling 
+architectures that overcome the quadratic complexity of traditional Transformers.52 
+Pose3DM and Mamba Architectures 
+The "Pose 3D Human Estimation from Mamba" (Pose3DM) framework represents a paradigm 
+shift in real-time gait assessment.52 By utilizing bidirectional Mamba blocks, this model captures 
+complex spatiotemporal dependencies with linear complexity, enabling the analysis of long 
+video sequences with minimal memory latency.52 For clinicians, this means the ability to 
+process continuous, minutes-long walking bouts in real-time during a consultation, providing 
+immediate feedback on deformity progression.52 
+GaitDynamics Foundation Models 
+"GaitDynamics" is a newly proposed generative foundation model for general-purpose gait 
+dynamics prediction.57 This model can estimate external ground reaction forces (GRF) from 
+kinematic inputs and predict the influence of gait modifications on knee loading without the 
+need for force plate experiments.57 For orthopedic surgeons, this enables "experiment-free" 
+simulation of how a specific brace or surgical correction will impact joint adduction moments, 
+
+allowing for highly personalized treatment planning.57 
+Conclusions and Practical Implementation Roadmap 
+The synthesis of AI frameworks and biomechanical modeling tools establishes a powerful 
+infrastructure for the management of pediatric structural deformities. To satisfy the demands 
+of expert-level research and clinical deployment, the following roadmap is proposed: 
+1.​ Framework Selection: Utilize MediaPipe Pose for rapid edge-based screening and 
+telerehabilitation dashboards due to its 33-landmark topology and mobile optimization.6 
+Implement MMPose/RTMPose for high-precision clinical research requiring superior 
+lower-limb tracking accuracy.21 
+2.​ Standardized Acquisition: Implement strict camera protocols (perpendicular alignment, 
+2m distance) to minimize Parallax-induced angle overestimation.4 
+3.​ Data Preprocessing Pipeline: Integrate zero-phase Butterworth filtering and spline 
+interpolation to ensure the integrity of the ROM waveforms and spatiotemporal 
+asymmetry measures.9 
+4.​ Biomechanical Enrichment: Deploy the Pose2Sim to OpenSim workflow to calculate 
+clinically actionable metrics like joint moments and muscle loading, moving beyond simple 
+surface coordinates.42 
+5.​ Longitudinal Monitoring: Leverage Mstudio and MotionQuantification dashboards to 
+track patient progress across multiple visits, providing objective data to validate 
+post-casting recovery in clubfoot or deformity correction in rickets.58 
+By integrating these open-source resources and computational strategies, clinicians can 
+provide more equitable, accessible, and high-precision care for children suffering from 
+complex orthopedic and structural deformities.1 
+ 
+Goal 
+Primary Resource 
+Secondary Resource 
+Angle Extraction 
+(https://github.com/brunob
+edo/mediapipe2dangle) 
+Goniometer-Mediapipe 
+Biomechanics 
+(https://github.com/perfanal
+ytics/pose2sim) 
+(https://simtk.org/projects/o
+pensim) 
+Gait Asymmetry 
+(https://github.com/jansten
+um/GaitAnalysis-PoseEstim
+ation) 
+vGait 
+
+Data Comparison 
+Health&Gait 
+(https://doi.org/10.6084/m9.
+figshare.c.4788012) 
+Visual Dashboard 
+MotionQuantification 
+(https://github.com/hunmin
+kim98/MStudio) 
+Works cited 
+1.​ Markerless movement analysis based on RGB and Depth sensor Technology for 
+clinical applications - Politecnico di Torino, accessed March 16, 2026, 
+https://iris.polito.it/retrieve/dffd66b6-be49-41b5-9737-6ac9638cd282/conv_phd_t
+hesis_final_dilettabalta.pdf 
+2.​ A Model-Based Markerless Protocol for Clinical Gait Analysis Based on a Single 
+RGB-Depth Camera - IRIS - Politecnico di Torino, accessed March 16, 2026, 
+https://iris.polito.it/retrieve/0c60c097-7ec7-4f6e-8e45-3f2224afa54d/A_Model-B
+ased_Markerless_Protocol_for_Clinical_Gait_Analysis_Based_on_a_Single_RGB-D
+epth_Camera_Concurrent_Validation_on_Patients_With_Cerebral_Palsy.pdf 
+3.​ A preliminary validation of a 3D markerless method for estimating the kinematics 
+of a two-segment foot model using a single RGB- - WebThesis - Politecnico di 
+Torino, accessed March 16, 2026, https://webthesis.biblio.polito.it/27911/1/tesi.pdf 
+4.​ (PDF) Knee Flexion/Extension Angle Measurement for Gait Analysis Using 
+Machine Learning Solution “MediaPipe Pose” and Its Comparison with Kinovea ® - 
+ResearchGate, accessed March 16, 2026, 
+https://www.researchgate.net/publication/369058814_Knee_FlexionExtension_An
+gle_Measurement_for_Gait_Analysis_Using_Machine_Learning_Solution_MediaPi
+pe_Pose_and_Its_Comparison_with_Kinovea_R 
+5.​ Comparison of different pose estimation models for lower-body kinematics: A 
+validation study | Scientific Journal of Sport and Performance, accessed March 
+16, 2026, 
+https://sjsp.aearedo.es/index.php/sjsp/article/download/pose-estimation-models-
+validated-lower-body-kinematics/219/3811 
+6.​ Best Pose Estimation Models & How to Deploy Them, accessed March 16, 2026, 
+https://blog.roboflow.com/best-pose-estimation-models/ 
+7.​ Pose landmark detection guide | Google AI Edge, accessed March 16, 2026, 
+https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker 
+8.​ Comparative and Improvement Study of 3D Human Pose Estimation Algorithms 
+using Monocular Cameras - Preprints.org, accessed March 16, 2026, 
+https://www.preprints.org/manuscript/202401.1668 
+9.​ Automated Gait Analysis Based on a Marker-Free Pose Estimation Model - PMC, 
+accessed March 16, 2026, https://pmc.ncbi.nlm.nih.gov/articles/PMC10384445/ 
+10.​Multimodal Motion Capture Toolbox for Enhanced Analysis of Intersegmental 
+Coordination in Children with Cerebral Palsy and Typically Developing - PMC, 
+accessed March 16, 2026, https://pmc.ncbi.nlm.nih.gov/articles/PMC12922778/ 
+11.​MediaPipe-based extraction of joint ROM and position from patient videos for the 
+
+functional movement screen: An exploratory study - SOAR@USA, accessed 
+March 16, 2026, 
+https://soar.usa.edu/cgi/viewcontent.cgi?article=1097&context=phjpt 
+12.​Eli-Bro/CV-Gait-Analysis-SU2023: A data acquisition tool ... - GitHub, accessed 
+March 16, 2026, https://github.com/Eli-Bro/CV-Gait-Analysis-SU2023 
+13.​A study on gait analysis based on the pose estimation algorithm RTMPose using 
+knee angle as a metric - ResearchGate, accessed March 16, 2026, 
+https://www.researchgate.net/publication/383252274_A_study_on_gait_analysis_b
+ased_on_the_pose_estimation_algorithm_RTMPose_using_knee_angle_as_a_met
+ric 
+14.​Verification of validity of gait analysis systems during treadmill walking and 
+running using human pose tracking algorithm - Kyoto University, accessed March 
+16, 2026, 
+https://repository.kulib.kyoto-u.ac.jp/bitstream/2433/261778/1/j.gaitpost.2021.02.0
+06.pdf 
+15.​OpenPose for 2D Gait Analysis: Knee Flexion Landmark Detection - GitHub, 
+accessed March 16, 2026, 
+https://github.com/batking24/OpenPose-for-2D-Gait-Analysis 
+16.​Clinical gait analysis using video-based pose estimation: Multiple perspectives, 
+clinical populations, and measuring change | PLOS Digital Health - Our journal 
+portfolio - PLOS, accessed March 16, 2026, 
+https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000467 
+17.​Two-dimensional video-based analysis of human gait using pose estimation - 
+PMC, accessed March 16, 2026, 
+https://pmc.ncbi.nlm.nih.gov/articles/PMC8099131/ 
+18.​(PDF) Predicting walkway spatiotemporal parameters using a markerless, 
+pixel-based machine learning approach - ResearchGate, accessed March 16, 
+2026, 
+https://www.researchgate.net/publication/393571592_Predicting_walkway_spatiot
+emporal_parameters_using_a_markerless_pixel-based_machine_learning_approa
+ch 
+19.​Overview — MMPose 1.3.2 documentation, accessed March 16, 2026, 
+https://mmpose.readthedocs.io/en/latest/overview.html 
+20.​mmpose-0.29.0/README.md · camenduru/show at 
+33365020c067ef6fa051c355bc31fd56fe608e3b - Hugging Face, accessed March 
+16, 2026, 
+https://huggingface.co/camenduru/show/blob/33365020c067ef6fa051c355bc31f
+d56fe608e3b/mmpose-0.29.0/README.md 
+21.​Validation of Automated Countermovement Vertical Jump Analysis: Markerless 
+Pose Estimation vs. 3D Marker-Based Motion Capture System - MDPI, accessed 
+March 16, 2026, https://www.mdpi.com/1424-8220/24/20/6624 
+22.​Predicting Body Movements for Person Identification under Different Walking 
+Conditions | Request PDF - ResearchGate, accessed March 16, 2026, 
+https://www.researchgate.net/publication/326777485_Predicting_Body_Movemen
+ts_for_Person_Identification_under_Different_Walking_Conditions 
+
+23.​Comparison of Wearable and Computer Vision Based Approaches to Knee 
+Flexion Angle Measurement | Request PDF - ResearchGate, accessed March 16, 
+2026, 
+https://www.researchgate.net/publication/372635483_Comparison_of_Wearable_
+and_Computer_Vision_Based_Approaches_to_Knee_Flexion_Angle_Measurement 
+24.​Human Pose Estimation for Clinical Analysis of Gait Pathologies - PMC, accessed 
+March 16, 2026, https://pmc.ncbi.nlm.nih.gov/articles/PMC11097739/ 
+25.​Learning to Estimate Critical Gait Parameters from Single-View RGB Videos with 
+Transformer-Based Attention Network, accessed March 16, 2026, 
+https://arxiv.org/html/2312.00398v2 
+26.​The effect of simulated marker misplacement on the interpretation of inter-limb 
+differences during a change of direction task | Request PDF - ResearchGate, 
+accessed March 16, 2026, 
+https://www.researchgate.net/publication/347939777_The_effect_of_simulated_m
+arker_misplacement_on_the_interpretation_of_inter-limb_differences_during_a_c
+hange_of_direction_task 
+27.​Validity and Reliability of OpenPose-Based Motion Analysis in Measuring Knee 
+Valgus during Drop Vertical Jump Test - PMC, accessed March 16, 2026, 
+https://pmc.ncbi.nlm.nih.gov/articles/PMC11366844/ 
+28.​Clinical gait analysis using video-based pose estimation: Multiple perspectives, 
+clinical populations, and measuring change - PMC, accessed March 16, 2026, 
+https://pmc.ncbi.nlm.nih.gov/articles/PMC10965062/ 
+29.​Accuracy of Video-Based Gait Analysis Using Pose Estimation During Treadmill 
+Walking Versus Overground Walking in Persons After Stroke - PMC, accessed 
+March 16, 2026, https://pmc.ncbi.nlm.nih.gov/articles/PMC12142495/ 
+30.​Clinical gait analysis using video-based pose estimation: multiple perspectives, 
+clinical populations, and measuring change - ResearchGate, accessed March 16, 
+2026, 
+https://www.researchgate.net/publication/367972403_Clinical_gait_analysis_using
+_video-based_pose_estimation_multiple_perspectives_clinical_populations_and_
+measuring_change 
+31.​Clinical gait analysis using video-based pose estimation: Multiple perspectives, 
+clinical populations, and measuring change - ResearchGate, accessed March 16, 
+2026, 
+https://www.researchgate.net/publication/379307775_Clinical_gait_analysis_using
+_video-based_pose_estimation_Multiple_perspectives_clinical_populations_and_
+measuring_change 
+32.​33 Pose landmarks in MediaPipe Pose Landmark Model - ResearchGate, accessed 
+March 16, 2026, 
+https://www.researchgate.net/figure/Pose-landmarks-in-MediaPipe-Pose-Landm
+ark-Model_fig1_369058814 
+33.​EgoHDM: An Online Egocentric-Inertial Human Motion Capture, Localization, and 
+Dense Mapping System - arXiv, accessed March 16, 2026, 
+https://arxiv.org/html/2409.00343v2 
+34.​Sport Ability during Walking Age in Clubfoot-Affected Children after Ponseti 
+
+Method: A Case-Series Study - PMC, accessed March 16, 2026, 
+https://pmc.ncbi.nlm.nih.gov/articles/PMC8001402/ 
+35.​Study Details | NCT03953430 | Gait Analysis in Children With Clubfoot Treated 
+With Tibialis Anterior Tendon Transfer | ClinicalTrials.gov, accessed March 16, 
+2026, https://clinicaltrials.gov/study/NCT03953430 
+36.​A preliminary validation of a 3D markerless method for estimating the kinematics 
+of a two-segment foot model using a single RGB-D camera - WebThesis - 
+Politecnico di Torino, accessed March 16, 2026, 
+https://webthesis.biblio.polito.it/27911/ 
+37.​A comparative evaluation of two markerless methods for sagittal lower limb joint 
+kinematics estimation based on a single RGB-D camera - WebThesis - Politecnico 
+di Torino, accessed March 16, 2026, 
+https://webthesis.biblio.polito.it/25847/1/tesi.pdf 
+38.​(PDF) A Model-Based Markerless Protocol for Clinical Gait Analysis Based on a 
+Single RGB-Depth Camera: Concurrent Validation on Patients With Cerebral Palsy 
+- ResearchGate, accessed March 16, 2026, 
+https://www.researchgate.net/publication/376349969_A_model-based_markerles
+s_protocol_for_clinical_gait_analysis_based_on_a_single_RGB-depth_camera_co
+ncurrent_validation_on_patients_with_cerebral_palsy 
+39.​This is a narrative review of the functional evaluation of clubfoot treatment with 
+gait analysis, accessed March 16, 2026, 
+https://atm.amegroups.org/article/view/69710/html 
+40.​Gait Analysis after Initial Nonoperative Treatment for Clubfeet: Intermediate Term 
+Followup at Age 5 - PMC, accessed March 16, 2026, 
+https://pmc.ncbi.nlm.nih.gov/articles/PMC2664431/ 
+41.​Efficacy of Clinical Gait Analysis: A Systematic Review - ResearchGate, accessed 
+March 16, 2026, 
+https://www.researchgate.net/publication/51196203_Efficacy_of_Clinical_Gait_Ana
+lysis_A_Systematic_Review 
+42.​Pose2Sim: An open-source Python package for multiview markerless kinematics, 
+accessed March 16, 2026, 
+https://www.researchgate.net/publication/363559891_Pose2Sim_An_open-source
+_Python_package_for_multiview_markerless_kinematics 
+43.​Diff-MSM: Differentiable MusculoSkeletal Model for Simultaneous Identification of 
+Human Muscle and Bone Parameters | Request PDF - ResearchGate, accessed 
+March 16, 2026, 
+https://www.researchgate.net/publication/398059550_Diff-MSM_Differentiable_
+MusculoSkeletal_Model_for_Simultaneous_Identification_of_Human_Muscle_and
+_Bone_Parameters 
+44.​davidpagnon/pose2sim: Markerless kinematics, from OpenPose to OpenSim - 
+GitHub, accessed March 16, 2026, https://github.com/davidpagnon/pose2sim 
+45.​perfanalytics/pose2sim: Markerless kinematics with any cameras — From 2D Pose 
+estimation to 3D OpenSim motion - GitHub, accessed March 16, 2026, 
+https://github.com/perfanalytics/pose2sim 
+46.​qualisys/paf-opensim-example: Example for using OpenSim with the QTM Project 
+
+Automation Framework - GitHub, accessed March 16, 2026, 
+https://github.com/qualisys/paf-opensim-example 
+47.​Biomechanically Accurate Gait Analysis: A 3d Human Reconstruction Framework 
+for Markerless Estimation of Gait Parameters - ResearchGate, accessed March 
+16, 2026, 
+https://www.researchgate.net/publication/401523444_Biomechanically_Accurate_
+Gait_Analysis_A_3d_Human_Reconstruction_Framework_for_Markerless_Estimati
+on_of_Gait_Parameters/download 
+48.​Pose2Sim - Markerless kinematics, from OpenPose to OpenSim - Zenodo, 
+accessed March 16, 2026, https://zenodo.org/records/14713203 
+49.​Diff-MSM: Differentiable MusculoSkeletal Model for Simultaneous Identification of 
+Human Muscle and Bone Parameters | Request PDF - ResearchGate, accessed 
+March 16, 2026, 
+https://www.researchgate.net/publication/394688730_Diff-MSM_Differentiable_M
+usculoSkeletal_Model_for_Simultaneous_Identification_of_Human_Muscle_and_B
+one_Parameters 
+50.​PyPose: A Library for Robot Learning with Physics-based Optimization - 
+ResearchGate, accessed March 16, 2026, 
+https://www.researchgate.net/publication/373308560_PyPose_A_Library_for_Rob
+ot_Learning_with_Physics-based_Optimization 
+51.​Markerless Pixel-Based Pipeline for Quantifying 2D Lower Limb Kinematics During 
+Squatting: A Preliminary Validation Study | Request PDF - ResearchGate, accessed 
+March 16, 2026, 
+https://www.researchgate.net/publication/398965656_Markerless_Pixel-Based_Pi
+peline_for_Quantifying_2D_Lower_Limb_Kinematics_During_Squatting_A_Prelimin
+ary_Validation_Study 
+52.​Bidirectional Mamba-Enhanced 3D Human Pose Estimation for Accurate Clinical 
+Gait Analysis - MDPI, accessed March 16, 2026, 
+https://www.mdpi.com/2504-3110/9/9/603 
+53.​A Dataset of Clinical Gait Signals with Wearable Sensors from Healthy, 
+Neurological, and Orthopedic Cohorts - PMC, accessed March 16, 2026, 
+https://pmc.ncbi.nlm.nih.gov/articles/PMC12546693/ 
+54.​carolinaclemente00/3D-HPE-MediaPipe-Pose - GitHub, accessed March 16, 
+2026, https://github.com/carolinaclemente00/3D-HPE-MediaPipe-Pose 
+55.​Human Pose Estimation Using MediaPipe Pose and Optimization Method Based 
+on a Humanoid Model - ResearchGate, accessed March 16, 2026, 
+https://www.researchgate.net/publication/368681318_Human_Pose_Estimation_U
+sing_MediaPipe_Pose_and_Optimization_Method_Based_on_a_Humanoid_Model 
+56.​Accuracy Evaluation of 3D Pose Reconstruction Algorithms Through Stereo 
+Camera Information Fusion for Physical Exercises with MediaPipe Pose - PMC, 
+accessed March 16, 2026, https://pmc.ncbi.nlm.nih.gov/articles/PMC11644880/ 
+57.​stanfordnmbl/GaitDynamics - GitHub, accessed March 16, 2026, 
+https://github.com/stanfordnmbl/GaitDynamics 
+58.​krmstrong322/MotionQuantification: Simple proof-of-concept app/scripts to 
+show the simplicity of mediapipe's human pose estimation - GitHub, accessed 
+
+March 16, 2026, https://github.com/krmstrong322/MotionQuantification 
+59.​hunminkim98/MStudio: A comprehensive toolkit for editing and managing 2D and 
+3D markers in motion capture and biomechanical studies. - GitHub, accessed 
+March 16, 2026, https://github.com/hunminkim98/MStudio 

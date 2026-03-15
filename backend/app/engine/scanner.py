@@ -23,6 +23,13 @@ from backend.app.schemas import (
 )
 from .video import validate_video
 from .smoothing import smooth_angles
+from .math_utils import (
+    calculate_angle_3d_projected, 
+    calculate_pelvic_tilt, 
+    apply_smoothing,
+    calculate_dorsiflexion_angle,
+    calculate_foot_progression_angle
+)
 from .analysis import (
     calculate_rom,
     calculate_symmetry_index,
@@ -83,7 +90,7 @@ class GaitScanner:
             image: BGR image from OpenCV
 
         Returns:
-            Tuple of (annotated_image, (left_angle, right_angle))
+            Tuple of (annotated_image, (left_angle, right_angle), (left_valgus, right_valgus), pelvic_tilt, (l_prog, r_prog), (l_dorsi, r_dorsi))
         """
         try:
             # Convert BGR to RGB
@@ -97,7 +104,7 @@ class GaitScanner:
 
             # If no landmarks detected
             if not detection_result.pose_landmarks:
-                return image, (0, 0)
+                return image, (0, 0), (0, 0), 0.0, (0, 0), (0, 0)
 
             # Get first pose
             landmarks = detection_result.pose_landmarks[0]
@@ -105,17 +112,32 @@ class GaitScanner:
             # Helper to get coords
             def get_coords(idx):
                 return [landmarks[idx].x, landmarks[idx].y]
+                
+            def get_coords_3d(idx):
+                return np.array([landmarks[idx].x, landmarks[idx].y, landmarks[idx].z])
 
             # Extract Landmarks
             # Left Leg
             left_hip = get_coords(23)
             left_knee = get_coords(25)
             left_ankle = get_coords(27)
+            
+            left_hip_3d = get_coords_3d(23)
+            left_knee_3d = get_coords_3d(25)
+            left_ankle_3d = get_coords_3d(27)
+            left_heel_3d = get_coords_3d(29)
+            left_toe_3d = get_coords_3d(31)
 
             # Right Leg
             right_hip = get_coords(24)
             right_knee = get_coords(26)
             right_ankle = get_coords(28)
+            
+            right_hip_3d = get_coords_3d(24)
+            right_knee_3d = get_coords_3d(26)
+            right_ankle_3d = get_coords_3d(28)
+            right_heel_3d = get_coords_3d(30)
+            right_toe_3d = get_coords_3d(32)
 
             # Face Privacy (Blur)
             face_indices = list(range(11))  # 0 to 10
@@ -144,6 +166,20 @@ class GaitScanner:
             # Calculate Angles
             left_angle = calculate_angle(left_hip, left_knee, left_ankle)
             right_angle = calculate_angle(right_hip, right_knee, right_ankle)
+            
+            # Phase 2: Rickets (Valgus Angle) on Frontal Plane
+            left_valgus = calculate_angle_3d_projected(left_hip_3d, left_knee_3d, left_ankle_3d, "frontal")
+            right_valgus = calculate_angle_3d_projected(right_hip_3d, right_knee_3d, right_ankle_3d, "frontal")
+            
+            # Phase 3: Leg Length Discrepancy (Pelvic Tilt)
+            p_tilt = calculate_pelvic_tilt(np.array(left_hip), np.array(right_hip))
+            
+            # Phase 4: Clubfoot Kinematics
+            l_dorsi = calculate_dorsiflexion_angle(left_knee_3d, left_ankle_3d, left_heel_3d, left_toe_3d)
+            r_dorsi = calculate_dorsiflexion_angle(right_knee_3d, right_ankle_3d, right_heel_3d, right_toe_3d)
+            
+            l_prog = calculate_foot_progression_angle(left_heel_3d, left_toe_3d)
+            r_prog = calculate_foot_progression_angle(right_heel_3d, right_toe_3d)
 
             # Draw skeleton
             h, w, c = image.shape
@@ -179,11 +215,11 @@ class GaitScanner:
                         cv2.LINE_AA,
                     )
 
-            return image, (left_angle or 0, right_angle or 0)
+            return image, (left_angle or 0, right_angle or 0), (left_valgus or 0, right_valgus or 0), p_tilt or 0.0, (l_prog or 0, r_prog or 0), (l_dorsi or 0, r_dorsi or 0)
 
         except Exception as e:
             print(f"Error processing frame: {e}")
-            return image, (0, 0)
+            return image, (0, 0), (0, 0), 0.0, (0, 0), (0, 0)
 
 
 def process_video(
@@ -244,6 +280,13 @@ def process_video(
     # Data collection
     left_angles = []
     right_angles = []
+    left_valgus_angles = []
+    right_valgus_angles = []
+    pelvic_tilts = []
+    left_progression_angles = []
+    right_progression_angles = []
+    left_dorsiflexion_angles = []
+    right_dorsiflexion_angles = []
     frames_processed = 0
     frames_detected = 0
 
@@ -256,7 +299,7 @@ def process_video(
             frames_processed += 1
 
             # Process frame
-            processed_frame, (left, right) = scanner.process_frame(frame)
+            processed_frame, (left, right), (l_valgus, r_valgus), p_tilt, (l_prog, r_prog), (l_dorsi, r_dorsi) = scanner.process_frame(frame)
 
             # Track detection rate
             if left > 0 or right > 0:
@@ -265,6 +308,13 @@ def process_video(
             # Store angles
             left_angles.append(left)
             right_angles.append(right)
+            left_valgus_angles.append(l_valgus)
+            right_valgus_angles.append(r_valgus)
+            pelvic_tilts.append(p_tilt)
+            left_progression_angles.append(l_prog)
+            right_progression_angles.append(r_prog)
+            left_dorsiflexion_angles.append(l_dorsi)
+            right_dorsiflexion_angles.append(r_dorsi)
 
             # Write processed frame
             if video_writer:
@@ -320,7 +370,64 @@ def process_video(
     detection_rate = (frames_detected / frames_processed * 100) if frames_processed > 0 else 0
 
     # Step 4: Get diagnosis
-    diagnosis = get_diagnosis(si, detection_rate)
+    
+    # Phase 2: Rickets heuristics
+    # We take the average of the valid valgus angles to determine structural bowing
+    left_v_valid = [v for v in left_valgus_angles if v > 0]
+    right_v_valid = [v for v in right_valgus_angles if v > 0]
+    avg_l_valgus = sum(left_v_valid) / len(left_v_valid) if left_v_valid else 0.0
+    avg_r_valgus = sum(right_v_valid) / len(right_v_valid) if right_v_valid else 0.0
+    
+    # The mechanical axis interior angle. < 170° typically varum (bowleg), > 190° typically valgum (knock-knee)
+    # Using the worst case angle out of both legs
+    max_deviation = 0.0
+    diagnosis_flag_rickets = ""
+    
+    # Simple heuristic to find most deviant leg from 180 degrees
+    l_dev = avg_l_valgus - 180.0
+    r_dev = avg_r_valgus - 180.0
+    most_deviant = l_dev if abs(l_dev) > abs(r_dev) else r_dev
+    max_deviation = 180.0 + most_deviant
+    
+    # Phase 3: Pelvic Tilt LLD heuristics
+    # Apply Butterworth filter to smooth bounding box jitter
+    smoothed_pelvic_tilts = apply_smoothing(pelvic_tilts).tolist() if len(pelvic_tilts) > 0 else []
+    
+    if len(smoothed_pelvic_tilts) > 0:
+        tilt_variance = float(np.var(smoothed_pelvic_tilts))
+        max_tilt_amplitude = float(max(abs(t) for t in smoothed_pelvic_tilts))
+    else:
+        tilt_variance = 0.0
+        max_tilt_amplitude = 0.0
+        
+    # Phase 4: Clubfoot heuristics
+    left_dorsi_smooth = apply_smoothing(left_dorsiflexion_angles).tolist() if left_dorsiflexion_angles else []
+    right_dorsi_smooth = apply_smoothing(right_dorsiflexion_angles).tolist() if right_dorsiflexion_angles else []
+    left_prog_smooth = apply_smoothing(left_progression_angles).tolist() if left_progression_angles else []
+    
+    # Analyze max/min dorsiflexion for Equinus/Calcaneus gait
+    max_dorsi_left = max(left_dorsi_smooth) if left_dorsi_smooth else 90.0
+    min_dorsi_left = min(left_dorsi_smooth) if left_dorsi_smooth else 90.0
+    max_dorsi_right = max(right_dorsi_smooth) if right_dorsi_smooth else 90.0
+    min_dorsi_right = min(right_dorsi_smooth) if right_dorsi_smooth else 90.0
+    
+    # A perfectly flat foot makes a 90 deg projection angle.
+    # Toes pointed DOWN = plantarflexion = angle > 90
+    # Toes pointed UP = dorsiflexion = angle < 90
+    
+    # We want to find if they are always on their toes (Equinus) or always on their heels (Calcaneus)
+    # Get the minimum dorsiflexion ever reached (the smallest angle, meaning maximum toes-up).
+    # If this minimum is still > 100 degrees, they never got their heel down (Equinus).
+    most_equinus = max(min_dorsi_left, min_dorsi_right) # Max of the mins, so the worst-case lack of dorsiflexion
+    
+    # If the maximum angle ever reached is < 80 degrees, they never pointed their toes down (Calcaneus).
+    most_calcaneus = min(max_dorsi_left, max_dorsi_right)
+    
+    # Foot progression averaging
+    avg_foot_progression = sum(left_prog_smooth) / len(left_prog_smooth) if left_prog_smooth else 0.0
+    
+    # Get base diagnosis
+    diagnosis = get_diagnosis(si, detection_rate, max_deviation, tilt_variance, max_tilt_amplitude, most_equinus, most_calcaneus)
 
     # Derive max/min from smoothed data for AngleData
     left_valid = [a for a in left_smooth if a > 0]
@@ -349,6 +456,14 @@ def process_video(
         frames_processed=frames_processed,
         frames_detected=frames_detected,
         detection_rate=detection_rate,
+        knee_valgus_angle=max_deviation,
+        knee_valgus_angle_array=left_valgus_angles,  # Storing left side for charts as example
+        pelvic_tilt=max_tilt_amplitude,
+        pelvic_tilt_array=smoothed_pelvic_tilts,
+        foot_progression_angle=avg_foot_progression,
+        foot_progression_angle_array=left_prog_smooth,
+        ankle_dorsiflexion=most_equinus,
+        ankle_dorsiflexion_array=left_dorsi_smooth,
     )
 
     result = AnalysisResult(

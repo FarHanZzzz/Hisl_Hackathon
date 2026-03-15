@@ -3,12 +3,108 @@ import { useRouter } from 'next/router';
 import { Layout } from '../../src/components/Layout';
 import { VisualLocalization } from '../../src/components/VisualLocalization';
 import { getJob, getAISummary } from '../../src/services/api';
-import type { Job, AISummary } from '../../src/types';
+import type { Job, AISummary, Result } from '../../src/types';
 import Head from 'next/head';
 import {
    LineChart, Line, XAxis, YAxis, CartesianGrid,
    Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
+
+// --- Orthopedic Components ---
+const OrthopedicSummaryCard = ({ result }: { result: Result }) => {
+   const valgus = result.knee_valgus_angle ?? 180;
+   const isVarum = valgus < 170;
+   const isValgum = valgus > 190;
+   
+   const lld = result.pelvic_tilt ?? 0;
+   const isLLD = lld > 8; // Max tilt threshold
+   
+   const equinus = result.ankle_dorsiflexion ?? 90;
+   const isEquinus = equinus > 100;
+
+   const getStatusInfo = (isIssue: boolean, issueText: string, normalText: string) => {
+      return {
+         text: isIssue ? issueText : normalText,
+         colorClass: isIssue ? 'bg-danger-50 text-danger-700 border-danger-200 dark:bg-danger-900/20 dark:border-danger-800' : 'bg-success-50 text-success-700 border-success-200 dark:bg-success-900/20 dark:border-success-800',
+         icon: isIssue ? 'warning' : 'check_circle'
+      };
+   };
+
+   const varumStatus = getStatusInfo(isVarum || isValgum, isVarum ? 'Genu Varum (Bowlegs)' : 'Genu Valgum (Knock-knees)', 'Normal Alignment');
+   const lldStatus = getStatusInfo(isLLD, 'Potential LLD / Trendelenburg', 'Normal Pelvic Tilt');
+   const equinusStatus = getStatusInfo(isEquinus, 'Equinus Gait (Limited Dorsiflexion)', 'Normal Foot Progression');
+
+   return (
+      <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-md rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col mt-6 mb-6">
+         <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2 font-['Outfit',sans-serif]">
+            <span className="material-icons text-primary-500 text-sm">medical_services</span>
+            Orthopedic Diagnostics
+         </h3>
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className={`p-4 rounded-lg border ${varumStatus.colorClass} flex flex-col gap-2`}>
+               <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold uppercase tracking-wider opacity-80 font-['Inter',sans-serif]">Rickets Eval</span>
+                  <span className="material-icons text-lg">{varumStatus.icon}</span>
+               </div>
+               <span className="font-semibold">{varumStatus.text}</span>
+               <span className="text-sm opacity-80">Valgus Angle: {valgus.toFixed(1)}°</span>
+            </div>
+            <div className={`p-4 rounded-lg border ${lldStatus.colorClass} flex flex-col gap-2`}>
+               <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold uppercase tracking-wider opacity-80 font-['Inter',sans-serif]">LLD Eval</span>
+                  <span className="material-icons text-lg">{lldStatus.icon}</span>
+               </div>
+               <span className="font-semibold">{lldStatus.text}</span>
+               <span className="text-sm opacity-80">Max Tilt: {lld.toFixed(1)}°</span>
+            </div>
+            <div className={`p-4 rounded-lg border ${equinusStatus.colorClass} flex flex-col gap-2`}>
+               <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold uppercase tracking-wider opacity-80 font-['Inter',sans-serif]">Clubfoot Eval</span>
+                  <span className="material-icons text-lg">{equinusStatus.icon}</span>
+               </div>
+               <span className="font-semibold">{equinusStatus.text}</span>
+               <span className="text-sm opacity-80">Dorsiflexion: {equinus.toFixed(1)}°</span>
+            </div>
+         </div>
+      </div>
+   );
+};
+
+const OrthopedicGraphArea = ({ chartData }: { chartData: any[] }) => {
+   return (
+      <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-md rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col mt-6">
+         <div className="mb-4">
+            <h3 className="font-semibold text-gray-900 dark:text-white font-['Outfit',sans-serif]">Orthopedic Kinematics</h3>
+            <p className="text-xs text-gray-500 mt-1 font-['Inter',sans-serif]">Valgus, Pelvic Tilt, and Dorsiflexion arrays over gait cycle.</p>
+         </div>
+         <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.5} />
+               <XAxis
+                  dataKey="pct"
+                  tick={{ fontSize: 10, fill: '#94a3b8' }}
+                  tickFormatter={(v: number) => `${v}%`}
+                  label={{ value: 'Gait Cycle %', position: 'insideBottom', offset: -2, fontSize: 10, fill: '#94a3b8' }}
+               />
+               <YAxis
+                  tick={{ fontSize: 10, fill: '#94a3b8' }}
+                  tickFormatter={(v: number) => `${v}°`}
+               />
+               <Tooltip
+                  contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', fontSize: 12, color: '#fff' }}
+                  labelFormatter={(v: number) => `Gait Cycle: ${v}%`}
+                  formatter={(value: number, name: string) => [`${value.toFixed(1)}°`, name]}
+               />
+               <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+               <Line type="monotone" dataKey="valgus" name="Knee Valgus" stroke="#3b82f6" strokeWidth={2} dot={false} />
+               <Line type="monotone" dataKey="pelvicTilt" name="Pelvic Tilt" stroke="#f59e0b" strokeWidth={2} dot={false} />
+               <Line type="monotone" dataKey="dorsiflexion" name="Dorsiflexion" stroke="#8b5cf6" strokeWidth={2} dot={false} />
+            </LineChart>
+         </ResponsiveContainer>
+      </div>
+   );
+};
+// ------------------------------
 
 export default function ResultsPage() {
    const router = useRouter();
@@ -104,12 +200,19 @@ export default function ResultsPage() {
       if (!r) return [];
       const left = r.left_angle_series || [];
       const right = r.right_angle_series || [];
-      const len = Math.max(left.length, right.length);
+      const valgus = r.knee_valgus_angle_array || [];
+      const tilt = r.pelvic_tilt_array || [];
+      const dorsi = r.ankle_dorsiflexion_array || [];
+      
+      const len = Math.max(left.length, right.length, valgus.length, tilt.length, dorsi.length);
       if (len === 0) return [];
       return Array.from({ length: len }, (_, i) => ({
          pct: Math.round((i / (len - 1)) * 100),
          left: left[i] ?? null,
          right: right[i] ?? null,
+         valgus: valgus[i] ?? null,
+         pelvicTilt: tilt[i] ?? null,
+         dorsiflexion: dorsi[i] ?? null,
       }));
    }, [job?.results]);
 
@@ -148,6 +251,12 @@ export default function ResultsPage() {
 
    const resultsList = Array.isArray(job.results) ? job.results : [job.results];
    const firstResult = resultsList[0];
+
+   // Extract Orthopedic Feature Arrays safely for child components
+   const valgusArray = firstResult?.knee_valgus_angle_array || [];
+   const pelvicTiltArray = firstResult?.pelvic_tilt_array || [];
+   const footProgressionArray = firstResult?.foot_progression_angle_array || [];
+   const dorsiflexionArray = firstResult?.ankle_dorsiflexion_array || [];
 
    // Calculate scores and determine risk based on symmetry index
    const rawScore = firstResult?.symmetry_index
@@ -496,6 +605,13 @@ export default function ResultsPage() {
                </div>
             </div>
         </div>
+        
+        {/* Orthopedic Summary */}
+        <OrthopedicSummaryCard result={firstResult} />
+        
+        {/* Orthopedic Graphs */}
+        <OrthopedicGraphArea chartData={chartData} />
+
             {/* AI Clinical Summary Card */}
             <div className="bg-white dark:bg-[#18181b] rounded-xl shadow-sm border border-gray-100 dark:border-[#27272a] overflow-hidden no-print">
                {/* Header */}

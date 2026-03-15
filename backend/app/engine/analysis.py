@@ -85,18 +85,25 @@ def calculate_confidence(detection_rate: float, si: float) -> float:
     return round(quality * 0.7 + significance * 0.3, 3)
 
 
-def get_diagnosis(si: float, detection_rate: float) -> DiagnosisInfo:
+def get_diagnosis(si: float, detection_rate: float, knee_valgus_angle: float = 180.0, pelvic_tilt_variance: float = 0.0, max_pelvic_tilt: float = 0.0, most_equinus: float = 90.0, most_calcaneus: float = 90.0) -> DiagnosisInfo:
     """
-    Determine clinical diagnosis from symmetry index and detection rate.
+    Determine clinical diagnosis from symmetry index, detection rate, and orthopedic features.
     
     Decision tree:
         1. If detection_rate < 50% → INSUFFICIENT_DATA
         2. If SI < 0.85 or SI > 1.15 → HIGH_RISK
-        3. Otherwise → NORMAL
+        3. Determine Rickets heuristics (Genu Varus / Valgus)
+        4. Determine LLD / Trendelenburg compensation
+        5. Determine Clubfoot kinematics (Equinus / Calcaneus)
     
     Args:
         si: Symmetry index.
         detection_rate: Percentage of frames with pose detection.
+        knee_valgus_angle: Average frontal plane knee angle.
+        pelvic_tilt_variance: Variance of the pelvic tilt over time.
+        max_pelvic_tilt: Max absolute tilt deviation from horizontal.
+        most_equinus: Worst-case minimum dorsiflexion angle.
+        most_calcaneus: Worst-case maximum dorsiflexion angle.
     Returns:
         DiagnosisInfo with result, message, is_high_risk, and confidence.
     """
@@ -110,6 +117,28 @@ def get_diagnosis(si: float, detection_rate: float) -> DiagnosisInfo:
             is_high_risk=False,
             confidence=confidence
         )
+        
+    orthopedic_alerts = []
+    
+    # Phase 2: Rickets heuristics
+    if knee_valgus_angle < 170.0:
+        orthopedic_alerts.append(f"Genu Varum Detected (Bowlegs, {knee_valgus_angle:.1f}°)")
+    elif knee_valgus_angle > 190.0:
+        orthopedic_alerts.append(f"Genu Valgum Detected (Knock-knees, {knee_valgus_angle:.1f}°)")
+    else:
+        orthopedic_alerts.append(f"Normal Mechanical Axis ({knee_valgus_angle:.1f}°)")
+        
+    # Phase 3: LLD heuristics (Trendelenburg gait)
+    if pelvic_tilt_variance > 10.0 or max_pelvic_tilt > 8.0:
+        orthopedic_alerts.append(f"Trendelenburg Gait / Potential LLD (Max tilt: {max_pelvic_tilt:.1f}°, Var: {pelvic_tilt_variance:.1f})")
+        
+    # Phase 4: Clubfoot kinematics (Equinus / Calcaneus)
+    if most_equinus > 100.0:
+        orthopedic_alerts.append(f"Equinus Gait Detected (Limited Dorsiflexion, Min: {most_equinus:.1f}°)")
+    elif most_calcaneus < 75.0:
+        orthopedic_alerts.append(f"Calcaneus Gait Detected (Excessive Dorsiflexion, Max: {most_calcaneus:.1f}°)")
+        
+    orthopedic_str = " | ".join(orthopedic_alerts)
     
     if si < SI_LOW_THRESHOLD or si > SI_HIGH_THRESHOLD:
         direction = "left-dominant" if si > SI_HIGH_THRESHOLD else "right-dominant"
@@ -117,15 +146,14 @@ def get_diagnosis(si: float, detection_rate: float) -> DiagnosisInfo:
         return DiagnosisInfo(
             result=DiagnosisResult.HIGH_RISK,
             message=f"Significant gait asymmetry detected ({direction}, "
-                    f"SI={si:.2f}, asymmetry={asymmetry:.1f}%). "
-                    f"Specialist evaluation recommended.",
+                    f"SI={si:.2f}, asymmetry={asymmetry:.1f}%). {orthopedic_str}",
             is_high_risk=True,
             confidence=confidence
         )
     
     return DiagnosisInfo(
         result=DiagnosisResult.NORMAL,
-        message=f"Gait symmetry within normal clinical limits (SI={si:.2f}).",
+        message=f"Gait symmetry within normal clinical limits (SI={si:.2f}). {orthopedic_str}",
         is_high_risk=False,
         confidence=confidence
     )
