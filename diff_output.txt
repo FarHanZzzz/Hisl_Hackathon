@@ -1,0 +1,32 @@
+diff --git a/frontend/src/types/index.ts b/frontend/src/types/index.ts
+index 6a05ff7..c31e129 100644
+--- a/frontend/src/types/index.ts
++++ b/frontend/src/types/index.ts
+@@ -23,7 +23,7 @@ export interface Job {
+   error_message?: string;
+   created_at: string;
+   completed_at?: string;
+-  results?: Result[];  // Nested from Supabase join
++  results?: Result;  // Nested from Supabase join (one-to-one)
+ }
+ 
+ // --- Result ---
+diff --git a/package.json b/package.json
+index a48f74d..b817d44 100644
+--- a/package.json
++++ b/package.json
+@@ -3,11 +3,11 @@
+     "version": "1.0.0",
+     "description": "Full-stack application with Next.js frontend and FastAPI backend",
+     "scripts": {
+-        "predev": "fuser -k 3000/tcp 2>/dev/null; fuser -k 8000/tcp 2>/dev/null; sleep 1; echo '✅ Ports cleared'",
++        "predev": "echo Preparing to start...",
+         "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+         "dev:frontend": "cd frontend && npm run dev",
+-        "dev:backend": ". venv/bin/activate && uvicorn backend.app.main:app --reload --port 8000",
+-        "install:all": "npm install && cd frontend && npm install && cd .. && pip install -r backend/requirements.txt"
++        "dev:backend": "node scripts/run-backend.js",
++        "install:all": "node scripts/install-all.js"
+     },
+     "devDependencies": {
+         "concurrently": "^8.2.2"

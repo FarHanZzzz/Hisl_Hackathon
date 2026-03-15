@@ -23,7 +23,7 @@ export interface Job {
   error_message?: string;
   created_at: string;
   completed_at?: string;
-  results?: Result[];  // Nested from Supabase join
+  results?: Result;  // Nested from Supabase join (one-to-one)
 }
 
 // --- Result ---
