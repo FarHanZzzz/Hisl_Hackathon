@@ -107,7 +107,7 @@ export function JobHistoryTable() {
                   <tr key={job.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{formatDate(job.created_at)}</td>
                     <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                      {job.patient_ref || 'Unknown'}
+                      {(job as any).patients?.patient_name || (job as any).patients?.patient_id || job.patient_ref?.slice(0, 8) || 'Unknown'}
                     </td>
                     <td className="px-6 py-4">
                       {job.status === 'completed' && (

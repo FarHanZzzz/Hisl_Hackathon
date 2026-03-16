@@ -7,7 +7,7 @@ Runs the video through the gait analysis pipeline and saves results to Supabase.
 import traceback
 from pathlib import Path
 from ..config import UPLOAD_DIR, RESULTS_DIR
-from .database import JobService, ResultService
+from .database import JobService, ResultService, PatientService
 
 
 def process_job_async(job_id: str) -> None:
@@ -54,8 +54,15 @@ def process_job_async(job_id: str) -> None:
             except Exception:
                 pass  # Don't fail processing due to progress update errors
         
-        # Build patient info for process_video
-        patient = PatientInfo(patient_id=job_id[:8])
+        # Look up real patient info from the database
+        patient_svc = PatientService()
+        patient_row = patient_svc.get(job["patient_ref"])
+        patient = PatientInfo(
+            patient_id=patient_row["patient_id"] if patient_row else job_id[:8],
+            patient_name=patient_row.get("patient_name") if patient_row else None,
+            age=patient_row.get("age") if patient_row else None,
+            notes=patient_row.get("notes") if patient_row else None,
+        )
         
         # Run analysis
         analysis_result = process_video(

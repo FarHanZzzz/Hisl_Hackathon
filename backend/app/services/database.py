@@ -68,7 +68,7 @@ class JobService:
     def get(self, job_id: str) -> Optional[Dict[str, Any]]:
         """Get job by UUID, including nested results if completed."""
         result = (self.db.table(self.table)
-                  .select("*, results(*)")
+                  .select("*, results(*), patients!patient_ref(patient_id, patient_name)")
                   .eq("id", job_id)
                   .execute())
         return result.data[0] if result.data else None
@@ -90,7 +90,7 @@ class JobService:
     def list_all(self, status: str = None, limit: int = 50) -> List[Dict[str, Any]]:
         """List jobs, optionally filtered by status, ordered by newest first."""
         query = (self.db.table(self.table)
-                 .select("*")
+                 .select("*, patients!patient_ref(patient_id, patient_name)")
                  .order("created_at", desc=True)
                  .limit(limit))
         if status:
