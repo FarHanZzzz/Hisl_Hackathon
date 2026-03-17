@@ -19,8 +19,8 @@ export default function LandingPage() {
 
       <style jsx global>{`
         .landing-page {
-          --primary: #3c83f6;
-          --accent: #06b6d4;
+          --lp-primary: #3c83f6;
+          --lp-accent: #06b6d4;
           --bg-dark: #0a0a1a;
           --surface: #121226;
           font-family: 'Space Grotesk', sans-serif;
@@ -120,12 +120,12 @@ export default function LandingPage() {
           transform: scale(1.25);
           opacity: 1;
         }
-        .step-group.blue:hover .step-circle { border-color: var(--primary); }
+        .step-group.blue:hover .step-circle { border-color: var(--lp-primary); }
         .step-group.blue:hover .step-circle::after { border-color: rgba(60,131,246,0.2); }
-        .step-group.blue:hover .step-num { color: var(--primary); }
-        .step-group.cyan:hover .step-circle { border-color: var(--accent); }
+        .step-group.blue:hover .step-num { color: var(--lp-primary); }
+        .step-group.cyan:hover .step-circle { border-color: var(--lp-accent); }
         .step-group.cyan:hover .step-circle::after { border-color: rgba(6,182,212,0.2); }
-        .step-group.cyan:hover .step-num { color: var(--accent); }
+        .step-group.cyan:hover .step-num { color: var(--lp-accent); }
         .step-group.purple:hover .step-circle { border-color: #a855f7; }
         .step-group.purple:hover .step-circle::after { border-color: rgba(168,85,247,0.2); }
         .step-group.purple:hover .step-num { color: #a855f7; }
@@ -158,31 +158,7 @@ export default function LandingPage() {
           <div style={{ position:'absolute', bottom:'-10%', right:'-5%', width:'40%', height:'40%', borderRadius:'50%', background:'rgba(6,182,212,0.15)', filter:'blur(100px)' }} />
         </div>
 
-        {/* Navigation */}
-        <header style={{ position:'fixed', top:0, left:0, right:0, zIndex:50, borderBottom:'1px solid rgba(255,255,255,0.05)', background:'rgba(10,10,26,0.8)', backdropFilter:'blur(12px)' }}>
-          <div style={{ maxWidth:1280, margin:'0 auto', padding:'0 24px', height:80, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-            <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-              <div style={{ width:40, height:40, background:'linear-gradient(135deg, #3c83f6, #06b6d4)', borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 15px rgba(60,131,246,0.2)' }}>
-                <span className="material-symbols-outlined" style={{ color:'white', fontSize:24 }}>accessibility_new</span>
-              </div>
-              <h1 style={{ fontSize:20, fontWeight:700, letterSpacing:'-0.025em' }}>Pedi-Growth</h1>
-            </div>
-            <nav style={{ display:'flex', alignItems:'center', gap:32, fontSize:14, fontWeight:500, color:'#94a3b8' }}>
-              <a href="#features" style={{ color:'inherit', textDecoration:'none', transition:'color 0.3s' }}>Platform</a>
-              <a href="#how-it-works" style={{ color:'inherit', textDecoration:'none', transition:'color 0.3s' }}>Technology</a>
-              <a href="#stats" style={{ color:'inherit', textDecoration:'none', transition:'color 0.3s' }}>Research</a>
-            </nav>
-            <button
-              onClick={goToDashboard}
-              className="btn-header-glow"
-              style={{ height:40, padding:'0 24px', borderRadius:8, background:'#3c83f6', color:'white', fontSize:14, fontWeight:700, border:'none', cursor:'pointer', transition:'all 0.3s' }}
-            >
-              Dashboard Login
-            </button>
-          </div>
-        </header>
-
-        <main style={{ position:'relative', zIndex:10, paddingTop:80 }}>
+        <main style={{ position:'relative', zIndex:10, paddingTop:20 }}>
           {/* ===== HERO SECTION ===== */}
           <section style={{ position:'relative', minHeight:'90vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'80px 24px', overflow:'hidden' }}>
             <div style={{ maxWidth:1280, width:'100%', display:'grid', gridTemplateColumns:'1fr 1fr', gap:48, alignItems:'center' }}>

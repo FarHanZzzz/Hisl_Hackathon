@@ -11,14 +11,8 @@ export function Layout({ children, title = 'Pedi-Growth | Clinical Gait Analysis
   const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
-    // Check localStorage or system preference on mount
-    const stored = localStorage.getItem('pedigrowth-theme');
-    if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      setDarkMode(true);
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    // Just sync the toggle-button state with whatever _app.tsx already set
+    setDarkMode(document.documentElement.classList.contains('dark'));
   }, []);
 
   const toggleDarkMode = () => {

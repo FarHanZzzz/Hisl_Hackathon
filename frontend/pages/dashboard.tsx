@@ -76,8 +76,8 @@ export default function Home() {
                <div className="relative mb-8">
                   <div className="absolute inset-0 bg-primary-500/10 blur-3xl rounded-full"></div>
                   {/* Using a placeholder div to represent the illustration from Stitch */}
-                  <div className="w-64 h-64 border-4 border-dashed border-gray-200 dark:border-gray-800 rounded-3xl opacity-50 flex items-center justify-center relative z-10 bg-gray-50 dark:bg-gray-800">
-                     <span className="material-icons text-6xl text-gray-300">directions_walk</span>
+                   <div className="w-64 h-64 border-4 border-dashed border-gray-300 dark:border-gray-800 rounded-3xl opacity-60 dark:opacity-50 flex items-center justify-center relative z-10 bg-gray-100 dark:bg-gray-800">
+                     <span className="material-icons text-6xl text-gray-600">directions_walk</span>
                   </div>
                   <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-2 bg-gray-200 dark:bg-gray-800 blur-sm rounded-full"></div>
                </div>
@@ -89,17 +89,17 @@ export default function Home() {
                
                <div className="mt-8 flex gap-6">
                   <div className="flex flex-col items-center">
-                     <span className="material-icons text-primary-500/40 text-3xl mb-1">speed</span>
+                      <span className="material-icons text-primary-600 dark:text-primary-400 text-3xl mb-1">speed</span>
                      <span className="text-xs font-bold text-gray-400 uppercase">AI-Powered</span>
                   </div>
                   <div className="w-px h-10 bg-gray-200 dark:bg-gray-800"></div>
                   <div className="flex flex-col items-center">
-                     <span className="material-icons text-primary-500/40 text-3xl mb-1">security</span>
+                      <span className="material-icons text-primary-600 dark:text-primary-400 text-3xl mb-1">security</span>
                      <span className="text-xs font-bold text-gray-400 uppercase">HIPAA Ready</span>
                   </div>
                   <div className="w-px h-10 bg-gray-200 dark:bg-gray-800"></div>
                   <div className="flex flex-col items-center">
-                     <span className="material-icons text-primary-500/40 text-3xl mb-1">timeline</span>
+                      <span className="material-icons text-primary-600 dark:text-primary-400 text-3xl mb-1">timeline</span>
                      <span className="text-xs font-bold text-gray-400 uppercase">Kinematics</span>
                   </div>
                </div>
