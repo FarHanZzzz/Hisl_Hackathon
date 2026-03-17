@@ -487,7 +487,9 @@ def process_video(
         foot_progression_angle_array=left_prog_smooth,
         ankle_dorsiflexion=most_equinus,
         ankle_dorsiflexion_array=left_dorsi_smooth,
-        # Note: We will add trunk_sway_array and shoulder_tilt_array to AnalysisMetrics in Phase 4.
+        # --- Neuromuscular Features ---
+        trunk_sway_array=smoothed_trunk_sways,
+        shoulder_tilt_array=smoothed_shoulder_tilts,
     )
 
     result = AnalysisResult(

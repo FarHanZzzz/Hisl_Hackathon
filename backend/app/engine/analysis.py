@@ -134,60 +134,82 @@ def get_diagnosis(
         )
         
     orthopedic_alerts = []
+    is_high_risk_flag = False
     
     # Phase 2: Rickets heuristics
     if knee_valgus_angle < 170.0:
         orthopedic_alerts.append(f"Genu Varum Detected (Bowlegs, {knee_valgus_angle:.1f}°)")
+        is_high_risk_flag = True
     elif knee_valgus_angle > 190.0:
         orthopedic_alerts.append(f"Genu Valgum Detected (Knock-knees, {knee_valgus_angle:.1f}°)")
-    else:
-        orthopedic_alerts.append(f"Normal Mechanical Axis ({knee_valgus_angle:.1f}°)")
+        is_high_risk_flag = True
         
     # Phase 3: LLD heuristics (Trendelenburg gait)
     if pelvic_tilt_variance > 10.0 or max_pelvic_tilt > 8.0:
         orthopedic_alerts.append(f"Trendelenburg Gait / Potential LLD (Max tilt: {max_pelvic_tilt:.1f}°, Var: {pelvic_tilt_variance:.1f})")
+        is_high_risk_flag = True
         
     # Phase 4: Clubfoot kinematics (Equinus / Calcaneus)
     if most_equinus > 100.0:
         orthopedic_alerts.append(f"Equinus Gait Detected (Limited Dorsiflexion, Min: {most_equinus:.1f}°)")
+        is_high_risk_flag = True
     elif most_calcaneus < 75.0:
         orthopedic_alerts.append(f"Calcaneus Gait Detected (Excessive Dorsiflexion, Max: {most_calcaneus:.1f}°)")
+        is_high_risk_flag = True
         
     # Phase 7 (Subphase 2): Neuromuscular DMD Logic
     neuromuscular_alerts = []
+    has_dmd = False
     if trunk_sway_variance > 15.0:
         neuromuscular_alerts.append(f"DMD Waddling Profile Detected (Trunk Sway Var: {trunk_sway_variance:.1f})")
-    
+        has_dmd = True
     if most_equinus > 110.0:
         neuromuscular_alerts.append(f"DMD Toe-Walking Risk (Severe Continuous Plantarflexion: {most_equinus:.1f}°)")
+        has_dmd = True
 
     # Phase 7 (Subphase 3): Early-Onset Scoliosis Screening (Postural Asymmetry Vector)
+    has_scoliosis = False
     if smoothed_shoulder_tilts and smoothed_pelvic_tilts and len(smoothed_shoulder_tilts) == len(smoothed_pelvic_tilts):
-        # Calculate dynamic divergence: difference between shoulder tilt and pelvic tilt
-        # A significant, sustained difference indicates spinal C-curve or S-curve compensation
         divergences = [abs(s - p) for s, p in zip(smoothed_shoulder_tilts, smoothed_pelvic_tilts)]
         avg_divergence = sum(divergences) / len(divergences) if divergences else 0.0
         
         if avg_divergence > 10.0:
             neuromuscular_alerts.append(f"Scoliosis Risk Protocol Recommended (Postural Asymmetry: {avg_divergence:.1f}°)")
+            has_scoliosis = True
+            
+    is_asymmetric = si < SI_LOW_THRESHOLD or si > SI_HIGH_THRESHOLD
+    if is_asymmetric:
+        is_high_risk_flag = True
         
-    all_alerts = orthopedic_alerts + neuromuscular_alerts
-    orthopedic_str = " | ".join(all_alerts)
-    
-    if si < SI_LOW_THRESHOLD or si > SI_HIGH_THRESHOLD:
+    # Determine final category
+    if has_dmd:
+        final_category = DiagnosisResult.DMD_RISK
+        is_high_risk_flag = True
+    elif has_scoliosis:
+        final_category = DiagnosisResult.SCOLIOSIS_RISK
+        is_high_risk_flag = True
+    elif is_high_risk_flag:
+        final_category = DiagnosisResult.HIGH_RISK
+    else:
+        final_category = DiagnosisResult.NORMAL
+
+    # Build final message
+    if is_asymmetric:
         direction = "left-dominant" if si > SI_HIGH_THRESHOLD else "right-dominant"
         asymmetry = calculate_asymmetry(si)
-        return DiagnosisInfo(
-            result=DiagnosisResult.HIGH_RISK,
-            message=f"Significant gait asymmetry detected ({direction}, "
-                    f"SI={si:.2f}, asymmetry={asymmetry:.1f}%). {orthopedic_str}",
-            is_high_risk=True,
-            confidence=confidence
-        )
-    
+        base_msg = f"Significant gait asymmetry detected ({direction}, SI={si:.2f}, asymmetry={asymmetry:.1f}%)."
+    else:
+        base_msg = f"Gait symmetry within normal clinical limits (SI={si:.2f})."
+        
+    all_alerts = orthopedic_alerts + neuromuscular_alerts
+    if all_alerts:
+        final_msg = f"{base_msg} Alerts: {' | '.join(all_alerts)}"
+    else:
+        final_msg = base_msg
+        
     return DiagnosisInfo(
-        result=DiagnosisResult.NORMAL,
-        message=f"Gait symmetry within normal clinical limits (SI={si:.2f}). {orthopedic_str}",
-        is_high_risk=False,
+        result=final_category,
+        message=final_msg,
+        is_high_risk=is_high_risk_flag,
         confidence=confidence
     )

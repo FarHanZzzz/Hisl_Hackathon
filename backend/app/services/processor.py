@@ -100,6 +100,9 @@ def process_job_async(job_id: str) -> None:
                 foot_progression_angle_array=m.foot_progression_angle_array,
                 ankle_dorsiflexion=m.ankle_dorsiflexion,
                 ankle_dorsiflexion_array=m.ankle_dorsiflexion_array,
+                # --- Neuromuscular Features ---
+                trunk_sway_array=m.trunk_sway_array,
+                shoulder_tilt_array=m.shoulder_tilt_array,
             )
         if analysis_result.diagnosis:
             d = analysis_result.diagnosis
