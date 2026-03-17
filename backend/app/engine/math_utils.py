@@ -107,3 +107,38 @@ def calculate_dorsiflexion_angle(knee: np.ndarray, ankle: np.ndarray, heel: np.n
     
     return calculate_angle_2d(tibial_sag, foot_sag)
 
+def calculate_shoulder_tilt(left_shoulder: np.ndarray, right_shoulder: np.ndarray) -> float:
+    """
+    Calculates the spatial horizontal tilt angle between Left Shoulder (11) and Right Shoulder (12).
+    """
+    dy = right_shoulder[1] - left_shoulder[1]
+    dx = right_shoulder[0] - left_shoulder[0]
+    
+    angle = np.degrees(np.arctan2(dy, dx))
+    
+    # We care about the deviation from a flat 0 degrees horizontal line.
+    if angle > 90:
+        angle -= 180
+    elif angle < -90:
+        angle += 180
+        
+    return angle
+
+def calculate_trunk_sway(left_shoulder: np.ndarray, right_shoulder: np.ndarray, left_hip: np.ndarray, right_hip: np.ndarray) -> float:
+    """
+    Calculates the trunk sway angle (deviation from vertical) using midpoints.
+    """
+    shoulder_mid = (left_shoulder + right_shoulder) / 2.0
+    hip_mid = (left_hip + right_hip) / 2.0
+    
+    # y goes down in image coords, so hip_y > shoulder_y
+    dy = hip_mid[1] - shoulder_mid[1] 
+    dx = hip_mid[0] - shoulder_mid[0]
+    
+    angle_from_horizontal = np.degrees(np.arctan2(dy, dx))
+    
+    # Deviation from vertical (90 degrees). Perfect upright = 0 sway.
+    sway = 90.0 - angle_from_horizontal
+    
+    return sway
+

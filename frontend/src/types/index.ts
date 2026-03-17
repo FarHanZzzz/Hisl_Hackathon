@@ -27,7 +27,7 @@ export interface Job {
 }
 
 // --- Result ---
-export type DiagnosisType = 'normal' | 'high_risk' | 'insufficient_data';
+export type DiagnosisType = 'normal' | 'high_risk' | 'insufficient_data' | 'dmd_risk' | 'scoliosis_risk';
 
 export interface Result {
   id: string;
@@ -61,6 +61,10 @@ export interface Result {
 
   ankle_dorsiflexion?: number;
   ankle_dorsiflexion_array?: number[];
+
+  // --- Neuromuscular Features ---
+  trunk_sway_array?: number[];
+  shoulder_tilt_array?: number[];
 
   created_at: string;
 }

@@ -85,7 +85,18 @@ def calculate_confidence(detection_rate: float, si: float) -> float:
     return round(quality * 0.7 + significance * 0.3, 3)
 
 
-def get_diagnosis(si: float, detection_rate: float, knee_valgus_angle: float = 180.0, pelvic_tilt_variance: float = 0.0, max_pelvic_tilt: float = 0.0, most_equinus: float = 90.0, most_calcaneus: float = 90.0) -> DiagnosisInfo:
+def get_diagnosis(
+    si: float, 
+    detection_rate: float, 
+    knee_valgus_angle: float = 180.0, 
+    pelvic_tilt_variance: float = 0.0, 
+    max_pelvic_tilt: float = 0.0, 
+    most_equinus: float = 90.0, 
+    most_calcaneus: float = 90.0,
+    trunk_sway_variance: float = 0.0,
+    smoothed_shoulder_tilts: list[float] = None,
+    smoothed_pelvic_tilts: list[float] = None
+) -> DiagnosisInfo:
     """
     Determine clinical diagnosis from symmetry index, detection rate, and orthopedic features.
     
@@ -95,6 +106,7 @@ def get_diagnosis(si: float, detection_rate: float, knee_valgus_angle: float = 1
         3. Determine Rickets heuristics (Genu Varus / Valgus)
         4. Determine LLD / Trendelenburg compensation
         5. Determine Clubfoot kinematics (Equinus / Calcaneus)
+        6. Determine Neuromuscular kinematics (DMD Waddling / Toe-Walking)
     
     Args:
         si: Symmetry index.
@@ -104,6 +116,9 @@ def get_diagnosis(si: float, detection_rate: float, knee_valgus_angle: float = 1
         max_pelvic_tilt: Max absolute tilt deviation from horizontal.
         most_equinus: Worst-case minimum dorsiflexion angle.
         most_calcaneus: Worst-case maximum dorsiflexion angle.
+        trunk_sway_variance: Variance of trunk sway for DMD detection.
+        smoothed_shoulder_tilts: Array of shoulder tilts for Phase 3.
+        smoothed_pelvic_tilts: Array of pelvic tilts for Phase 3.
     Returns:
         DiagnosisInfo with result, message, is_high_risk, and confidence.
     """
@@ -138,7 +153,26 @@ def get_diagnosis(si: float, detection_rate: float, knee_valgus_angle: float = 1
     elif most_calcaneus < 75.0:
         orthopedic_alerts.append(f"Calcaneus Gait Detected (Excessive Dorsiflexion, Max: {most_calcaneus:.1f}°)")
         
-    orthopedic_str = " | ".join(orthopedic_alerts)
+    # Phase 7 (Subphase 2): Neuromuscular DMD Logic
+    neuromuscular_alerts = []
+    if trunk_sway_variance > 15.0:
+        neuromuscular_alerts.append(f"DMD Waddling Profile Detected (Trunk Sway Var: {trunk_sway_variance:.1f})")
+    
+    if most_equinus > 110.0:
+        neuromuscular_alerts.append(f"DMD Toe-Walking Risk (Severe Continuous Plantarflexion: {most_equinus:.1f}°)")
+
+    # Phase 7 (Subphase 3): Early-Onset Scoliosis Screening (Postural Asymmetry Vector)
+    if smoothed_shoulder_tilts and smoothed_pelvic_tilts and len(smoothed_shoulder_tilts) == len(smoothed_pelvic_tilts):
+        # Calculate dynamic divergence: difference between shoulder tilt and pelvic tilt
+        # A significant, sustained difference indicates spinal C-curve or S-curve compensation
+        divergences = [abs(s - p) for s, p in zip(smoothed_shoulder_tilts, smoothed_pelvic_tilts)]
+        avg_divergence = sum(divergences) / len(divergences) if divergences else 0.0
+        
+        if avg_divergence > 10.0:
+            neuromuscular_alerts.append(f"Scoliosis Risk Protocol Recommended (Postural Asymmetry: {avg_divergence:.1f}°)")
+        
+    all_alerts = orthopedic_alerts + neuromuscular_alerts
+    orthopedic_str = " | ".join(all_alerts)
     
     if si < SI_LOW_THRESHOLD or si > SI_HIGH_THRESHOLD:
         direction = "left-dominant" if si > SI_HIGH_THRESHOLD else "right-dominant"

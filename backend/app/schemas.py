@@ -22,6 +22,8 @@ class DiagnosisResult(str, Enum):
     NORMAL = "normal"
     HIGH_RISK = "high_risk"
     INSUFFICIENT_DATA = "insufficient_data"
+    DMD_RISK = "dmd_risk"
+    SCOLIOSIS_RISK = "scoliosis_risk"
 
 
 class VideoViewType(str, Enum):
@@ -110,6 +112,14 @@ class AnalysisMetrics(BaseModel):
     )
     ankle_dorsiflexion_array: Optional[List[float]] = Field(
         None, description="Ankle dorsiflexion angle per frame"
+    )
+    
+    # --- Neuromuscular Features ---
+    trunk_sway_array: Optional[List[float]] = Field(
+        None, description="Trunk sway angle from vertical per frame (DMD)"
+    )
+    shoulder_tilt_array: Optional[List[float]] = Field(
+        None, description="Shoulder tilt angle per frame (Scoliosis)"
     )
 
 

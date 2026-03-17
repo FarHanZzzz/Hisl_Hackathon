@@ -28,7 +28,9 @@ from .math_utils import (
     calculate_pelvic_tilt, 
     apply_smoothing,
     calculate_dorsiflexion_angle,
-    calculate_foot_progression_angle
+    calculate_foot_progression_angle,
+    calculate_shoulder_tilt,
+    calculate_trunk_sway
 )
 from .analysis import (
     calculate_rom,
@@ -90,7 +92,7 @@ class GaitScanner:
             image: BGR image from OpenCV
 
         Returns:
-            Tuple of (annotated_image, (left_angle, right_angle), (left_valgus, right_valgus), pelvic_tilt, (l_prog, r_prog), (l_dorsi, r_dorsi))
+            Tuple of (annotated_image, (left_angle, right_angle), (left_valgus, right_valgus), pelvic_tilt, (l_prog, r_prog), (l_dorsi, r_dorsi), shoulder_tilt, trunk_sway)
         """
         try:
             # Convert BGR to RGB
@@ -104,7 +106,7 @@ class GaitScanner:
 
             # If no landmarks detected
             if not detection_result.pose_landmarks:
-                return image, (0, 0), (0, 0), 0.0, (0, 0), (0, 0)
+                return image, (0, 0), (0, 0), 0.0, (0, 0), (0, 0), 0.0, 0.0
 
             # Get first pose
             landmarks = detection_result.pose_landmarks[0]
@@ -181,6 +183,13 @@ class GaitScanner:
             l_prog = calculate_foot_progression_angle(left_heel_3d, left_toe_3d)
             r_prog = calculate_foot_progression_angle(right_heel_3d, right_toe_3d)
 
+            # Phase 7: Neuromuscular Features
+            left_shoulder = get_coords(11)
+            right_shoulder = get_coords(12)
+            
+            s_tilt = calculate_shoulder_tilt(np.array(left_shoulder), np.array(right_shoulder))
+            t_sway = calculate_trunk_sway(np.array(left_shoulder), np.array(right_shoulder), np.array(left_hip), np.array(right_hip))
+
             # Draw skeleton
             h, w, c = image.shape
 
@@ -215,11 +224,11 @@ class GaitScanner:
                         cv2.LINE_AA,
                     )
 
-            return image, (left_angle or 0, right_angle or 0), (left_valgus or 0, right_valgus or 0), p_tilt or 0.0, (l_prog or 0, r_prog or 0), (l_dorsi or 0, r_dorsi or 0)
+            return image, (left_angle or 0, right_angle or 0), (left_valgus or 0, right_valgus or 0), p_tilt or 0.0, (l_prog or 0, r_prog or 0), (l_dorsi or 0, r_dorsi or 0), s_tilt or 0.0, t_sway or 0.0
 
         except Exception as e:
             print(f"Error processing frame: {e}")
-            return image, (0, 0), (0, 0), 0.0, (0, 0), (0, 0)
+            return image, (0, 0), (0, 0), 0.0, (0, 0), (0, 0), 0.0, 0.0
 
 
 def process_video(
@@ -287,6 +296,8 @@ def process_video(
     right_progression_angles = []
     left_dorsiflexion_angles = []
     right_dorsiflexion_angles = []
+    shoulder_tilts = []
+    trunk_sways = []
     frames_processed = 0
     frames_detected = 0
 
@@ -299,7 +310,7 @@ def process_video(
             frames_processed += 1
 
             # Process frame
-            processed_frame, (left, right), (l_valgus, r_valgus), p_tilt, (l_prog, r_prog), (l_dorsi, r_dorsi) = scanner.process_frame(frame)
+            processed_frame, (left, right), (l_valgus, r_valgus), p_tilt, (l_prog, r_prog), (l_dorsi, r_dorsi), s_tilt, t_sway = scanner.process_frame(frame)
 
             # Track detection rate
             if left > 0 or right > 0:
@@ -315,6 +326,8 @@ def process_video(
             right_progression_angles.append(r_prog)
             left_dorsiflexion_angles.append(l_dorsi)
             right_dorsiflexion_angles.append(r_dorsi)
+            shoulder_tilts.append(s_tilt)
+            trunk_sways.append(t_sway)
 
             # Write processed frame
             if video_writer:
@@ -427,7 +440,17 @@ def process_video(
     avg_foot_progression = sum(left_prog_smooth) / len(left_prog_smooth) if left_prog_smooth else 0.0
     
     # Get base diagnosis
-    diagnosis = get_diagnosis(si, detection_rate, max_deviation, tilt_variance, max_tilt_amplitude, most_equinus, most_calcaneus)
+    # Pass Neuromuscular metrics (trunk_sway_variance, smoothed arrays) to the updated get_diagnosis later
+    # We will compute them here for Phase 7
+    smoothed_shoulder_tilts = apply_smoothing(shoulder_tilts).tolist() if len(shoulder_tilts) > 0 else []
+    smoothed_trunk_sways = apply_smoothing(trunk_sways).tolist() if len(trunk_sways) > 0 else []
+    
+    if len(smoothed_trunk_sways) > 0:
+        trunk_sway_variance = float(np.var(smoothed_trunk_sways))
+    else:
+        trunk_sway_variance = 0.0
+        
+    diagnosis = get_diagnosis(si, detection_rate, max_deviation, tilt_variance, max_tilt_amplitude, most_equinus, most_calcaneus, trunk_sway_variance, smoothed_shoulder_tilts, smoothed_pelvic_tilts)
 
     # Derive max/min from smoothed data for AngleData
     left_valid = [a for a in left_smooth if a > 0]
@@ -464,6 +487,7 @@ def process_video(
         foot_progression_angle_array=left_prog_smooth,
         ankle_dorsiflexion=most_equinus,
         ankle_dorsiflexion_array=left_dorsi_smooth,
+        # Note: We will add trunk_sway_array and shoulder_tilt_array to AnalysisMetrics in Phase 4.
     )
 
     result = AnalysisResult(

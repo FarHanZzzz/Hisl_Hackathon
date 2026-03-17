@@ -28,18 +28,34 @@ const STYLES: Record<DiagnosisType, { bg: string; border: string; text: string; 
     text: 'text-warning-600',
     badge: 'bg-warning-500',
   },
+  dmd_risk: {
+    bg: 'bg-purple-50',
+    border: 'border-purple-500',
+    text: 'text-purple-700',
+    badge: 'bg-purple-500',
+  },
+  scoliosis_risk: {
+    bg: 'bg-orange-50',
+    border: 'border-orange-500',
+    text: 'text-orange-700',
+    badge: 'bg-orange-500',
+  },
 };
 
 const ICONS: Record<DiagnosisType, React.ReactNode> = {
   normal: <CheckCircle className="w-10 h-10 text-success-500" />,
   high_risk: <AlertTriangle className="w-10 h-10 text-danger-500" />,
   insufficient_data: <HelpCircle className="w-10 h-10 text-warning-500" />,
+  dmd_risk: <AlertTriangle className="w-10 h-10 text-purple-500" />,
+  scoliosis_risk: <AlertTriangle className="w-10 h-10 text-orange-500" />,
 };
 
 const LABELS: Record<DiagnosisType, string> = {
   normal: 'NORMAL',
   high_risk: 'HIGH RISK',
   insufficient_data: 'INSUFFICIENT DATA',
+  dmd_risk: 'DMD RISK',
+  scoliosis_risk: 'SCOLIOSIS RISK',
 };
 
 export function DiagnosisBanner({ diagnosis, message, confidence, symmetryIndex, detectionRate }: Props) {
@@ -72,13 +88,26 @@ export function DiagnosisBanner({ diagnosis, message, confidence, symmetryIndex,
 
       {/* Mandatory HIGH RISK alert */}
       {diagnosis === 'high_risk' && (
-        <div className="bg-danger-50 border border-danger-500 rounded-xl p-4 flex items-start gap-3">
+        <div className="bg-danger-50 border border-danger-500 rounded-xl p-4 flex items-start gap-3 mt-4">
           <AlertOctagon className="w-5 h-5 text-danger-500 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-semibold text-danger-700">Clinical Referral Recommended</p>
             <p className="text-xs text-danger-600 mt-1">
               Please refer for specialist evaluation. Significant gait asymmetry detected.
               This result should be verified through clinical observation by a qualified professional.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Neuromuscular alert */}
+      {(diagnosis === 'dmd_risk' || diagnosis === 'scoliosis_risk') && (
+        <div className="bg-purple-50 border border-purple-500 rounded-xl p-4 flex items-start gap-3 mt-4">
+          <AlertOctagon className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-purple-700">Neuromuscular Profile Detected</p>
+            <p className="text-xs text-purple-600 mt-1">
+              Please refer for specialist evaluation. The kinematic analysis has detected a profile associated with neuromuscular conditions.
             </p>
           </div>
         </div>

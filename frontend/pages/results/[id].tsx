@@ -104,6 +104,110 @@ const OrthopedicGraphArea = ({ chartData }: { chartData: any[] }) => {
       </div>
    );
 };
+
+// --- Neuromuscular Components ---
+const NeuromuscularSummaryCard = ({ result }: { result: Result }) => {
+   // Frontend Heuristic Computation
+   const trunkSway = result.trunk_sway_array || [];
+   const meanSway = trunkSway.length ? trunkSway.reduce((a, b) => a + b, 0) / trunkSway.length : 0;
+   const swayVar = trunkSway.length ? trunkSway.reduce((a, b) => a + Math.pow(b - meanSway, 2), 0) / trunkSway.length : 0;
+   const isDMDWaddling = swayVar > 15.0;
+   
+   const shoulderTilt = result.shoulder_tilt_array || [];
+   const pelvicTilt = result.pelvic_tilt_array || [];
+   let avgDivergence = 0;
+   if (shoulderTilt.length && pelvicTilt.length && shoulderTilt.length === Math.min(shoulderTilt.length, pelvicTilt.length)) {
+      const divergences = shoulderTilt.map((s, i) => Math.abs(s - (pelvicTilt[i] || 0)));
+      avgDivergence = divergences.reduce((a, b) => a + b, 0) / (divergences.length || 1);
+   }
+   const isScoliosis = avgDivergence > 10.0;
+   
+   const mostEquinus = (result.ankle_dorsiflexion_array || []).reduce((min, val) => Math.max(min, val), 0);
+   const isToeWalking = mostEquinus > 110.0;
+   const isDMD = isDMDWaddling || isToeWalking;
+
+   const getStatusInfo = (isIssue: boolean, issueText: string, normalText: string) => {
+      return {
+         text: isIssue ? issueText : normalText,
+         colorClass: isIssue ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800' : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800',
+         icon: isIssue ? 'warning' : 'check_circle'
+      };
+   };
+
+   const dmdStatus = getStatusInfo(isDMD, 'DMD Risk Detected', 'DMD Profile Normal');
+   const swayStatus = getStatusInfo(isDMDWaddling, 'Excessive Trunk Sway', 'Normal Trunk Sway');
+   const scoliosisStatus = getStatusInfo(isScoliosis, 'Scoliosis Risk Protocol', 'Spine Alignment Normal');
+
+   return (
+      <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-md rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col mt-6 mb-6">
+         <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2 font-['Outfit',sans-serif]">
+            <span className="material-icons text-purple-500 text-sm">neurology</span>
+            Neuromuscular Diagnostics
+         </h3>
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className={`p-4 rounded-lg border flex flex-col gap-2 ${dmdStatus.colorClass}`}>
+               <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold uppercase tracking-wider opacity-80 font-['Inter',sans-serif]">DMD Status</span>
+                  <span className="material-icons text-lg">{dmdStatus.icon}</span>
+               </div>
+               <span className="font-semibold">{dmdStatus.text}</span>
+               <span className="text-sm opacity-80">{isToeWalking ? 'Toe-Walking Present' : 'Plantarflexion Normal'}</span>
+            </div>
+            <div className={`p-4 rounded-lg border flex flex-col gap-2 ${swayStatus.colorClass}`}>
+               <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold uppercase tracking-wider opacity-80 font-['Inter',sans-serif]">Trunk Sway</span>
+                  <span className="material-icons text-lg">{swayStatus.icon}</span>
+               </div>
+               <span className="font-semibold">{swayStatus.text}</span>
+               <span className="text-sm opacity-80">Variance: {swayVar.toFixed(1)}</span>
+            </div>
+            <div className={`p-4 rounded-lg border flex flex-col gap-2 ${scoliosisStatus.colorClass}`}>
+               <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold uppercase tracking-wider opacity-80 font-['Inter',sans-serif]">Scoliosis Risk</span>
+                  <span className="material-icons text-lg">{scoliosisStatus.icon}</span>
+               </div>
+               <span className="font-semibold">{scoliosisStatus.text}</span>
+               <span className="text-sm opacity-80">Divergence: {avgDivergence.toFixed(1)}°</span>
+            </div>
+         </div>
+      </div>
+   );
+};
+
+const NeuromuscularGraphArea = ({ chartData }: { chartData: any[] }) => {
+   return (
+      <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-md rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col mt-6">
+         <div className="mb-4">
+            <h3 className="font-semibold text-gray-900 dark:text-white font-['Outfit',sans-serif]">Neuromuscular Kinematics</h3>
+            <p className="text-xs text-gray-500 mt-1 font-['Inter',sans-serif]">Trunk Sway, Shoulder Tilt, and Pelvic Tilt over gait cycle.</p>
+         </div>
+         <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.5} />
+               <XAxis
+                  dataKey="pct"
+                  tick={{ fontSize: 10, fill: '#94a3b8' }}
+                  tickFormatter={(v: number) => `${v}%`}
+                  label={{ value: 'Gait Cycle %', position: 'insideBottom', offset: -2, fontSize: 10, fill: '#94a3b8' }}
+               />
+               <YAxis
+                  tick={{ fontSize: 10, fill: '#94a3b8' }}
+                  tickFormatter={(v: number) => `${v}°`}
+               />
+               <Tooltip
+                  contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', fontSize: 12, color: '#fff' }}
+                  labelFormatter={(v: number) => `Gait Cycle: ${v}%`}
+                  formatter={(value: number, name: string) => [`${value?.toFixed(1)}°`, name]}
+               />
+               <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+               <Line type="monotone" dataKey="trunkSway" name="Trunk Sway" stroke="#8b5cf6" strokeWidth={2} dot={false} />
+               <Line type="monotone" dataKey="shoulderTilt" name="Shoulder Tilt" stroke="#ec4899" strokeWidth={2} dot={false} />
+               <Line type="monotone" dataKey="pelvicTilt" name="Pelvic Tilt" stroke="#f59e0b" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+            </LineChart>
+         </ResponsiveContainer>
+      </div>
+   );
+};
 // ------------------------------
 
 export default function ResultsPage() {
@@ -203,8 +307,10 @@ export default function ResultsPage() {
       const valgus = r.knee_valgus_angle_array || [];
       const tilt = r.pelvic_tilt_array || [];
       const dorsi = r.ankle_dorsiflexion_array || [];
+      const trunk = r.trunk_sway_array || [];
+      const shoulder = r.shoulder_tilt_array || [];
       
-      const len = Math.max(left.length, right.length, valgus.length, tilt.length, dorsi.length);
+      const len = Math.max(left.length, right.length, valgus.length, tilt.length, dorsi.length, trunk.length, shoulder.length);
       if (len === 0) return [];
       return Array.from({ length: len }, (_, i) => ({
          pct: Math.round((i / (len - 1)) * 100),
@@ -213,6 +319,8 @@ export default function ResultsPage() {
          valgus: valgus[i] ?? null,
          pelvicTilt: tilt[i] ?? null,
          dorsiflexion: dorsi[i] ?? null,
+         trunkSway: trunk[i] ?? null,
+         shoulderTilt: shoulder[i] ?? null,
       }));
    }, [job?.results]);
 
@@ -611,6 +719,12 @@ export default function ResultsPage() {
         
         {/* Orthopedic Graphs */}
         <OrthopedicGraphArea chartData={chartData} />
+
+        {/* Neuromuscular Summary */}
+        <NeuromuscularSummaryCard result={firstResult} />
+
+        {/* Neuromuscular Graphs */}
+        <NeuromuscularGraphArea chartData={chartData} />
 
             {/* AI Clinical Summary Card */}
             <div className="bg-white dark:bg-[#18181b] rounded-xl shadow-sm border border-gray-100 dark:border-[#27272a] overflow-hidden no-print">
