@@ -21,11 +21,9 @@ export default function LandingPage() {
         .landing-page {
           --lp-primary: #3c83f6;
           --lp-accent: #06b6d4;
-          --bg-dark: #0a0a1a;
-          --surface: #121226;
           font-family: 'Space Grotesk', sans-serif;
-          background: var(--bg-dark);
-          color: #e2e8f0;
+          background: hsl(var(--background));
+          color: hsl(var(--foreground));
           overflow-x: hidden;
         }
 
@@ -38,12 +36,12 @@ export default function LandingPage() {
           box-shadow: 0 4px 30px rgba(0,0,0,0.1);
         }
 
-        /* Grid Background */
+        /* Grid Background (Light Mode Optimized) */
         .grid-bg {
           background-size: 50px 50px;
           background-image:
-            linear-gradient(to right, rgba(60,131,246,0.05) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(60,131,246,0.05) 1px, transparent 1px);
+            linear-gradient(to right, rgba(60,131,246,0.1) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(60,131,246,0.1) 1px, transparent 1px);
         }
 
         /* Neon Text Glow */
@@ -101,6 +99,22 @@ export default function LandingPage() {
         .feature-card.cyan:hover { border-color: rgba(6,182,212,0.5); }
         .feature-card.purple:hover { border-color: rgba(168,85,247,0.5); }
 
+        /* Theme-aware Hero Visuals */
+        .landing-page {
+          --hero-img-blend: multiply;
+          --hero-img-filter: contrast(1.1) brightness(0.9);
+          --hero-img-opacity: 0.8;
+          --hero-container-bg: linear-gradient(to bottom, rgba(60,131,246,0.05), rgba(255,255,255,0.8));
+          --hero-dot-shadow: 0 0 10px rgba(60,131,246,0.3);
+        }
+
+        .dark .landing-page {
+          --hero-img-blend: screen;
+          --hero-img-filter: contrast(1.5) brightness(1.5) hue-rotate(180deg);
+          --hero-img-opacity: 0.6;
+          --hero-container-bg: linear-gradient(to bottom, rgba(60,131,246,0.05), transparent);
+          --hero-dot-shadow: 0 0 15px #06b6d4;
+        }
         /* Step circle */
         .step-circle {
           transition: all 0.3s;
@@ -174,7 +188,7 @@ export default function LandingPage() {
                   Pediatric Gait Screening
                 </h1>
 
-                <p style={{ fontSize:18, color:'#94a3b8', maxWidth:560, lineHeight:1.7 }}>
+                <p style={{ fontSize:18, color:'hsl(var(--muted-foreground))', maxWidth:560, lineHeight:1.7 }}>
                   Transform video into precise clinical biomechanics. Next-generation MediaPipe analysis providing knee flexion, stride length, and posture data in seconds.
                 </p>
 
@@ -189,7 +203,7 @@ export default function LandingPage() {
                   </button>
                   <button
                     className="glass-card"
-                    style={{ display:'flex', alignItems:'center', justifyContent:'center', height:56, padding:'0 32px', borderRadius:12, color:'white', fontWeight:500, border:'1px solid rgba(255,255,255,0.1)', cursor:'pointer', background:'transparent', gap:8 }}
+                    style={{ display:'flex', alignItems:'center', justifyContent:'center', height:56, padding:'0 32px', borderRadius:12, color:'hsl(var(--foreground))', fontWeight:500, border:'1px solid rgba(60,131,246,0.2)', cursor:'pointer', background:'transparent', gap:8 }}
                   >
                     <span className="material-symbols-outlined">play_circle</span>
                     View Demo
@@ -208,17 +222,24 @@ export default function LandingPage() {
               <div style={{ position:'relative', height:500, display:'flex', alignItems:'center', justifyContent:'center' }}>
                 <div style={{ position:'absolute', inset:0, background:'radial-gradient(circle, rgba(60,131,246,0.1), transparent)', opacity:0.5 }} />
                 <div className="animate-float" style={{ position:'relative', width:'100%', height:'100%', maxWidth:400, margin:'0 auto' }}>
-                  <div style={{ position:'absolute', inset:0, borderRadius:24, border:'1px solid rgba(60,131,246,0.2)', background:'linear-gradient(to bottom, rgba(60,131,246,0.05), transparent)', backdropFilter:'blur(4px)', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                  <div style={{ position:'absolute', inset:0, borderRadius:24, border:'1px solid rgba(60,131,246,0.2)', background:'var(--hero-container-bg)', backdropFilter:'blur(4px)', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 20px 40px rgba(0,0,0,0.05)' }}>
                     <img
-                      alt="Holographic wireframe of human anatomy for gait analysis"
+                      alt="Anatomical human anatomy for gait analysis"
                       src="https://lh3.googleusercontent.com/aida-public/AB6AXuB__HF1uc0hZDtOmto4JYnERcb1O1nQJXCtTu6KrqOiEwYKVyyNCXN_otOd-4k7hzaE4AAu0jjN02VjrY6DieOBDdxJG5GG_NZ3dvFX-89TwUFy0MyGf-yaSbxFsqVuxuLlQ1zqBl4xRNSVqihY_Rx7t_Cm-qhK0BVOqUHOMTCb7wbMS2LMossNrB23dhXyd2J8g9_cAXrUVavvnP_1l_xPmD5qcDwUnumciJ8WIZ8J_lZKHQSoxVqM7ZBNfMgnDStEp3Jxi00VulS0"
-                      style={{ objectFit:'cover', opacity:0.6, mixBlendMode:'screen', height:'80%', width:'auto', filter:'contrast(1.5) brightness(1.5) hue-rotate(180deg)' }}
+                      style={{ 
+                        objectFit:'cover', 
+                        opacity:'var(--hero-img-opacity)', 
+                        mixBlendMode:'var(--hero-img-blend)' as any, 
+                        height:'85%', 
+                        width:'auto', 
+                        filter:'var(--hero-img-filter)' 
+                      }}
                     />
                     {/* Glowing joints */}
-                    <div style={{ position:'absolute', top:'25%', left:'25%', width:12, height:12, background:'#06b6d4', borderRadius:'50%', boxShadow:'0 0 15px #06b6d4', animation:'pulse-glow 2s infinite' }} />
-                    <div style={{ position:'absolute', top:'25%', right:'25%', width:12, height:12, background:'#06b6d4', borderRadius:'50%', boxShadow:'0 0 15px #06b6d4', animation:'pulse-glow 2s 0.3s infinite' }} />
-                    <div style={{ position:'absolute', bottom:'33%', left:'33%', width:12, height:12, background:'#3c83f6', borderRadius:'50%', boxShadow:'0 0 15px #3c83f6', animation:'pulse-glow 2s 0.6s infinite' }} />
-                    <div style={{ position:'absolute', bottom:'33%', right:'33%', width:12, height:12, background:'#3c83f6', borderRadius:'50%', boxShadow:'0 0 15px #3c83f6', animation:'pulse-glow 2s 0.9s infinite' }} />
+                    <div style={{ position:'absolute', top:'25%', left:'25%', width:12, height:12, background:'#06b6d4', borderRadius:'50%', boxShadow:'var(--hero-dot-shadow)', animation:'pulse-glow 2s infinite' }} />
+                    <div style={{ position:'absolute', top:'25%', right:'25%', width:12, height:12, background:'#06b6d4', borderRadius:'50%', boxShadow:'var(--hero-dot-shadow)', animation:'pulse-glow 2s 0.3s infinite' }} />
+                    <div style={{ position:'absolute', bottom:'33%', left:'33%', width:12, height:12, background:'#3c83f6', borderRadius:'50%', boxShadow:'var(--hero-dot-shadow)', animation:'pulse-glow 2s 0.6s infinite' }} />
+                    <div style={{ position:'absolute', bottom:'33%', right:'33%', width:12, height:12, background:'#3c83f6', borderRadius:'50%', boxShadow:'var(--hero-dot-shadow)', animation:'pulse-glow 2s 0.9s infinite' }} />
                     {/* Connecting Lines */}
                     <svg style={{ position:'absolute', inset:0, width:'100%', height:'100%', pointerEvents:'none', stroke:'rgba(6,182,212,0.4)', strokeWidth:1 }}>
                       <line x1="25%" y1="25%" x2="75%" y2="25%" />
@@ -249,8 +270,8 @@ export default function LandingPage() {
                   { value: 'HIPAA', label: 'Compliant Ready' },
                 ].map(stat => (
                   <div key={stat.label} className="glass-card stat-card" style={{ padding:24, borderRadius:12, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', textAlign:'center', gap:8 }}>
-                    <span className="stat-value" style={{ fontSize:30, fontWeight:700, color:'white', transition:'all 0.3s' }}>{stat.value}</span>
-                    <span style={{ fontSize:14, color:'#94a3b8', fontWeight:500 }}>{stat.label}</span>
+                    <span className="stat-value" style={{ fontSize:30, fontWeight:700, color:'hsl(var(--foreground))', transition:'all 0.3s' }}>{stat.value}</span>
+                    <span style={{ fontSize:14, color:'hsl(var(--muted-foreground))', fontWeight:500 }}>{stat.label}</span>
                   </div>
                 ))}
               </div>
@@ -270,24 +291,24 @@ export default function LandingPage() {
                   <div style={{ width:56, height:56, borderRadius:12, background:'rgba(60,131,246,0.1)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:24 }}>
                     <span className="material-symbols-outlined icon-hover" style={{ color:'#3c83f6', fontSize:30 }}>videocam</span>
                   </div>
-                  <h3 style={{ fontSize:20, fontWeight:700, color:'white', marginBottom:12 }}>AI Video Analysis</h3>
-                  <p style={{ color:'#94a3b8', lineHeight:1.7 }}>Automated joint tracking using computer vision. Upload standard video from any device and get mocap-quality data instantly.</p>
+                  <h3 style={{ fontSize:20, fontWeight:700, color:'hsl(var(--foreground))', marginBottom:12 }}>AI Video Analysis</h3>
+                  <p style={{ color:'hsl(var(--muted-foreground))', lineHeight:1.7 }}>Automated joint tracking using computer vision. Upload standard video from any device and get mocap-quality data instantly.</p>
                 </div>
                 {/* Feature 2 */}
                 <div className="glass-card feature-card cyan" style={{ padding:32, borderRadius:16, position:'relative' }}>
                   <div style={{ width:56, height:56, borderRadius:12, background:'rgba(6,182,212,0.1)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:24 }}>
                     <span className="material-symbols-outlined icon-hover" style={{ color:'#06b6d4', fontSize:30 }}>monitoring</span>
                   </div>
-                  <h3 style={{ fontSize:20, fontWeight:700, color:'white', marginBottom:12 }}>Clinical Metrics</h3>
-                  <p style={{ color:'#94a3b8', lineHeight:1.7 }}>Detailed knee flexion, cadence, & stride length data visualized in interactive charts for immediate clinical assessment.</p>
+                  <h3 style={{ fontSize:20, fontWeight:700, color:'hsl(var(--foreground))', marginBottom:12 }}>Clinical Metrics</h3>
+                  <p style={{ color:'hsl(var(--muted-foreground))', lineHeight:1.7 }}>Detailed knee flexion, cadence, & stride length data visualized in interactive charts for immediate clinical assessment.</p>
                 </div>
                 {/* Feature 3 */}
                 <div className="glass-card feature-card purple" style={{ padding:32, borderRadius:16 }}>
                   <div style={{ width:56, height:56, borderRadius:12, background:'rgba(168,85,247,0.1)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:24 }}>
                     <span className="material-symbols-outlined icon-hover" style={{ color:'#a78bfa', fontSize:30 }}>neurology</span>
                   </div>
-                  <h3 style={{ fontSize:20, fontWeight:700, color:'white', marginBottom:12 }}>AI Clinical Summary</h3>
-                  <p style={{ color:'#94a3b8', lineHeight:1.7 }}>LLM-generated patient reports and insights. Our models synthesize data into readable summaries for patient records.</p>
+                  <h3 style={{ fontSize:20, fontWeight:700, color:'hsl(var(--foreground))', marginBottom:12 }}>AI Clinical Summary</h3>
+                  <p style={{ color:'hsl(var(--muted-foreground))', lineHeight:1.7 }}>LLM-generated patient reports and insights. Our models synthesize data into readable summaries for patient records.</p>
                 </div>
               </div>
             </div>
@@ -319,8 +340,8 @@ export default function LandingPage() {
                       </div>
                       <div className={`glass-card ${step.cardClass}`} style={{ padding:24, borderRadius:12, transition:'background 0.3s' }}>
                         <span className="material-symbols-outlined" style={{ color: step.iconColor, fontSize:30, marginBottom:12, display:'block' }}>{step.icon}</span>
-                        <h3 style={{ fontSize:18, fontWeight:700, color:'white', marginBottom:8 }}>{step.title}</h3>
-                        <p style={{ fontSize:14, color:'#94a3b8' }}>{step.desc}</p>
+                        <h3 style={{ fontSize:18, fontWeight:700, color:'hsl(var(--foreground))', marginBottom:8 }}>{step.title}</h3>
+                        <p style={{ fontSize:14, color:'hsl(var(--muted-foreground))' }}>{step.desc}</p>
                       </div>
                     </div>
                   ))}
@@ -333,17 +354,17 @@ export default function LandingPage() {
           <section style={{ padding:'80px 24px', position:'relative', overflow:'hidden' }}>
             <div style={{ position:'absolute', inset:0, background:'rgba(60,131,246,0.03)' }} />
             <div style={{ position:'absolute', top:'-50%', left:'50%', transform:'translateX(-50%)', width:'100%', maxWidth:800, height:500, background:'rgba(60,131,246,0.15)', filter:'blur(150px)', borderRadius:'50%' }} />
-            <div className="glass-card" style={{ maxWidth:896, margin:'0 auto', textAlign:'center', position:'relative', zIndex:10, padding:48, borderRadius:24, border:'1px solid rgba(255,255,255,0.1)', boxShadow:'0 25px 50px rgba(60,131,246,0.1)' }}>
-              <h2 style={{ fontSize:'clamp(1.75rem, 4vw, 3rem)', fontWeight:700, marginBottom:24, color:'white' }}>Ready to modernize your pediatric analysis?</h2>
-              <p style={{ fontSize:20, color:'#cbd5e1', marginBottom:32, maxWidth:640, margin:'0 auto 32px' }}>Join the leading clinics using Pedi-Growth for faster, more accurate gait assessments.</p>
+            <div className="glass-card" style={{ maxWidth:896, margin:'0 auto', textAlign:'center', position:'relative', zIndex:10, padding:48, borderRadius:24, border:'1px solid rgba(60,131,246,0.2)', boxShadow:'0 25px 50px rgba(60,131,246,0.05)' }}>
+              <h2 style={{ fontSize:'clamp(1.75rem, 4vw, 3rem)', fontWeight:700, marginBottom:24, color:'hsl(var(--foreground))' }}>Ready to modernize your pediatric analysis?</h2>
+              <p style={{ fontSize:20, color:'hsl(var(--muted-foreground))', marginBottom:32, maxWidth:640, margin:'0 auto 32px' }}>Join the leading clinics using Pedi-Growth for faster, more accurate gait assessments.</p>
               <div style={{ display:'flex', gap:16, justifyContent:'center', flexWrap:'wrap' }}>
                 <button
                   onClick={goToDashboard}
-                  style={{ height:56, padding:'0 32px', borderRadius:12, background:'#3c83f6', color:'white', fontWeight:700, fontSize:18, border:'none', cursor:'pointer', boxShadow:'0 0 20px rgba(60,131,246,0.4)', transition:'all 0.3s' }}
+                  style={{ height:56, padding:'0 32px', borderRadius:12, background:'#3c83f6', color:'white', fontWeight:700, fontSize:18, border:'none', cursor:'pointer', boxShadow:'0 0 20px rgba(60,131,246,0.3)', transition:'all 0.3s' }}
                 >
                   Get Started Now
                 </button>
-                <button style={{ height:56, padding:'0 32px', borderRadius:12, background:'transparent', border:'1px solid rgba(255,255,255,0.2)', color:'white', fontWeight:500, cursor:'pointer', transition:'all 0.3s' }}>
+                <button style={{ height:56, padding:'0 32px', borderRadius:12, background:'transparent', border:'1px solid rgba(60,131,246,0.3)', color:'hsl(var(--foreground))', fontWeight:500, cursor:'pointer', transition:'all 0.3s' }}>
                   Schedule Demo
                 </button>
               </div>
@@ -352,23 +373,23 @@ export default function LandingPage() {
         </main>
 
         {/* ===== FOOTER ===== */}
-        <footer style={{ borderTop:'1px solid rgba(255,255,255,0.05)', background:'var(--bg-dark)', padding:'48px 24px', position:'relative', zIndex:10 }}>
+        <footer style={{ borderTop:'1px solid rgba(60,131,246,0.1)', background:'hsl(var(--background))', padding:'48px 24px', position:'relative', zIndex:10 }}>
           <div style={{ maxWidth:1280, margin:'0 auto' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:24, marginBottom:32, flexWrap:'wrap' }}>
               <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                 <div style={{ width:32, height:32, background:'linear-gradient(135deg, #3c83f6, #06b6d4)', borderRadius:4, display:'flex', alignItems:'center', justifyContent:'center' }}>
                   <span className="material-symbols-outlined" style={{ color:'white', fontSize:18 }}>accessibility_new</span>
                 </div>
-                <span style={{ fontSize:18, fontWeight:700, letterSpacing:'-0.025em', color:'white' }}>Pedi-Growth</span>
+                <span style={{ fontSize:18, fontWeight:700, letterSpacing:'-0.025em', color:'hsl(var(--foreground))' }}>Pedi-Growth</span>
               </div>
-              <div style={{ display:'flex', gap:32, fontSize:14, color:'#94a3b8' }}>
+              <div style={{ display:'flex', gap:32, fontSize:14, color:'hsl(var(--muted-foreground))' }}>
                 <a href="#" style={{ color:'inherit', textDecoration:'none' }}>Privacy Policy</a>
                 <a href="#" style={{ color:'inherit', textDecoration:'none' }}>Terms of Service</a>
                 <a href="#" style={{ color:'inherit', textDecoration:'none' }}>HIPAA Compliance</a>
                 <a href="#" style={{ color:'inherit', textDecoration:'none' }}>Contact Support</a>
               </div>
             </div>
-            <div style={{ fontSize:12, color:'#475569' }}>
+            <div style={{ fontSize:12, color:'hsl(var(--muted-foreground))', opacity:0.8 }}>
               © {new Date().getFullYear()} Pedi-Growth Inc. All rights reserved.
             </div>
           </div>

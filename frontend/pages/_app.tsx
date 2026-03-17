@@ -8,7 +8,7 @@ import { NavBar } from '@/src/components/ui/tubelight-navbar';
 const navItems = [
   { name: 'Home', url: '/', icon: Home },
   { name: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-  { name: 'About', url: '#', icon: User },
+  { name: 'About', url: '/about', icon: User },
 ];
 
 /**
@@ -25,22 +25,16 @@ function useRouteTheme() {
   useLayoutEffect(() => {
     const html = document.documentElement;
 
-    // Disable body transition so the theme swap is instant, not animated
     document.body.style.transition = 'none';
 
-    if (router.pathname === '/') {
+    // Default to 'light' everywhere unless user prefers 'dark'
+    const stored = localStorage.getItem('pedigrowth-theme');
+    if (stored === 'dark') {
       html.classList.add('dark');
     } else {
-      const stored = localStorage.getItem('pedigrowth-theme');
-      if (stored === 'dark') {
-        html.classList.add('dark');
-      } else {
-        html.classList.remove('dark');
-      }
+      html.classList.remove('dark');
     }
 
-    // Force a reflow so the browser applies the class change immediately,
-    // then re-enable transitions for any user-initiated dark mode toggle
     void document.body.offsetHeight;
     document.body.style.transition = '';
   }, [router.pathname]);
