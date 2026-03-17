@@ -3,7 +3,8 @@ import { useRouter } from 'next/router';
 import { Layout } from '../../src/components/Layout';
 import { VisualLocalization } from '../../src/components/VisualLocalization';
 import { getJob, getAISummary } from '../../src/services/api';
-import type { Job, AISummary, Result } from '../../src/types';
+import { DiagnosisBanner } from '../../src/components/DiagnosisBanner';
+import type { Job, AISummary, Result, DiagnosisType } from '../../src/types';
 import Head from 'next/head';
 import {
    LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -360,29 +361,12 @@ export default function ResultsPage() {
    const resultsList = Array.isArray(job.results) ? job.results : [job.results];
    const firstResult = resultsList[0];
 
-   // Extract Orthopedic Feature Arrays safely for child components
-   const valgusArray = firstResult?.knee_valgus_angle_array || [];
-   const pelvicTiltArray = firstResult?.pelvic_tilt_array || [];
-   const footProgressionArray = firstResult?.foot_progression_angle_array || [];
-   const dorsiflexionArray = firstResult?.ankle_dorsiflexion_array || [];
-
-   // Calculate scores and determine risk based on symmetry index
-   const rawScore = firstResult?.symmetry_index
+   const diagnosis = firstResult?.diagnosis || 'normal';
+   const isHighRisk = firstResult?.is_high_risk || false;
+   const symmetryScore = firstResult?.symmetry_index
       ? Math.max(0, 100 - (Math.abs(1 - firstResult.symmetry_index) * 100))
       : 95;
-   const boundedScore = Math.min(100, Math.round(rawScore));
-   const isHighRisk = boundedScore < 85;
-
-   const statusColor = isHighRisk ? 'bg-danger-500' : 'bg-success-500';
-   const statusLight = isHighRisk ? 'bg-danger-50 dark:bg-danger-900/20' : 'bg-success-50 dark:bg-success-900/20';
-   const statusText = isHighRisk ? 'text-danger-700 dark:text-danger-400' : 'text-success-700 dark:text-success-400';
-   const statusBorder = isHighRisk ? 'border-danger-200 dark:border-danger-800' : 'border-success-200 dark:border-success-800';
-
-   const icon = isHighRisk ? 'warning' : 'check_circle';
-   const title = isHighRisk ? 'High Risk Patterns Detected' : 'Normal Gait Pattern Detected';
-   const statusSummary = isHighRisk
-      ? 'Analysis indicates significant asymmetries and kinematic patterns outside of expected age-matched normative ranges. Clinical review recommended.'
-      : 'Analysis indicates kinematic patterns within expected age-matched normative ranges. No significant asymmetries detected.';
+   const boundedScore = Math.min(100, Math.round(symmetryScore));
 
    return (
       <Layout title={`Analysis Results | ${job.patient_ref}`}>
@@ -420,30 +404,26 @@ export default function ResultsPage() {
             </div>
 
             {/* Status Banner */}
-            <div className={`${statusLight} border ${statusBorder} rounded-xl p-5 sm:p-6 flex flex-col md:flex-row gap-5 items-start md:items-center justify-between`}>
-               <div className="flex items-start sm:items-center gap-4">
-                  <div className={`w-12 h-12 rounded-full ${isHighRisk ? 'bg-danger-100 dark:bg-danger-900/50 text-danger-600' : 'bg-success-100 dark:bg-success-900/50 text-success-600'} flex items-center justify-center shrink-0`}>
-                     <span className="material-icons text-2xl">{icon}</span>
-                  </div>
-                  <div>
-                     <h2 className={`text-lg sm:text-xl font-bold ${statusText} mb-1 flex items-center gap-2`}>
-                        {title}
-                     </h2>
-                     <p className={`text-sm ${isHighRisk ? 'text-danger-600/80 dark:text-danger-400/80' : 'text-success-600/80 dark:text-success-400/80'}`}>
-                        {statusSummary}
-                     </p>
-                  </div>
+            <div className="flex flex-col md:flex-row gap-6 items-start">
+               <div className="flex-1 w-full">
+                  <DiagnosisBanner
+                     diagnosis={diagnosis}
+                     message={job.results.message || (isHighRisk ? 'Clinical review recommended.' : 'Gait patterns within normal limits.')}
+                     confidence={job.results.confidence || 0.95}
+                     symmetryIndex={firstResult.symmetry_index}
+                     detectionRate={firstResult.detection_rate}
+                  />
                </div>
 
-               <div className="flex items-center gap-4 shrink-0 w-full md:w-auto bg-white/50 dark:bg-black/20 p-3 rounded-lg border border-white/20 dark:border-white/5">
-                  <div className="text-right">
-                     <div className="text-xs font-bold uppercase tracking-wider opacity-70 mb-0.5">Symmetry Score</div>
-                     <div className="text-2xl font-bold">{boundedScore}<span className="text-lg opacity-70">%</span></div>
+               <div className="shrink-0 w-full md:w-48 bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col items-center justify-center">
+                  <div className="text-center mb-3">
+                     <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Symmetry Score</div>
+                     <div className="text-3xl font-bold">{boundedScore}<span className="text-lg opacity-70">%</span></div>
                   </div>
-                  <div className="w-16 h-16 relative flex items-center justify-center shrink-0">
+                  <div className="w-24 h-24 relative flex items-center justify-center">
                      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                         <path
-                           className="text-black/5 dark:text-white/5"
+                           className="text-gray-100 dark:text-gray-800"
                            strokeWidth="3"
                            stroke="currentColor"
                            fill="none"
@@ -460,7 +440,7 @@ export default function ResultsPage() {
                            style={{ animation: 'gauge-sweep 1.2s ease-out forwards' }}
                         />
                      </svg>
-                     <div className="absolute inset-0 flex items-center justify-center font-bold text-sm">
+                     <div className="absolute inset-0 flex items-center justify-center font-bold text-base">
                         {boundedScore}
                      </div>
                   </div>

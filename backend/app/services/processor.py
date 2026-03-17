@@ -110,6 +110,7 @@ def process_job_async(job_id: str) -> None:
                 diagnosis=d.result.value,
                 is_high_risk=d.is_high_risk,
                 confidence=d.confidence,
+                message=d.message,
             )
         
         result_svc.create(job_id=job_id, **result_data)

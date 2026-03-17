@@ -41,6 +41,7 @@ export interface Result {
   symmetry_index: number;
   asymmetry_percentage: number;
   diagnosis: DiagnosisType;
+  message: string;
   is_high_risk: boolean;
   confidence: number;
   detection_rate: number;
