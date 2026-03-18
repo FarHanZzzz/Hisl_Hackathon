@@ -219,13 +219,24 @@ async def generate_summary(job_id: str):
                     detail = resp.text[:300]
                     raise HTTPException(status_code=resp.status_code, detail=f"OpenRouter error: {detail}")
 
-                data = resp.json()
-                raw_text = data["choices"][0]["message"]["content"]
+                resp_json = resp.json()
+                
+                # Robustly get content
+                try:
+                    raw_text = resp_json["choices"][0]["message"]["content"]
+                except (KeyError, IndexError, TypeError):
+                    raw_text = None
+                    
+                if not raw_text:
+                    last_error_detail = f"Model {model_id} returned null or empty content"
+                    print(f"DEBUG: AI response choice was empty: {resp_json}")
+                    continue
+                    
                 summary_data = _extract_json(raw_text)
 
                 return AISummaryResponse(
                     overview=summary_data.get("overview", "Summary unavailable."),
-                    what_this_means=summary_data.get("what_this_means", ""),
+                    what_this_means=summary_data.get("what_this_means", "Information currently processing."),
                     key_findings=summary_data.get("key_findings", []),
                     risk_assessment=summary_data.get("risk_assessment", "Assessment unavailable."),
                     recommendations=summary_data.get("recommendations", []),

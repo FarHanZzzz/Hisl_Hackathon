@@ -46,12 +46,19 @@ def process_job_async(job_id: str) -> None:
         from backend.app.engine.scanner import process_video
         from backend.app.schemas import PatientInfo
         
-        # Define progress callback
+        # Define throttled progress callback
+        last_reported_progress = -0.1
+        
         def on_progress(fraction: float):
             """Called by process_video with progress 0.0 → 1.0"""
+            nonlocal last_reported_progress
             try:
-                job_svc.update(job_id, progress=min(fraction, 0.99))
-            except Exception:
+                # Only update database every 5% to avoid rate-limiting
+                if (fraction - last_reported_progress) >= 0.05 or fraction >= 0.99:
+                    job_svc.update(job_id, progress=min(fraction, 0.99))
+                    last_reported_progress = fraction
+            except Exception as e:
+                print(f"DEBUG: Progress update failed: {e}")
                 pass  # Don't fail processing due to progress update errors
         
         # Look up real patient info from the database

@@ -10,58 +10,93 @@ except ImportError:
     HAS_SCIPY = False
 
 
-def interpolate_zeros(data: List[float]) -> List[float]:
+def interpolate_zeros(data: List[float], max_gap: int = 15) -> List[float]:
     """
-    Replace zero values (missed detections) with linearly interpolated values.
-    Must be called BEFORE smoothing or outlier removal.
+    Replace zero values (missed detections) with linearly interpolated values,
+    but ONLY for gaps smaller than max_gap. Large gaps remain zero to avoid 
+    misleading 'flat' segments.
     
     Args:
         data: Raw angle series, zeros indicate missed frames.
+        max_gap: Maximum number of consecutive zeros to interpolate.
     Returns:
-        Angle series with zeros replaced by interpolated values.
+        Angle series with small gaps interpolated.
     """
-    if not data:
+    if not data or len(data) < 2:
         return data
+        
     arr = np.array(data, dtype=float)
     zeros = arr == 0
-    if zeros.all() or not zeros.any():
+    if not zeros.any() or zeros.all():
         return data
-    arr[zeros] = np.interp(
-        np.where(zeros)[0],
-        np.where(~zeros)[0],
-        arr[~zeros]
-    )
-    return arr.tolist()
+
+    # Find indices of non-zero elements
+    valid_indices = np.where(~zeros)[0]
+    
+    # If we have very few points, don't interpolate at all
+    if len(valid_indices) < 2:
+        return data
+
+    # Identify gaps
+    new_arr = arr.copy()
+    for i in range(len(valid_indices) - 1):
+        start_idx = valid_indices[i]
+        end_idx = valid_indices[i+1]
+        gap_size = end_idx - start_idx - 1
+        
+        if 0 < gap_size <= max_gap:
+            # Short gap, safe to interpolate
+            interp_range = np.arange(start_idx + 1, end_idx)
+            new_arr[interp_range] = np.interp(
+                interp_range,
+                [start_idx, end_idx],
+                [arr[start_idx], arr[end_idx]]
+            )
+            
+    return new_arr.tolist()
 
 
 def remove_outliers_iqr(data: List[float], multiplier: float = 1.5) -> List[float]:
     """
-    Remove statistical outliers using IQR method.
+    Remove statistical outliers using IQR method, considering ONLY non-zero values.
     Outlier values are replaced with NaN, then linearly interpolated.
-    
-    Args:
-        data: Angle series (zeros already interpolated).
-        multiplier: IQR multiplier for outlier bounds (default 1.5).
-    Returns:
-        Cleaned angle series.
     """
-    if len(data) < 4:
+    if not data or len(data) < 4:
         return data
+        
     arr = np.array(data, dtype=float)
-    q1, q3 = np.percentile(arr, [25, 75])
+    valid_mask = arr > 0
+    valid_data = arr[valid_mask]
+    
+    if len(valid_data) < 4:
+        return data
+        
+    q1, q3 = np.percentile(valid_data, [25, 75])
     iqr = q3 - q1
     lower = q1 - multiplier * iqr
     upper = q3 + multiplier * iqr
-    outliers = (arr < lower) | (arr > upper)
-    if outliers.any() and not outliers.all():
-        arr[outliers] = np.nan
-        # Interpolate NaN values
+    
+    # Identify outliers only among the valid data
+    outliers_mask = valid_mask & ((arr < lower) | (arr > upper))
+    
+    if outliers_mask.any():
+        arr[outliers_mask] = np.nan
+        # Interpolate NaN values using remaining valid data
         nans = np.isnan(arr)
-        arr[nans] = np.interp(
-            np.where(nans)[0],
-            np.where(~nans)[0],
-            arr[~nans]
-        )
+        if not nans.all():
+            arr[nans] = np.interp(
+                np.where(nans)[0],
+                np.where(~nans & valid_mask)[0],
+                arr[~nans & valid_mask]
+            )
+            # Ensure we don't accidentally fill the original zeros that were not outliers
+            # Wait, if we interpolate NaN, we might fill the whole array if we are not careful.
+            # Actually, we ONLY want to fill the specific points that WERE outliers.
+            # So we should only update arr where outliers_mask was True.
+            arr_with_fixed_outliers = np.array(data, dtype=float)
+            arr_with_fixed_outliers[outliers_mask] = arr[outliers_mask]
+            return arr_with_fixed_outliers.tolist()
+            
     return arr.tolist()
 
 
@@ -106,28 +141,47 @@ def savitzky_golay(data: List[float], window: int = 7, order: int = 3) -> List[f
 
 def smooth_angles(data: List[float], method: str = "savgol") -> List[float]:
     """
-    Full smoothing pipeline: interpolate zeros → remove outliers → smooth.
-    This is the main entry point for the smoothing module.
-    
-    Args:
-        data: Raw angle series from GaitScanner.
-        method: "savgol" (default) or "moving_avg".
-    Returns:
-        Cleaned and smoothed angle series.
+    Full smoothing pipeline: interpolate small gaps → remove outliers → segment-wise smoothing.
+    Processing segments individually prevents 'ringing' artifacts at detection boundaries.
     """
     if not data or len(data) < 3:
         return data
     
-    # Step 1: Replace zeros with interpolated values
-    result = interpolate_zeros(data)
+    # Step 1: Replace small gaps of zeros with interpolated values
+    # Large gaps remain zero to mark detection breaks.
+    data_interp = interpolate_zeros(data)
     
-    # Step 2: Remove statistical outliers
-    result = remove_outliers_iqr(result)
+    # Step 2: Remove statistical outliers (ignores zeros)
+    data_cleaned = remove_outliers_iqr(data_interp)
     
-    # Step 3: Apply smoothing filter
-    if method == "savgol":
-        result = savitzky_golay(result)
-    else:
-        result = moving_average(result)
+    # Step 3: Segment-wise smoothing
+    arr = np.array(data_cleaned, dtype=float)
+    zeros = arr == 0
+    if zeros.all():
+        return data_cleaned
+        
+    final_output = np.zeros_like(arr)
     
-    return result
+    # Identify contiguous non-zero segments
+    is_data = ~zeros
+    # Find transitions
+    diff = np.diff(is_data.astype(int), prepend=0, append=0)
+    starts = np.where(diff == 1)[0]
+    ends = np.where(diff == -1)[0]
+    
+    for start, end in zip(starts, ends):
+        segment = arr[start:end].tolist()
+        if len(segment) < 3:
+            # Too short to smooth, just copy
+            final_output[start:end] = segment
+            continue
+            
+        # Smooth this specific segment
+        if method == "savgol":
+            smoothed_segment = savitzky_golay(segment)
+        else:
+            smoothed_segment = moving_average(segment)
+            
+        final_output[start:end] = smoothed_segment
+        
+    return final_output.tolist()

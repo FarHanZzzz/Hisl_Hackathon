@@ -84,7 +84,7 @@ class GaitScanner:
         )
         self.landmarker = vision.PoseLandmarker.create_from_options(options)
 
-    def process_frame(self, image: np.ndarray) -> Tuple[np.ndarray, Tuple[float, float]]:
+    def process_frame(self, image: np.ndarray) -> Tuple[np.ndarray, Tuple[float, float], Tuple[float, float], float, Tuple[float, float], Tuple[float, float], float, float]:
         """
         Process a single frame to detect pose and calculate knee angles.
 

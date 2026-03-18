@@ -17,18 +17,20 @@ MIN_DETECTION_RATE = 50.0 # Below this = insufficient data
 def calculate_rom(angles: List[float]) -> float:
     """
     Calculate Range of Motion = max - min angle.
+    A valid ROM requires a minimum number of detected points to be credible.
     
     Args:
         angles: Smoothed angle series for one leg.
     Returns:
         ROM in degrees. Returns 0.0 if insufficient data.
     """
-    if not angles or len(angles) < 2:
+    if not angles or len(angles) < 5:
         return 0.0
     valid = [a for a in angles if a > 0]
-    if not valid:
+    # We need at least some variety in data to call it a 'Range of Motion'
+    if len(valid) < 5:
         return 0.0
-    return max(valid) - min(valid)
+    return round(max(valid) - min(valid), 2)
 
 
 def calculate_symmetry_index(rom_left: float, rom_right: float) -> float:
