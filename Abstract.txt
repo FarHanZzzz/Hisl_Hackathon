@@ -1,0 +1,19 @@
+ABSTRACT
+========
+Pedi-Growth: AI-Powered Pediatric Gait Analysis System
+
+
+Cerebral Palsy (CP), Muscular Dystrophy, and other developmental motor disorders collectively form the leading cause of childhood physical disability worldwide, affecting millions of children - disproportionately in low- and middle-income countries where diagnostic resources are scarce. Early detection of gait abnormalities is critical for initiating timely intervention, yet traditional instrumented gait analysis requires expensive motion capture systems, force plates, and trained specialists - infrastructure rarely available in primary care or community health settings.
+
+This paper presents Pedi-Growth, an open-source, AI-powered pediatric gait analysis system that transforms any standard smartphone camera into a clinical screening instrument. The system uses Google's MediaPipe Pose Landmarker - a state-of-the-art markerless pose estimation model - to extract 33 body landmarks per frame from walking videos of children aged 0-18 years. From these landmarks, the system automatically computes bilateral knee flexion angles at each frame, applies robust signal processing (zero interpolation, Interquartile Range outlier removal, and Savitzky-Golay smoothing), and derives clinically meaningful biomechanical metrics including Range of Motion (ROM), Symmetry Index (SI = ROM_left / ROM_right), and Asymmetry Percentage.
+
+The system employs a full-stack architecture consisting of a Python FastAPI backend for computer vision processing and a Next.js React frontend for real-time visualization. Video processing is performed entirely on-device, ensuring patient privacy through local computation and automatic face blurring. The asynchronous processing pipeline handles heavy computational loads without blocking the user interface, providing real-time progress feedback. Analysis results are presented through an interactive dashboard featuring bilateral knee angle charts, risk classification banners, visual body localization diagrams, and AI-generated clinical summaries powered by Large Language Models (LLMs) via the OpenRouter API.
+
+Diagnostic classification follows evidence-based pediatric thresholds: a Symmetry Index outside the 0.85-1.15 range or an Asymmetry Percentage >=15% triggers a High Risk classification, prompting referral for specialist evaluation. A minimum detection rate of 50% is enforced to ensure diagnostic confidence, with cases falling below this threshold categorized as Insufficient Data rather than producing unreliable results.
+
+The platform further extends its screening capabilities to neuromuscular conditions including Duchenne Muscular Dystrophy (DMD) and Early-Onset Scoliosis through Postural Asymmetry Vector analysis and DMD-specific gait pattern recognition derived from the same MediaPipe pose estimation pipeline. This multi-condition screening approach maximizes the clinical utility of a single video recording.
+
+Pedi-Growth is designed as a triage and screening tool - not a replacement for clinical diagnosis - intended to bridge the gap between community-level health services and specialized pediatric care. By lowering the barrier to entry for gait analysis from expensive laboratory equipment to a smartphone and an internet connection, the system enables community health workers, pediatricians, and parents to perform preliminary screenings that identify children who would most benefit from specialist referral. The local-first architecture, privacy-preserving design, and open-source nature of the project make it particularly suited for deployment in resource-constrained healthcare settings across developing nations.
+
+
+Keywords: Pediatric Gait Analysis, Computer Vision, MediaPipe, Cerebral Palsy Screening, Markerless Motion Capture, Symmetry Index, Range of Motion, AI Clinical Summary, Assistive Technology, Low-Resource Healthcare, Open Source
