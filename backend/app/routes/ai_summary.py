@@ -7,7 +7,6 @@ metrics and produce a structured, human-readable clinical summary.
 import json
 import re
 import httpx
-import httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List

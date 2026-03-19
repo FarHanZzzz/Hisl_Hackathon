@@ -57,3 +57,10 @@ uploads/
 # =========================
 .DS_Store
 Thumbs.db
+
+# =========================
+# Debug / Test artifacts
+# =========================
+jobs.json
+git_out.txt
+*.json.test

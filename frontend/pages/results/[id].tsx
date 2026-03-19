@@ -571,8 +571,9 @@ export default function ResultsPage() {
                               className="w-full h-full object-contain bg-black"
                               crossOrigin="anonymous"
                               onError={() => setVideoError(true)}
+                              preload="metadata"
                            >
-                              <source src={videoUrl} type={videoUrl.endsWith('.webm') ? 'video/webm' : 'video/mp4'} />
+                              <source src={`${videoUrl}#t=0.001`} type={videoUrl.endsWith('.webm') ? 'video/webm' : 'video/mp4'} />
                            </video>
                         ) : (
                            <div className="flex flex-col items-center gap-3 text-gray-400">
@@ -707,7 +708,7 @@ export default function ResultsPage() {
         <NeuromuscularGraphArea chartData={chartData} />
 
             {/* AI Clinical Summary Card */}
-            <div className="bg-white dark:bg-[#18181b] rounded-xl shadow-sm border border-gray-100 dark:border-[#27272a] overflow-hidden no-print">
+            <div className="bg-white dark:bg-[#18181b] rounded-xl shadow-sm border border-gray-100 dark:border-[#27272a] overflow-hidden">
                {/* Header */}
                <div className="px-6 py-4 border-b border-gray-100 dark:border-[#27272a] flex justify-between items-center bg-gray-50/50 dark:bg-[#18181b]">
                   <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2.5 text-base">
