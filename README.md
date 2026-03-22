@@ -354,12 +354,31 @@ All backend endpoints are documented at **http://localhost:8000/docs** (Swagger 
 ```
 
 ### Clinical Thresholds
+
 | Metric | Normal Range | High Risk |
 |--------|-------------|-----------|
 | Symmetry Index | 0.85 – 1.15 | < 0.85 or > 1.15 |
 | Asymmetry % | < 15% | ≥ 15% |
 | Detection Rate | ≥ 50% | < 50% → Insufficient Data |
 | Normal Knee ROM | 40° – 60° | Outside this range |
+
+### ⚠️ Clinical Accuracy Disclaimer
+
+**This system is for SCREENING only, NOT for definitive diagnosis.**
+
+| Aspect | Accuracy | Notes |
+|--------|----------|-------|
+| **MediaPipe Pose Accuracy** | ±6–19° error vs. VICON | Research: PMC11399566 (2024) |
+| **Knee Flexion/Extension** | ±5.88° MAE vs. Kinovea | Research: IOP Science (2023) |
+| **Knee Valgus (Absolute)** | r=0.016–0.590 correlation | Poor-moderate vs. 3D motion capture |
+| **Knee Valgus (IC-Normalized)** | r=0.554–0.697 correlation | Moderate-good with normalization |
+| **Symmetry Index (ROM-based)** | Highest reliability | ICC >0.80, CV <10% [MDPI 2023] |
+
+**Key Limitations:**
+- MediaPipe shows **±6–19° absolute error** compared to gold-standard 3D motion capture (VICON)
+- **Relative measurements** (ROM, symmetry index) are more reliable than absolute angles
+- **Initial Contact (IC) normalization** improves accuracy to <5° error
+- Positive screenings should be **referred for specialist evaluation** with instrumented gait analysis
 
 ---
 

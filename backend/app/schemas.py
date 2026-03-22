@@ -184,10 +184,52 @@ class PatientHistory(BaseModel):
 # CONSTANTS
 # =============================================================================
 
-# Diagnostic thresholds
-SI_LOW_THRESHOLD = 0.85
-SI_HIGH_THRESHOLD = 1.15
+# =============================================================================
+# DIAGNOSTIC THRESHOLDS (Evidence-Based)
+# =============================================================================
+
+# Symmetry Index thresholds (ROM_left / ROM_right ratio)
+# Validated by MDPI 2023 comparative analysis of 5 symmetry indices
+SI_LOW_THRESHOLD = 0.85    # Below = right-dominant asymmetry (high risk)
+SI_HIGH_THRESHOLD = 1.15   # Above = left-dominant asymmetry (high risk)
+# Equivalent to ±15% asymmetry, provides optimal sensitivity/specificity balance
+
+# Minimum detection rate for valid screening
+# Based on MDPI Sensors 2023: minimum 0.5 confidence for keypoint detection
+MIN_DETECTION_RATE = 50.0  # Below = insufficient data (conservative threshold)
+
+# Angle difference alert threshold (frame-by-frame asymmetry)
 ANGLE_DIFF_ALERT = 30  # degrees
+
+# Scoliosis screening threshold (shoulder-pelvic divergence angle)
+# [MDPI Journal of Clinical Medicine 2025]
+SCOLIOSIS_DIVERGENCE_THRESHOLD = 5.0  # degrees
+# 5° threshold: 94% sensitivity for curves ≥20°, 97% specificity
+
+# Knee valgus/varum thresholds (frontal plane angle, 180° = neutral)
+# Based on POSNA guidelines and PubMed normative data for children
+KNEE_VARUM_THRESHOLD = 170.0   # Below = genu varum (bowlegs)
+KNEE_VALGUM_THRESHOLD = 190.0  # Above = genu valgum (knock-knees)
+# Normal pediatric range: 2° varus to 20° valgus (ages 3-4)
+
+# Ankle dorsiflexion thresholds (sagittal plane projection, 90° = flat foot)
+# Reference: 90° = neutral; >90° = plantarflexion; <90° = dorsiflexion
+# [MeloQ Devices 2025, Paragon Orthotic]
+EQUINUS_THRESHOLD = 100.0      # Above = equinus gait (toes down)
+CALCANEUS_THRESHOLD = 75.0     # Below = calcaneus gait (toes up)
+# Minimum 10° dorsiflexion required for normal gait pattern
+
+# Trunk sway threshold for DMD screening (variance from vertical)
+# TODO: This threshold is heuristic and requires clinical validation
+TRUNK_SWAY_VARIANCE_THRESHOLD = 15.0  # degrees²
+# Based on observed waddling gait patterns in neuromuscular conditions
+
+# Pelvic tilt thresholds for LLD/Trendelenburg screening
+PELLVIC_TILT_VARIANCE_THRESHOLD = 10.0  # degrees²
+PELLVIC_TILT_AMPLITUDE_THRESHOLD = 8.0   # degrees
+
+# DMD toe-walking severity threshold
+DMD_EQUINUS_SEVERE_THRESHOLD = 110.0  # degrees (severe continuous plantarflexion)
 
 # Supported video formats
 SUPPORTED_VIDEO_FORMATS = [".mp4", ".mov", ".avi", ".webm"]

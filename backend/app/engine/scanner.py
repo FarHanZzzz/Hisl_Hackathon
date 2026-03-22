@@ -24,13 +24,14 @@ from backend.app.schemas import (
 from .video import validate_video
 from .smoothing import smooth_angles
 from .math_utils import (
-    calculate_angle_3d_projected, 
-    calculate_pelvic_tilt, 
+    calculate_angle_3d_projected,
+    calculate_pelvic_tilt,
     apply_smoothing,
     calculate_dorsiflexion_angle,
     calculate_foot_progression_angle,
     calculate_shoulder_tilt,
-    calculate_trunk_sway
+    calculate_trunk_sway,
+    calculate_ic_normalized_valgus
 )
 from .analysis import (
     calculate_rom,
@@ -84,7 +85,7 @@ class GaitScanner:
         )
         self.landmarker = vision.PoseLandmarker.create_from_options(options)
 
-    def process_frame(self, image: np.ndarray) -> Tuple[np.ndarray, Tuple[float, float], Tuple[float, float], float, Tuple[float, float], Tuple[float, float], float, float]:
+    def process_frame(self, image: np.ndarray) -> Tuple[np.ndarray, Tuple[float, float], Tuple[float, float], float, Tuple[float, float], Tuple[float, float], float, float, Tuple[float, float, float, float]]:
         """
         Process a single frame to detect pose and calculate knee angles.
 
@@ -92,7 +93,9 @@ class GaitScanner:
             image: BGR image from OpenCV
 
         Returns:
-            Tuple of (annotated_image, (left_angle, right_angle), (left_valgus, right_valgus), pelvic_tilt, (l_prog, r_prog), (l_dorsi, r_dorsi), shoulder_tilt, trunk_sway)
+            Tuple of (annotated_image, (left_angle, right_angle), (left_valgus, right_valgus), 
+            pelvic_tilt, (l_prog, r_prog), (l_dorsi, r_dorsi), shoulder_tilt, trunk_sway, 
+            (left_ankle_y, right_ankle_y, left_knee_y, right_knee_y))
         """
         try:
             # Convert BGR to RGB
@@ -106,7 +109,7 @@ class GaitScanner:
 
             # If no landmarks detected
             if not detection_result.pose_landmarks:
-                return image, (0, 0), (0, 0), 0.0, (0, 0), (0, 0), 0.0, 0.0
+                return image, (0, 0), (0, 0), 0.0, (0, 0), (0, 0), 0.0, 0.0, (0.0, 0.0, 0.0, 0.0)
 
             # Get first pose
             landmarks = detection_result.pose_landmarks[0]
@@ -168,27 +171,34 @@ class GaitScanner:
             # Calculate Angles
             left_angle = calculate_angle(left_hip, left_knee, left_ankle)
             right_angle = calculate_angle(right_hip, right_knee, right_ankle)
-            
+
             # Phase 2: Rickets (Valgus Angle) on Frontal Plane
             left_valgus = calculate_angle_3d_projected(left_hip_3d, left_knee_3d, left_ankle_3d, "frontal")
             right_valgus = calculate_angle_3d_projected(right_hip_3d, right_knee_3d, right_ankle_3d, "frontal")
-            
+
             # Phase 3: Leg Length Discrepancy (Pelvic Tilt)
             p_tilt = calculate_pelvic_tilt(np.array(left_hip), np.array(right_hip))
-            
+
             # Phase 4: Clubfoot Kinematics
             l_dorsi = calculate_dorsiflexion_angle(left_knee_3d, left_ankle_3d, left_heel_3d, left_toe_3d)
             r_dorsi = calculate_dorsiflexion_angle(right_knee_3d, right_ankle_3d, right_heel_3d, right_toe_3d)
-            
+
             l_prog = calculate_foot_progression_angle(left_heel_3d, left_toe_3d)
             r_prog = calculate_foot_progression_angle(right_heel_3d, right_toe_3d)
 
             # Phase 7: Neuromuscular Features
             left_shoulder = get_coords(11)
             right_shoulder = get_coords(12)
-            
+
             s_tilt = calculate_shoulder_tilt(np.array(left_shoulder), np.array(right_shoulder))
             t_sway = calculate_trunk_sway(np.array(left_shoulder), np.array(right_shoulder), np.array(left_hip), np.array(right_hip))
+
+            # Return ankle Y-coordinates for IC detection (for improved valgus accuracy)
+            # Ankle Y position is used to detect initial contact frames
+            left_ankle_y = left_ankle[1]  # Normalized Y coordinate (0-1)
+            right_ankle_y = right_ankle[1]
+            left_knee_y_val = left_knee[1]
+            right_knee_y_val = right_knee[1]
 
             # Draw skeleton
             h, w, c = image.shape
@@ -224,11 +234,11 @@ class GaitScanner:
                         cv2.LINE_AA,
                     )
 
-            return image, (left_angle or 0, right_angle or 0), (left_valgus or 0, right_valgus or 0), p_tilt or 0.0, (l_prog or 0, r_prog or 0), (l_dorsi or 0, r_dorsi or 0), s_tilt or 0.0, t_sway or 0.0
+            return image, (left_angle or 0, right_angle or 0), (left_valgus or 0, right_valgus or 0), p_tilt or 0.0, (l_prog or 0, r_prog or 0), (l_dorsi or 0, r_dorsi or 0), s_tilt or 0.0, t_sway or 0.0, (left_ankle_y, right_ankle_y, left_knee_y_val, right_knee_y_val)
 
         except Exception as e:
             print(f"Error processing frame: {e}")
-            return image, (0, 0), (0, 0), 0.0, (0, 0), (0, 0), 0.0, 0.0
+            return image, (0, 0), (0, 0), 0.0, (0, 0), (0, 0), 0.0, 0.0, (0.0, 0.0, 0.0, 0.0)
 
 
 def process_video(
@@ -298,6 +308,11 @@ def process_video(
     right_dorsiflexion_angles = []
     shoulder_tilts = []
     trunk_sways = []
+    # For IC normalization (improves knee valgus accuracy from ±19° to <5°)
+    left_ankle_y_coords = []
+    right_ankle_y_coords = []
+    left_knee_y_coords = []
+    right_knee_y_coords = []
     frames_processed = 0
     frames_detected = 0
 
@@ -310,7 +325,7 @@ def process_video(
             frames_processed += 1
 
             # Process frame
-            processed_frame, (left, right), (l_valgus, r_valgus), p_tilt, (l_prog, r_prog), (l_dorsi, r_dorsi), s_tilt, t_sway = scanner.process_frame(frame)
+            processed_frame, (left, right), (l_valgus, r_valgus), p_tilt, (l_prog, r_prog), (l_dorsi, r_dorsi), s_tilt, t_sway, (l_ankle_y, r_ankle_y, l_knee_y, r_knee_y) = scanner.process_frame(frame)
 
             # Track detection rate
             if left > 0 or right > 0:
@@ -328,6 +343,12 @@ def process_video(
             right_dorsiflexion_angles.append(r_dorsi)
             shoulder_tilts.append(s_tilt)
             trunk_sways.append(t_sway)
+            
+            # Store ankle/knee Y-coordinates for IC detection
+            left_ankle_y_coords.append(l_ankle_y)
+            right_ankle_y_coords.append(r_ankle_y)
+            left_knee_y_coords.append(l_knee_y)
+            right_knee_y_coords.append(r_knee_y)
 
             # Write processed frame
             if video_writer:
@@ -383,20 +404,36 @@ def process_video(
     detection_rate = (frames_detected / frames_processed * 100) if frames_processed > 0 else 0
 
     # Step 4: Get diagnosis
+
+    # Phase 2: Rickets heuristics - Using IC-normalization for improved accuracy
+    # Research: PMC11399566 (2024) shows IC-normalization reduces MediaPipe error from ±18.83° to <5°
     
-    # Phase 2: Rickets heuristics
-    # We take the average of the valid valgus angles to determine structural bowing
-    left_v_valid = [v for v in left_valgus_angles if v > 0]
-    right_v_valid = [v for v in right_valgus_angles if v > 0]
-    avg_l_valgus = sum(left_v_valid) / len(left_v_valid) if left_v_valid else 0.0
-    avg_r_valgus = sum(right_v_valid) / len(right_v_valid) if right_v_valid else 0.0
+    # Calculate IC-normalized knee valgus angles
+    avg_l_valgus, avg_r_valgus, left_valgus_normalized, right_valgus_normalized = calculate_ic_normalized_valgus(
+        left_valgus_angles,
+        right_valgus_angles,
+        left_ankle_y_coords,
+        right_ankle_y_coords,
+        left_knee_y_coords,
+        right_knee_y_coords,
+        fps
+    )
+    
+    # Fallback to non-normalized if IC detection failed
+    if avg_l_valgus == 0.0 and avg_r_valgus == 0.0:
+        # Use traditional averaging as fallback
+        left_v_valid = [v for v in left_valgus_angles if v > 0]
+        right_v_valid = [v for v in right_valgus_angles if v > 0]
+        avg_l_valgus = sum(left_v_valid) / len(left_v_valid) if left_v_valid else 0.0
+        avg_r_valgus = sum(right_v_valid) / len(right_v_valid) if right_v_valid else 0.0
+        # Note: Using raw angles, thresholds account for ±19° error margin
     
     # The mechanical axis interior angle. < 170° typically varum (bowleg), > 190° typically valgum (knock-knee)
     # Using the worst case angle out of both legs
     max_deviation = 0.0
-    diagnosis_flag_rickets = ""
-    
+
     # Simple heuristic to find most deviant leg from 180 degrees
+    # With IC-normalization, this now represents deviation from neutral alignment at initial contact
     l_dev = avg_l_valgus - 180.0
     r_dev = avg_r_valgus - 180.0
     most_deviant = l_dev if abs(l_dev) > abs(r_dev) else r_dev

@@ -4,14 +4,52 @@ Gait analysis metrics calculation.
 Key difference from old utils.py (now backend/app/utils.py):
 - OLD: SI = min(L,R) / max(L,R) — always ≤ 1.0, loses directionality
 - NEW: SI = ROM_left / ROM_right — preserves which side is dominant
+
+Clinical Thresholds (Evidence-Based):
+- Symmetry Index: 0.85–1.15 normal (±15% asymmetry) [MDPI 2023, Wu & Wu]
+- Detection Rate: ≥50% minimum for valid screening [MDPI Sensors 2023]
+- Scoliosis: ≥5° shoulder-pelvic divergence [MDPI JCM 2025, 94% sensitivity]
+- Knee Valgus: 170–190° normal (±10° from 180°) [POSNA, PubMed]
+- Ankle Equinus: >100° (plantarflexion, toes down) [MeloQ Devices 2025]
+- Ankle Calcaneus: <75° (dorsiflexion, toes up) [Paragon Orthotic]
+- Trunk Sway (DMD): >15° variance (heuristic, requires validation)
 """
 from typing import List, Optional
 from backend.app.schemas import DiagnosisResult, DiagnosisInfo
 
-# Clinical thresholds
-SI_LOW_THRESHOLD = 0.85   # Below this = high risk (right-dominant)
-SI_HIGH_THRESHOLD = 1.15  # Above this = high risk (left-dominant)
-MIN_DETECTION_RATE = 50.0 # Below this = insufficient data
+# =============================================================================
+# CLINICAL THRESHOLDS (Evidence-Based)
+# =============================================================================
+
+# Symmetry Index thresholds (ROM_left / ROM_right ratio)
+SI_LOW_THRESHOLD = 0.85    # Below = right-dominant asymmetry (high risk)
+SI_HIGH_THRESHOLD = 1.15   # Above = left-dominant asymmetry (high risk)
+# Equivalent to ±15% asymmetry, validated by MDPI 2023 comparative analysis
+
+# Minimum detection rate for valid screening
+MIN_DETECTION_RATE = 50.0  # Below = insufficient data (conservative threshold)
+
+# Scoliosis screening threshold (shoulder-pelvic divergence angle)
+SCOLIOSIS_DIVERGENCE_THRESHOLD = 5.0  # degrees [MDPI J Clin Med 2025]
+# 5° threshold provides 94% sensitivity for curves ≥20°
+# Specificity: 97% at this threshold
+
+# Knee valgus/varum thresholds (frontal plane angle, 180° = neutral)
+KNEE_VARUM_THRESHOLD = 170.0   # Below = genu varum (bowlegs)
+KNEE_VALGUM_THRESHOLD = 190.0  # Above = genu valgum (knock-knees)
+# Based on POSNA guidelines: 2° varus to 20° valgus normal in children
+
+# Ankle dorsiflexion thresholds (sagittal plane projection, 90° = flat foot)
+EQUINUS_THRESHOLD = 100.0      # Above = equinus gait (toes down, plantarflexion)
+CALCANEUS_THRESHOLD = 75.0     # Below = calcaneus gait (toes up, dorsiflexion)
+# Reference: 90° = neutral; >90° = plantarflexion; <90° = dorsiflexion
+# Minimum 10° dorsiflexion (80° projection) required for normal gait [MeloQ 2025]
+
+# Trunk sway threshold for DMD screening (variance from vertical)
+TRUNK_SWAY_VARIANCE_THRESHOLD = 15.0  # degrees² (heuristic)
+# TODO: This threshold requires clinical validation
+# Current literature does not establish specific degree thresholds for DMD
+# Based on observed waddling gait patterns in neuromuscular conditions
 
 
 def calculate_rom(angles: List[float]) -> float:
@@ -139,30 +177,41 @@ def get_diagnosis(
     is_high_risk_flag = False
     
     # Phase 2: Rickets heuristics
-    if knee_valgus_angle < 170.0:
+    # Knee valgus angle: frontal plane angle where 180° = neutral alignment
+    # Genu varum (bowlegs): <170° (interior angle <170°)
+    # Genu valgum (knock-knees): >190° (interior angle >190°)
+    # Thresholds based on POSNA guidelines and PubMed normative data
+    if knee_valgus_angle < KNEE_VARUM_THRESHOLD:
         orthopedic_alerts.append(f"Genu Varum Detected (Bowlegs, {knee_valgus_angle:.1f}°)")
         is_high_risk_flag = True
-    elif knee_valgus_angle > 190.0:
+    elif knee_valgus_angle > KNEE_VALGUM_THRESHOLD:
         orthopedic_alerts.append(f"Genu Valgum Detected (Knock-knees, {knee_valgus_angle:.1f}°)")
         is_high_risk_flag = True
         
     # Phase 3: LLD heuristics (Trendelenburg gait)
+    # Pelvic tilt variance >10° or amplitude >8° suggests leg length discrepancy
     if pelvic_tilt_variance > 10.0 or max_pelvic_tilt > 8.0:
         orthopedic_alerts.append(f"Trendelenburg Gait / Potential LLD (Max tilt: {max_pelvic_tilt:.1f}°, Var: {pelvic_tilt_variance:.1f})")
         is_high_risk_flag = True
-        
+
     # Phase 4: Clubfoot kinematics (Equinus / Calcaneus)
-    if most_equinus > 100.0:
+    # Ankle dorsiflexion measured as sagittal plane projection angle
+    # Reference: 90° = neutral (flat foot), >90° = plantarflexion (toes down), <90° = dorsiflexion (toes up)
+    # Equinus: minimum dorsiflexion >100° (never gets heel down during gait cycle)
+    # Calcaneus: maximum dorsiflexion <75° (never points toes down during gait cycle)
+    if most_equinus > EQUINUS_THRESHOLD:
         orthopedic_alerts.append(f"Equinus Gait Detected (Limited Dorsiflexion, Min: {most_equinus:.1f}°)")
         is_high_risk_flag = True
-    elif most_calcaneus < 75.0:
+    elif most_calcaneus < CALCANEUS_THRESHOLD:
         orthopedic_alerts.append(f"Calcaneus Gait Detected (Excessive Dorsiflexion, Max: {most_calcaneus:.1f}°)")
         is_high_risk_flag = True
         
     # Phase 7 (Subphase 2): Neuromuscular DMD Logic
     neuromuscular_alerts = []
     has_dmd = False
-    if trunk_sway_variance > 15.0:
+    # Trunk sway variance threshold is heuristic (requires clinical validation)
+    # DMD waddling gait characterized by excessive lateral trunk motion
+    if trunk_sway_variance > TRUNK_SWAY_VARIANCE_THRESHOLD:
         neuromuscular_alerts.append(f"DMD Waddling Profile Detected (Trunk Sway Var: {trunk_sway_variance:.1f})")
         has_dmd = True
     if most_equinus > 110.0:
@@ -174,8 +223,10 @@ def get_diagnosis(
     if smoothed_shoulder_tilts and smoothed_pelvic_tilts and len(smoothed_shoulder_tilts) == len(smoothed_pelvic_tilts):
         divergences = [abs(s - p) for s, p in zip(smoothed_shoulder_tilts, smoothed_pelvic_tilts)]
         avg_divergence = sum(divergences) / len(divergences) if divergences else 0.0
-        
-        if avg_divergence > 10.0:
+
+        # Evidence-based threshold: 5° provides 94% sensitivity for curves ≥20°
+        # [MDPI Journal of Clinical Medicine 2025]
+        if avg_divergence > SCOLIOSIS_DIVERGENCE_THRESHOLD:
             neuromuscular_alerts.append(f"Scoliosis Risk Protocol Recommended (Postural Asymmetry: {avg_divergence:.1f}°)")
             has_scoliosis = True
             
