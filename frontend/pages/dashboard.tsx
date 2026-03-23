@@ -72,35 +72,34 @@ export default function Home() {
 
           {/* Right Column (65%): Empty State */}
           <div className="lg:col-span-8">
-            <div className="bg-white dark:bg-gray-900 h-full min-h-[500px] rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col items-center justify-center text-center p-12">
+            <div className="bg-slate-900/40 h-full min-h-[500px] rounded-xl shadow-[0_4px_30px_rgba(0,0,0,0.5)] border border-cyan-500/20 backdrop-blur-md flex flex-col items-center justify-center text-center p-12">
                <div className="relative mb-8">
-                  <div className="absolute inset-0 bg-primary-500/10 blur-3xl rounded-full"></div>
-                  {/* Using a placeholder div to represent the illustration from Stitch */}
-                   <div className="w-64 h-64 border-4 border-dashed border-gray-300 dark:border-gray-800 rounded-3xl opacity-60 dark:opacity-50 flex items-center justify-center relative z-10 bg-gray-100 dark:bg-gray-800">
-                     <span className="material-icons text-6xl text-gray-600">directions_walk</span>
+                  <div className="absolute inset-0 bg-cyan-500/10 blur-[60px] rounded-full"></div>
+                   <div className="w-64 h-64 border-4 border-dashed border-cyan-500/30 rounded-3xl opacity-80 flex items-center justify-center relative z-10 bg-slate-900/60 shadow-inner">
+                     <span className="material-icons text-6xl text-cyan-500/50">directions_walk</span>
                   </div>
-                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-2 bg-gray-200 dark:bg-gray-800 blur-sm rounded-full"></div>
+                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-2 bg-cyan-900 blur-sm rounded-full"></div>
                </div>
                
-               <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-3">Ready for Screening</h3>
-               <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto leading-relaxed">
+               <h3 className="text-2xl font-bold text-slate-50 mb-3">Ready for Screening</h3>
+               <p className="text-slate-400 max-w-md mx-auto leading-relaxed">
                   Complete the patient profile and upload a gait video to begin high-precision kinematic analysis.
                </p>
                
                <div className="mt-8 flex gap-6">
                   <div className="flex flex-col items-center">
-                      <span className="material-icons text-primary-600 dark:text-primary-400 text-3xl mb-1">speed</span>
-                     <span className="text-xs font-bold text-gray-400 uppercase">AI-Powered</span>
+                      <span className="material-icons text-cyan-400 text-3xl mb-1 shadow-cyan-500/50 drop-shadow-md">speed</span>
+                     <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">AI-Powered</span>
                   </div>
-                  <div className="w-px h-10 bg-gray-200 dark:bg-gray-800"></div>
+                  <div className="w-px h-10 bg-cyan-900"></div>
                   <div className="flex flex-col items-center">
-                      <span className="material-icons text-primary-600 dark:text-primary-400 text-3xl mb-1">security</span>
-                     <span className="text-xs font-bold text-gray-400 uppercase">HIPAA Ready</span>
+                      <span className="material-icons text-cyan-400 text-3xl mb-1 shadow-cyan-500/50 drop-shadow-md">security</span>
+                     <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">HIPAA Ready</span>
                   </div>
-                  <div className="w-px h-10 bg-gray-200 dark:bg-gray-800"></div>
+                  <div className="w-px h-10 bg-cyan-900"></div>
                   <div className="flex flex-col items-center">
-                      <span className="material-icons text-primary-600 dark:text-primary-400 text-3xl mb-1">timeline</span>
-                     <span className="text-xs font-bold text-gray-400 uppercase">Kinematics</span>
+                      <span className="material-icons text-cyan-400 text-3xl mb-1 shadow-cyan-500/50 drop-shadow-md">timeline</span>
+                     <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Kinematics</span>
                   </div>
                </div>
             </div>
@@ -112,50 +111,51 @@ export default function Home() {
 
         {/* Processing State Overlay */}
         {processing && (
-          <div className="fixed inset-0 bg-gray-900/40 dark:bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-             <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-300">
-                <div className="p-8 text-center flex flex-col items-center">
-                   <div className="w-16 h-16 bg-primary-50 dark:bg-primary-900/30 rounded-full flex items-center justify-center mb-6 relative">
-                      <div className="absolute inset-0 border-4 border-primary-200 dark:border-primary-800 rounded-full border-t-primary-500 animate-spin"></div>
-                      <span className="material-icons text-primary-500 text-3xl">psychology</span>
+          <div className="fixed inset-0 bg-[#020617]/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+             <div className="bg-slate-900/80 rounded-2xl shadow-[0_0_50px_rgba(6,182,212,0.15)] border border-cyan-500/30 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+                <div className="p-8 text-center flex flex-col items-center relative overflow-hidden">
+                   <div className="absolute top-0 right-1/2 translate-x-1/2 w-64 h-32 bg-cyan-500/20 blur-[80px] rounded-full pointer-events-none -z-10"></div>
+                   <div className="w-16 h-16 bg-cyan-900/40 rounded-full flex items-center justify-center mb-6 relative border border-cyan-500/20">
+                      <div className="absolute inset-0 border-4 border-slate-700 rounded-full border-t-cyan-400 animate-spin shadow-[0_0_15px_rgba(34,211,238,0.5)]"></div>
+                      <span className="material-icons text-cyan-400 text-3xl drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]">psychology</span>
                    </div>
                    
-                   <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Analyzing Gait Pattern...</h2>
-                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 font-medium">Extracting kinematics and joint angles</p>
+                   <h2 className="text-xl font-bold text-slate-50 mb-2">Analyzing Gait Pattern...</h2>
+                   <p className="text-sm text-slate-400 mb-8 font-medium">Extracting kinematics and joint angles</p>
                    
                    <div className="w-full space-y-2">
                       <div className="flex justify-between text-xs font-bold">
-                         <span className="text-gray-700 dark:text-gray-300">Processing Progress</span>
-                         <span className="text-primary-600 dark:text-primary-400">{progress}%</span>
+                         <span className="text-slate-300">Processing Progress</span>
+                         <span className="text-cyan-400">{progress}%</span>
                       </div>
-                      <div className="h-2 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                      <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden border border-slate-700">
                          <div 
-                           className="h-full bg-primary-500 transition-all duration-500 ease-out rounded-full" 
+                           className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 transition-all duration-500 ease-out rounded-full shadow-[0_0_10px_rgba(34,211,238,0.8)]" 
                            style={{ width: `${progress}%` }}
                          ></div>
                       </div>
-                      <p className="text-[10px] text-gray-400 text-right mt-1 font-medium">Please do not close this window</p>
+                      <p className="text-[10px] text-slate-500 text-right mt-1 font-medium tracking-wide">Please do not close this window</p>
                    </div>
                 </div>
                 
-                <div className="bg-gray-50 dark:bg-gray-800/50 p-6 space-y-4 border-t border-gray-100 dark:border-gray-800">
+                <div className="bg-slate-950/50 p-6 space-y-4 border-t border-cyan-500/20">
                    <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 rounded-full bg-success-100 text-success-600 flex items-center justify-center shrink-0">
-                         <span className="material-icons text-[12px]">check</span>
+                      <div className="w-5 h-5 rounded-full bg-cyan-900/50 text-cyan-400 border border-cyan-500/30 flex items-center justify-center shrink-0">
+                         <span className="material-icons text-[12px] drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]">check</span>
                       </div>
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Video uploaded successfully</span>
+                      <span className="text-sm font-medium text-slate-200">Video uploaded successfully</span>
                    </div>
                    <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${progress > 15 ? 'bg-success-100 text-success-600' : 'bg-primary-100 text-primary-600 animate-pulse'}`}>
-                         {progress > 15 ? <span className="material-icons text-[12px]">check</span> : <span className="material-icons text-[12px]">sync</span>}
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${progress > 15 ? 'bg-cyan-900/50 text-cyan-400 border border-cyan-500/30' : 'bg-cyan-500/20 text-cyan-300 animate-pulse border border-cyan-400/50 shadow-[0_0_10px_rgba(34,211,238,0.3)]'}`}>
+                         {progress > 15 ? <span className="material-icons text-[12px] drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]">check</span> : <span className="material-icons text-[12px]">sync</span>}
                       </div>
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Pose extraction initialized</span>
+                      <span className="text-sm font-medium text-slate-200">Pose extraction initialized</span>
                    </div>
                    <div className={`flex items-center gap-3 ${progress > 15 ? 'opacity-100' : 'opacity-40'}`}>
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${progress > 90 ? 'bg-success-100 text-success-600' : progress > 15 ? 'bg-primary-100 text-primary-600 animate-pulse' : 'border-2 border-gray-300 dark:border-gray-600'}`}>
-                         {progress > 90 ? <span className="material-icons text-[12px]">check</span> : progress > 15 ? <span className="material-icons text-[12px]">sync</span> : null}
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${progress > 90 ? 'bg-cyan-900/50 text-cyan-400 border border-cyan-500/30' : progress > 15 ? 'bg-cyan-500/20 text-cyan-300 animate-pulse border border-cyan-400/50 shadow-[0_0_10px_rgba(34,211,238,0.3)]' : 'border border-slate-700 bg-slate-800'}`}>
+                         {progress > 90 ? <span className="material-icons text-[12px] drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]">check</span> : progress > 15 ? <span className="material-icons text-[12px]">sync</span> : null}
                       </div>
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Computing symmetry metrics</span>
+                      <span className="text-sm font-medium text-slate-200">Computing symmetry metrics</span>
                    </div>
                 </div>
              </div>

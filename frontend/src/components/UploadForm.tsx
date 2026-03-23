@@ -71,22 +71,22 @@ export function UploadForm({ onSubmit, disabled }: Props) {
   const isLoading = submitting || disabled;
 
   return (
-    <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-        <PlusCircle className="w-5 h-5 text-primary-500" />
+    <div className="bg-slate-900/40 p-6 rounded-xl shadow-[0_4px_30px_rgba(0,0,0,0.5)] border border-cyan-500/20 backdrop-blur-md">
+      <h2 className="text-lg font-semibold text-slate-50 mb-6 flex items-center gap-2">
+        <PlusCircle className="w-5 h-5 text-cyan-400" />
         New Analysis
       </h2>
       
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Patient ID */}
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Patient ID</label>
+          <label className="text-sm font-medium text-slate-300">Patient ID</label>
           <input
             type="text"
             value={patientId}
             onChange={(e) => setPatientId(e.target.value)}
             placeholder="PG-2024-000"
-            className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-white text-sm transition-colors"
+            className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg px-3.5 py-2.5 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 text-slate-50 text-sm transition-colors outline-none"
             required
             disabled={isLoading}
           />
@@ -94,20 +94,20 @@ export function UploadForm({ onSubmit, disabled }: Props) {
 
         {/* Full Name */}
         <div className="space-y-1.5">
-           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</label>
+           <label className="text-sm font-medium text-slate-300">Full Name</label>
            <input
             type="text"
             value={patientName}
             onChange={(e) => setPatientName(e.target.value)}
             placeholder="John Doe"
-            className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-white text-sm transition-colors"
+            className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg px-3.5 py-2.5 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 text-slate-50 text-sm transition-colors outline-none"
             disabled={isLoading}
           />
         </div>
 
         {/* Age */}
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Age (0-18 Years)</label>
+          <label className="text-sm font-medium text-slate-300">Age (0-18 Years)</label>
           <div className="flex items-center gap-4">
             <input
               type="range"
@@ -115,10 +115,10 @@ export function UploadForm({ onSubmit, disabled }: Props) {
               onChange={(e) => setAge(e.target.value)}
               min="0"
               max="18"
-              className="flex-grow accent-primary-500 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              className="flex-grow accent-cyan-500 h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer"
               disabled={isLoading}
             />
-            <span className="bg-primary-50 text-primary-600 px-3 py-1 rounded-md font-bold min-w-[3rem] text-center shrink-0">
+            <span className="bg-cyan-900/40 text-cyan-400 border border-cyan-500/20 px-3 py-1 rounded-md font-bold min-w-[3rem] text-center shrink-0">
                {age}
             </span>
           </div>
@@ -126,49 +126,49 @@ export function UploadForm({ onSubmit, disabled }: Props) {
 
         {/* Clinical Notes */}
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Clinical Notes</label>
+          <label className="text-sm font-medium text-slate-300">Clinical Notes</label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Describe symptoms or medical history..."
             rows={3}
-            className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3.5 py-2.5 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-white text-sm transition-colors resize-none"
+            className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg px-3.5 py-2.5 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 text-slate-50 text-sm transition-colors resize-none outline-none"
             disabled={isLoading}
           />
         </div>
 
         {/* Gait Video Upload */}
         <div className="space-y-1.5">
-           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Gait Video Upload <span className="text-danger-500">*</span></label>
+           <label className="text-sm font-medium text-slate-300">Gait Video Upload <span className="text-red-500">*</span></label>
            <div
             onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
-            className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer group bg-gray-50/50 dark:bg-gray-800/30
-              ${isDragging ? 'border-primary-400 bg-primary-50' : 
-                selectedFile ? 'border-success-400 bg-success-50' : 'border-gray-300 dark:border-gray-700 hover:border-primary-500/50'
+            className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer group bg-slate-900/30
+              ${isDragging ? 'border-cyan-400/50 bg-cyan-900/20' : 
+                selectedFile ? 'border-green-500/50 bg-green-900/20' : 'border-slate-700 hover:border-cyan-500/50'
               }`}
           >
              {selectedFile ? (
                <div className="space-y-2">
-                 <div className="mx-auto w-12 h-12 bg-success-100 rounded-full flex items-center justify-center">
-                    <Activity className="h-6 w-6 text-success-600" />
+                 <div className="mx-auto w-12 h-12 bg-green-900/30 border border-green-500/30 rounded-full flex items-center justify-center">
+                    <Activity className="h-6 w-6 text-green-400" />
                  </div>
-                 <p className="text-sm font-medium text-gray-900">{selectedFile.name}</p>
-                 <p className="text-xs text-center text-gray-500">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                 <p className="text-sm font-medium text-slate-50">{selectedFile.name}</p>
+                 <p className="text-xs text-center text-slate-400">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
                  <button
                     type="button"
                     onClick={() => setSelectedFile(null)}
-                    className="text-xs text-primary-600 hover:underline relative z-10"
+                    className="text-xs text-cyan-400 hover:underline relative z-10"
                   >
                     Change file
                   </button>
                </div>
              ) : (
                 <div className="space-y-2">
-                  <Upload className="mx-auto h-10 w-10 text-gray-400 group-hover:text-primary-500 transition-colors mb-2" />
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Drag & drop MP4 or MOV</p>
-                  <p className="text-xs text-gray-500 mt-1">Maximum file size: 50MB</p>
+                  <Upload className="mx-auto h-10 w-10 text-slate-500 group-hover:text-cyan-400 transition-colors mb-2" />
+                  <p className="text-sm text-slate-400">Drag & drop MP4 or MOV</p>
+                  <p className="text-xs text-slate-500 mt-1">Maximum file size: 50MB</p>
                 </div>
              )}
              <input
@@ -186,7 +186,7 @@ export function UploadForm({ onSubmit, disabled }: Props) {
 
         {/* Error State */}
         {error && (
-          <div className="p-3 bg-danger-50 border border-danger-100 rounded-lg text-sm text-danger-700 flex items-center gap-2">
+          <div className="p-3 bg-red-900/20 border border-red-500/30 rounded-lg text-sm text-red-400 flex items-center gap-2">
             <Activity className="w-4 h-4 shrink-0" />
             {error}
           </div>
@@ -196,7 +196,7 @@ export function UploadForm({ onSubmit, disabled }: Props) {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md shadow-primary-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-gradient-to-r from-cyan-600 to-cyan-500 hover:opacity-90 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] border border-cyan-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
            {isLoading ? (
             <>
