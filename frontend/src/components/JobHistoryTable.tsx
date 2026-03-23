@@ -27,7 +27,8 @@ export function JobHistoryTable() {
     fetchJobs();
   }, []);
 
-  const handleDelete = async (jobId: string) => {
+  const handleDelete = async (jobId: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (!confirm('Delete this analysis?')) return;
     try {
       await deleteJob(jobId);
@@ -80,16 +81,15 @@ export function JobHistoryTable() {
                    if (job.status !== 'completed' || !job.results) {
                       return <span className="text-gray-400">--</span>;
                    }
-                   
-                   // Fallback logic for SI visualization
-                   // Assuming SI ranges around 1.0 (perfect). Convert to a 0-100 score for the UI bar.
-                   // Asymmetry % calculation if not explicitly provided
-                   // Access the first result's symmetry index if results is an array
-                   const firstResult = Array.isArray(job.results) ? job.results[0] : (job.results as any);
-                   const score = firstResult?.overall_symmetry_index 
-                     ? Math.max(0, 100 - (Math.abs(1 - firstResult.overall_symmetry_index) * 100))
-                     : 95; // Default for fallback if result payload shape differs
-                     
+
+                   // Access the symmetry index from results
+                   // symmetry_index is a value where 1.0 = perfect symmetry
+                   // Convert to 0-100 score for UI display
+                   const symmetryValue = job.results.symmetry_index;
+                   const score = symmetryValue
+                     ? Math.max(0, 100 - (Math.abs(1 - symmetryValue) * 100))
+                     : 95; // Default for fallback
+
                    const boundedScore = Math.min(100, Math.round(score));
                    const isWarning = boundedScore < 85;
 
@@ -141,9 +141,14 @@ export function JobHistoryTable() {
                     <td className="px-6 py-4 text-right">
                        <div className="flex justify-end gap-2">
                          {job.status === 'completed' ? (
-                            <button onClick={() => router.push(`/results/${job.id}`)} className="bg-primary-50 hover:bg-primary-100 text-primary-700 px-4 py-1.5 rounded-lg text-xs font-bold transition-colors">
-                               View Report
-                            </button>
+                            <>
+                               <button onClick={() => router.push(`/results/${job.id}`)} className="bg-primary-50 hover:bg-primary-100 text-primary-700 px-4 py-1.5 rounded-lg text-xs font-bold transition-colors">
+                                  View Report
+                               </button>
+                               <button onClick={(e) => handleDelete(job.id, e)} className="text-danger-500 hover:text-danger-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">
+                                  Delete
+                               </button>
+                            </>
                          ) : job.status === 'failed' ? (
                             <button onClick={() => handleDelete(job.id)} className="text-danger-500 hover:text-danger-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">
                                Delete
