@@ -3,7 +3,73 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import { LampContainer } from '@/components/ui/lamp';
-import { ArrowRight, PlayCircle, Video, Activity, BrainCircuit, Upload, Cpu, BarChart, FileText, Activity as ActivityIcon } from 'lucide-react';
+import { FeatureSteps } from '@/components/ui/feature-section';
+import { Feature } from '@/components/ui/feature';
+import { GlowingEffect } from '@/components/ui/glowing-effect';
+import { cn } from "@/lib/utils";
+import { ArrowRight, PlayCircle, Video, Activity, BrainCircuit, Upload, Cpu, BarChart, FileText, Activity as ActivityIcon, Crosshair, Timer, FileVideo, ShieldCheck } from 'lucide-react';
+
+const statsCards = [
+  {
+    id: 1,
+    className: "col-span-1",
+    icon: <Crosshair size={40} strokeWidth={1.5} />,
+    title: "33",
+    subtitle: "Landmarks Tracked",
+    content: "Our AI model precisely identifies and tracks 33 critical skeletal points across the body to provide highly accurate kinematic and joint angle data.",
+  },
+  {
+    id: 2,
+    className: "col-span-1",
+    icon: <Timer size={40} strokeWidth={1.5} />,
+    title: "< 2 min",
+    subtitle: "Processing Time",
+    content: "Rapid data turnaround. Patient videos are fully processed and analyzed in under two minutes to fit seamlessly into fast-paced clinical workflows.",
+  },
+  {
+    id: 3,
+    className: "col-span-1",
+    icon: <FileVideo size={40} strokeWidth={1.5} />,
+    title: "H.264",
+    subtitle: "Video Support",
+    content: "Broad compatibility with standard H.264 video files, meaning you can record screening footage on almost any smartphone, tablet, or clinical webcam.",
+  },
+  {
+    id: 4,
+    className: "col-span-1",
+    icon: <ShieldCheck size={40} strokeWidth={1.5} />,
+    title: "HIPAA",
+    subtitle: "Compliant Ready",
+    content: "Enterprise-grade security architecture designed from the ground up to keep patient health information protected and completely private.",
+  },
+];
+
+const howItWorksFeatures = [
+  { 
+    step: 'Step 1', 
+    title: 'Upload Video',
+    content: 'Securely upload patient footage via our HIPAA-compliant portal. Supports standard formats.', 
+    image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=1000&auto=format&fit=crop' 
+  },
+  { 
+    step: 'Step 2',
+    title: 'AI Processing',
+    content: 'Our engine identifies 33 skeletal landmarks and tracks movement frame-by-frame.',
+    image: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1000&auto=format&fit=crop'
+  },
+  { 
+    step: 'Step 3',
+    title: 'Get Results',
+    content: 'View interactive biomechanical charts and replay video with overlay skeletons.',
+    image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=1000'
+  },
+  { 
+    step: 'Step 4',
+    title: 'AI Explanation',
+    content: 'Receive an automatically generated textual summary highlighting abnormalities.',
+    image: 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?auto=format&fit=crop&q=80&w=1000'
+  },
+];
 
 export default function LandingPage() {
   const router = useRouter();
@@ -197,95 +263,59 @@ export default function LandingPage() {
           </LampContainer>
 
           {/* ===== STATS SECTION ===== */}
-          <section id="stats" style={{ padding:'40px 0', borderTop:'1px solid rgba(6,182,212,0.1)', borderBottom:'1px solid rgba(6,182,212,0.1)', background:'rgba(0,0,0,0.2)' }}>
-            <div style={{ maxWidth:1280, margin:'0 auto', padding:'0 24px' }}>
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:24 }}>
-                {[
-                  { value: '33', label: 'Landmarks Tracked' },
-                  { value: '< 2 min', label: 'Processing Time' },
-                  { value: 'H.264', label: 'Video Support' },
-                  { value: 'HIPAA', label: 'Compliant Ready' },
-                ].map(stat => (
-                  <div key={stat.label} className="glass-card stat-card" style={{ padding:24, borderRadius:12, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', textAlign:'center', gap:8 }}>
-                    <span className="stat-value" style={{ fontSize:30, fontWeight:700, color:'#f8fafc', transition:'all 0.3s' }}>{stat.value}</span>
-                    <span style={{ fontSize:14, color:'#94a3b8', fontWeight:500 }}>{stat.label}</span>
-                  </div>
-                ))}
-              </div>
+          <section id="stats" style={{ padding:'64px 0', borderTop:'1px solid rgba(6,182,212,0.1)', borderBottom:'1px solid rgba(6,182,212,0.1)', background:'rgba(0,0,0,0.2)' }}>
+            <div style={{ textAlign:'center', marginBottom:24 }}>
+              <h2 style={{ fontSize:'clamp(1.5rem, 3vw, 2.5rem)', fontWeight:700, color:'#f8fafc' }}>System Capabilities</h2>
+              <p style={{ color:'#94a3b8', marginTop:8 }}>Hover over the features to see them glow in real-time.</p>
             </div>
+            
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto px-4">
+              {statsCards.map((card) => (
+                <li key={card.id} className="list-none min-h-[16rem]">
+                  <div className="relative h-full rounded-[1.25rem] border-[1px] border-cyan-500/20 p-2 md:rounded-[1.5rem] md:p-3 transition-transform hover:-translate-y-1 duration-300">
+                    <GlowingEffect
+                      spread={40}
+                      glow={true}
+                      disabled={false}
+                      proximity={64}
+                      inactiveZone={0.01}
+                      borderWidth={3}
+                    />
+                    <div className="relative flex h-full flex-col justify-center items-center gap-6 overflow-hidden rounded-xl border-[1px] border-cyan-500/10 bg-slate-900/60 p-6 md:p-8 backdrop-blur-md text-center">
+                      <div className="text-cyan-400 drop-shadow-[0_0_15px_rgba(6,182,212,0.6)]">
+                        {card.icon}
+                      </div>
+                      <div className="space-y-2 flex flex-col items-center">
+                        <h3 className="text-3xl font-bold font-sans tracking-tight text-slate-50">
+                          {card.title}
+                        </h3>
+                        <h2 className="font-sans text-sm md:text-base text-cyan-400 font-semibold tracking-wide uppercase">
+                          {card.subtitle}
+                        </h2>
+                        <p className="mt-4 text-sm text-slate-400 leading-relaxed max-w-[250px]">
+                          {card.content}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </section>
 
           {/* ===== FEATURES SECTION ===== */}
-          <section id="features" style={{ padding:'96px 24px', position:'relative' }}>
-            <div style={{ maxWidth:1280, margin:'0 auto' }}>
-              <div style={{ textAlign:'center', marginBottom:64 }}>
-                <h2 style={{ fontSize:'clamp(1.75rem, 4vw, 3rem)', fontWeight:700, marginBottom:16 }}>Advanced Clinical Features</h2>
-                <p style={{ color:'#94a3b8', maxWidth:640, margin:'0 auto', fontSize:18 }}>Leverage state-of-the-art computer vision to automate gait analysis without the need for wearable sensors.</p>
-              </div>
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:32 }}>
-                {/* Feature 1 */}
-                <div className="glass-card feature-card blue" style={{ padding:32, borderRadius:16 }}>
-                  <div style={{ width:56, height:56, borderRadius:12, background:'rgba(6,182,212,0.1)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:24 }}>
-                    <Video className="icon-hover" color="#06b6d4" size={30} />
-                  </div>
-                  <h3 style={{ fontSize:20, fontWeight:700, color:'#f8fafc', marginBottom:12 }}>AI Video Analysis</h3>
-                  <p style={{ color:'#94a3b8', lineHeight:1.7 }}>Automated joint tracking using computer vision. Upload standard video from any device and get mocap-quality data instantly.</p>
-                </div>
-                {/* Feature 2 */}
-                <div className="glass-card feature-card cyan" style={{ padding:32, borderRadius:16, position:'relative' }}>
-                  <div style={{ width:56, height:56, borderRadius:12, background:'rgba(34,211,238,0.1)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:24 }}>
-                    <Activity className="icon-hover" color="#22d3ee" size={30} />
-                  </div>
-                  <h3 style={{ fontSize:20, fontWeight:700, color:'#f8fafc', marginBottom:12 }}>Clinical Metrics</h3>
-                  <p style={{ color:'#94a3b8', lineHeight:1.7 }}>Detailed knee flexion, cadence, & stride length data visualized in interactive charts for immediate clinical assessment.</p>
-                </div>
-                {/* Feature 3 */}
-                <div className="glass-card feature-card purple" style={{ padding:32, borderRadius:16 }}>
-                  <div style={{ width:56, height:56, borderRadius:12, background:'rgba(8,145,178,0.1)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:24 }}>
-                    <BrainCircuit className="icon-hover" color="#0891b2" size={30} />
-                  </div>
-                  <h3 style={{ fontSize:20, fontWeight:700, color:'#f8fafc', marginBottom:12 }}>AI Clinical Summary</h3>
-                  <p style={{ color:'#94a3b8', lineHeight:1.7 }}>LLM-generated patient reports and insights. Our models synthesize data into readable summaries for patient records.</p>
-                </div>
-              </div>
-            </div>
+          <section id="features" style={{ position: 'relative' }}>
+            <Feature />
           </section>
 
           {/* ===== HOW IT WORKS ===== */}
-          <section id="how-it-works" style={{ padding:'96px 24px', background:'linear-gradient(to bottom, transparent, rgba(0,0,0,0.4))' }}>
-            <div style={{ maxWidth:1280, margin:'0 auto' }}>
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginBottom:64, gap:24, flexWrap:'wrap' }}>
-                <div>
-                  <h2 style={{ fontSize:'clamp(1.75rem, 4vw, 3rem)', fontWeight:700, marginBottom:16 }}>How It Works</h2>
-                  <p style={{ color:'#94a3b8' }}>From upload to insight in four simple steps.</p>
-                </div>
-              </div>
-
-              <div style={{ position:'relative' }}>
-                <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:48, position:'relative', zIndex:10 }}>
-                  {[
-                    { num: '01', icon: <Upload color="#06b6d4" size={30} />, title: 'Upload Video', desc: 'Securely upload patient footage via our HIPAA-compliant portal. Supports standard formats.', img: 'https://images.unsplash.com/photo-1576091160550-2173d1000b2e?auto=format&fit=crop&q=80&w=300' },
-                    { num: '02', icon: <Cpu color="#22d3ee" size={30} />, title: 'AI Processing', desc: 'Our engine identifies 33 skeletal landmarks and tracks movement frame-by-frame.', img: 'https://images.unsplash.com/photo-1551076805-e1869043e560?auto=format&fit=crop&q=80&w=300' },
-                    { num: '03', icon: <BarChart color="#0891b2" size={30} />, title: 'Get Results', desc: 'View interactive biomechanical charts and replay video with overlay skeletons.', img: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=300' },
-                    { num: '04', icon: <FileText color="#06b6d4" size={30} />, title: 'AI Explanation', desc: 'Receive an automatically generated textual summary highlighting abnormalities.', img: 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?auto=format&fit=crop&q=80&w=300' },
-                  ].map(step => (
-                    <div key={step.num} className="step-group" style={{ display:'flex', flexDirection:'column', gap:24 }}>
-                      <div className="step-circle" style={{ width:64, height:64, borderRadius:'50%', background:'#020617', border:'1px solid rgba(6,182,212,0.2)', boxShadow:'0 0 15px rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                        <span className="step-num" style={{ fontSize:20, fontWeight:700, color:'#64748b', transition:'color 0.3s' }}>{step.num}</span>
-                      </div>
-                      <div className="glass-card step-card" style={{ padding:24, borderRadius:12, transition:'background 0.3s' }}>
-                        <div style={{ marginBottom: 16, height: 120, borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(6,182,212,0.1)' }}>
-                          <img src={step.img} alt={step.title} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }} />
-                        </div>
-                        <div style={{ marginBottom:12, display:'block' }}>{step.icon}</div>
-                        <h3 style={{ fontSize:18, fontWeight:700, color:'#f8fafc', marginBottom:8 }}>{step.title}</h3>
-                        <p style={{ fontSize:14, color:'#94a3b8' }}>{step.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+          <section id="how-it-works" style={{ background:'linear-gradient(to bottom, transparent, rgba(0,0,0,0.4))' }}>
+            <FeatureSteps 
+              features={howItWorksFeatures}
+              title="How It Works"
+              autoPlayInterval={4000}
+              imageHeight="h-[400px]"
+            />
           </section>
 
           {/* ===== CTA SECTION ===== */}
