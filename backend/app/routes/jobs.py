@@ -14,7 +14,7 @@ router = APIRouter(prefix="/api/v1/jobs", tags=["jobs"])
 # --- Request/Response Models ---
 
 class PatientInput(BaseModel):
-    patient_id: str = Field(..., description="User-facing patient identifier")
+    patient_id: Optional[str] = Field(None, description="User-facing patient identifier (auto-generated if omitted)")
     patient_name: Optional[str] = None
     age: Optional[int] = Field(None, ge=0, le=18)
     notes: Optional[str] = None

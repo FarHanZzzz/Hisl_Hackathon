@@ -11,7 +11,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List
 from ..config import OPENROUTER_API_KEY, OPENROUTER_MODEL
-from ..services.database import JobService, ResultService
+from ..services.database import JobService, ResultService, PatientService
 
 # Hardcoded fallbacks if the primary model gets rate-limited
 FREE_MODEL_FALLBACKS = [
@@ -57,21 +57,29 @@ IMPORTANT RULES:
 - Be empathetic but honest. Don't sugarcoat concerning findings, but don't be alarming either.
 - ALWAYS explain what each finding means for the child's daily life (walking, running, playing).
 - Include a "what_this_means" section that gives a simple 3-4 sentence plain-English summary a parent can quickly understand.
+- If the patient's age is provided, use AGE-APPROPRIATE interpretation:
+  * Ages 1-3: Bowlegs (varus) and occasional toe-walking are NORMAL developmental patterns.
+  * Ages 3-7: Mild knock-knees (valgus) are a NORMAL developmental phase.
+  * Ages 7+: Significant valgus/varus or toe-walking should be evaluated.
+- If the parent provided clinical notes, correlate their observations with the data findings.
+- ONLY comment on data points that have actual values. If a measurement is 'N/A' or 'Not measured', skip it entirely.
+- Generate at least 4 but up to 8 key findings, covering ALL available data sections (knee, orthopedic, neuromuscular).
 
 OUTPUT FORMAT — You MUST respond with valid JSON only, no markdown, no extra text:
 {
-  "overview": "A 3-4 sentence summary written in simple language explaining what was observed in the child's walking pattern. Avoid medical jargon.",
-  "what_this_means": "A 3-4 sentence plain-English explanation a parent can understand. What does this mean for my child? Is this something to worry about? What should I do next? Be specific and practical.",
+  "overview": "A 3-4 sentence summary written in simple language explaining what was observed in the child's walking pattern. Avoid medical jargon. Reference the child's age if provided.",
+  "what_this_means": "A 3-4 sentence plain-English explanation a parent can understand. What does this mean for my child? Is this something to worry about? What should I do next? Be specific and practical. If clinical notes were provided, address them directly.",
   "key_findings": [
-    "Finding 1: Explain the measurement AND what it means in simple terms. Example: 'The left knee bends about 27 degrees during walking — this is less than the normal 40-60 degrees, meaning the knee appears stiffer than expected and may cause the child to walk with a limp.'",
-    "Finding 2: Same format — number + plain explanation",
-    "Finding 3: Same format",
-    "Finding 4: Same format"
+    "Finding 1: Explain the measurement AND what it means in simple terms, covering knee ROM.",
+    "Finding 2: Cover symmetry/asymmetry.",
+    "Finding 3: Cover any orthopedic finding (valgus, pelvic tilt, foot angle, ankle) if data is available.",
+    "Finding 4: Cover any neuromuscular finding (trunk sway, shoulder tilt) if data is available.",
+    "Finding 5+: Additional findings as needed — cover ALL available data points."
   ],
-  "risk_assessment": "A detailed paragraph explaining the overall risk level in plain language. What does 'high risk' or 'normal' actually mean? What should the parent understand? Be specific about what the asymmetry percentage and symmetry index tell us about the child's walking.",
+  "risk_assessment": "A detailed paragraph explaining the overall risk level in plain language. Consider ALL data points holistically — knee ROM, symmetry, orthopedic angles, and neuromuscular stability. Be specific about what each measurement tells us.",
   "recommendations": [
-    "Recommendation 1: Specific, actionable step written for a parent (not a doctor)",
-    "Recommendation 2: Another clear next step",
+    "Recommendation 1: Specific, actionable step written for a parent, tailored to the specific findings",
+    "Recommendation 2: Another clear next step addressing a different finding",
     "Recommendation 3: Another clear next step",
     "Recommendation 4: Another clear next step"
   ]
@@ -79,9 +87,65 @@ OUTPUT FORMAT — You MUST respond with valid JSON only, no markdown, no extra t
 """
 
 
-def _build_user_prompt(result: dict) -> str:
-    """Build the prompt from a result dict."""
+def _calc_variance(arr) -> str:
+    """Calculate variance of an array, return formatted string or 'Not measured'."""
+    if not arr or not isinstance(arr, list) or len(arr) < 2:
+        return "Not measured"
+    mean = sum(arr) / len(arr)
+    variance = sum((x - mean) ** 2 for x in arr) / len(arr)
+    return f"{variance:.2f}"
+
+
+def _build_user_prompt(result: dict, patient: dict = None) -> str:
+    """Build the prompt from a result dict and optional patient data."""
+    # Patient context
+    patient_age = patient.get('age', 'Not provided') if patient else 'Not provided'
+    patient_notes = patient.get('notes', '') if patient else ''
+    patient_name = patient.get('patient_name', 'the child') if patient else 'the child'
+
+    # Orthopedic values
+    knee_valgus = result.get('knee_valgus_angle')
+    pelvic_tilt = result.get('pelvic_tilt')
+    foot_prog = result.get('foot_progression_angle')
+    ankle_dorsi = result.get('ankle_dorsiflexion')
+
+    # Neuromuscular variances
+    trunk_var = _calc_variance(result.get('trunk_sway_array'))
+    shoulder_var = _calc_variance(result.get('shoulder_tilt_array'))
+
+    # Build orthopedic section only if data exists
+    ortho_lines = []
+    if knee_valgus is not None:
+        ortho_lines.append(f"- Knee Valgus Angle: {knee_valgus:.1f} degrees (180° = neutral, <170° = bowlegs/Genu Varum, >190° = knock-knees/Genu Valgum)")
+    if pelvic_tilt is not None:
+        ortho_lines.append(f"- Pelvic Tilt: {pelvic_tilt:.1f} degrees (>5° suggests possible leg length difference)")
+    if foot_prog is not None:
+        ortho_lines.append(f"- Foot Progression Angle: {foot_prog:.1f} degrees (10-15° is normal, <0° = in-toeing/pigeon-toed, >30° = out-toeing)")
+    if ankle_dorsi is not None:
+        ortho_lines.append(f"- Ankle Dorsiflexion: {ankle_dorsi:.1f} degrees (90° is neutral, >100° suggests toe-walking/Equinus)")
+
+    ortho_section = ""
+    if ortho_lines:
+        ortho_section = "\nORTHOPEDIC SCREENING:\n" + "\n".join(ortho_lines)
+
+    # Build neuromuscular section only if data exists
+    neuro_lines = []
+    if trunk_var != "Not measured":
+        neuro_lines.append(f"- Trunk Sway Variance: {trunk_var} (>15 = significant waddling/balance difficulty, possible DMD indicator)")
+    if shoulder_var != "Not measured":
+        neuro_lines.append(f"- Shoulder Tilt Variance: {shoulder_var} (>10 = asymmetric shoulder movement, possible scoliosis indicator)")
+
+    neuro_section = ""
+    if neuro_lines:
+        neuro_section = "\nNEUROMUSCULAR SCREENING:\n" + "\n".join(neuro_lines)
+
+    # Patient context section
+    patient_section = f"\nPATIENT CONTEXT:\n- Patient: {patient_name}\n- Age: {patient_age} years"
+    if patient_notes:
+        patient_section += f"\n- Caregiver's Clinical Notes: \"{patient_notes}\""
+
     return f"""Analyze the following pediatric gait analysis data and explain it in simple terms for a parent:
+{patient_section}
 
 WHAT WAS MEASURED (Knee Angles During Walking):
 - Left Knee Maximum Bend: {result.get('left_max_flexion', 'N/A')} degrees
@@ -94,6 +158,8 @@ WHAT WAS MEASURED (Knee Angles During Walking):
 HOW EVENLY THE LEGS MOVE:
 - Symmetry Index: {result.get('symmetry_index', 'N/A')} (1.0 means both legs move identically, further from 1.0 means more difference between legs)
 - Asymmetry Percentage: {result.get('asymmetry_percentage', 'N/A')}% (0% = perfectly even, higher = more uneven)
+{ortho_section}
+{neuro_section}
 
 AI CLASSIFICATION:
 - Diagnosis: {result.get('diagnosis', 'N/A')}
@@ -105,9 +171,14 @@ VIDEO QUALITY:
 - Frames Analyzed: {result.get('frames_processed', 'N/A')}
 - Frames with Clear Detection: {result.get('frames_detected', 'N/A')}
 
-Normal pediatric knee ROM during walking is typically 40-60 degrees. A symmetry index near 1.0 is normal; anything below 0.9 or above 1.1 suggests notable asymmetry.
+REFERENCE RANGES:
+- Normal pediatric knee ROM during walking: 40-60 degrees
+- Symmetry index near 1.0 is normal; below 0.9 or above 1.1 = notable asymmetry
+- Ages 1-3: Bowlegs and toe-walking can be normal developmental patterns
+- Ages 3-7: Mild knock-knees are a normal developmental phase
+- Ages 7+: Persistent valgus/varus or toe-walking should be evaluated
 
-Please explain these results in simple, parent-friendly language. Be specific about what each number means for the child's walking and daily life. Respond ONLY with JSON."""
+Please explain ALL available results in simple, parent-friendly language. Be specific about what each number means for the child's walking and daily life. Cover every data section that has actual values. Respond ONLY with JSON."""
 
 
 def _extract_json(text: str) -> dict:
@@ -163,9 +234,10 @@ async def generate_summary(job_id: str):
             detail="OPENROUTER_API_KEY is not configured. Add it to your .env file."
         )
 
-    # 1. Fetch the job and its results
+    # 1. Fetch the job, its results, and patient data
     job_svc = JobService()
     result_svc = ResultService()
+    patient_svc = PatientService()
 
     job = job_svc.get(job_id)
     if not job:
@@ -179,8 +251,14 @@ async def generate_summary(job_id: str):
 
     result = results[0] if isinstance(results, list) else results
 
-    # 2. Build the prompt
-    user_prompt = _build_user_prompt(result)
+    # Fetch patient data for age, notes, and name context
+    patient = None
+    patient_ref = job.get("patient_ref")
+    if patient_ref:
+        patient = patient_svc.get(patient_ref)
+
+    # 2. Build the prompt with full data
+    user_prompt = _build_user_prompt(result, patient)
 
     # 3. Call OpenRouter via httpx (OpenAI-compatible)
     # We will try the user's configured model first, then fallback to others if rate-limited
@@ -205,7 +283,7 @@ async def generate_summary(job_id: str):
                                 {"role": "user", "content": user_prompt},
                             ],
                             "temperature": 0.3,
-                            "max_tokens": 2000,
+                            "max_tokens": 3500,
                         },
                     )
                 

@@ -69,7 +69,8 @@ export function JobHistoryTable() {
             <thead>
               <tr className="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-cyan-500/20">
                 <th className="px-6 py-4">Date</th>
-                <th className="px-6 py-4">Patient ID</th>
+                <th className="px-6 py-4">Patient Name</th>
+                <th className="px-6 py-4">ID</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4">Symmetry Index</th>
                 <th className="px-6 py-4 text-right">Actions</th>
@@ -106,9 +107,8 @@ export function JobHistoryTable() {
                 return (
                   <tr key={job.id} className="hover:bg-cyan-500/10 transition-colors">
                     <td className="px-6 py-4 text-slate-400">{formatDate(job.created_at)}</td>
-                    <td className="px-6 py-4 font-semibold text-slate-50">
-                      {(job as any).patients?.patient_name || (job as any).patients?.patient_id || job.patient_ref?.slice(0, 8) || 'Unknown'}
-                    </td>
+                    <td className="px-6 py-4 font-semibold text-slate-50">{job.patients?.patient_name || 'Unknown'}</td>
+                    <td className="px-6 py-4 text-cyan-400/70 font-mono text-xs tracking-wider">{job.patients?.patient_id || job.patient_ref?.slice(0, 8)}</td>
                     <td className="px-6 py-4">
                       {job.status === 'completed' && (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900/30 text-green-400 border border-green-500/30">

@@ -11,6 +11,208 @@ import {
    Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 
+// --- Parent Insights Panel ---
+const ParentInsightsPanel = ({ result }: { result: Result }) => {
+   const [isOpen, setIsOpen] = useState(false);
+
+   // Calculate trunk sway variance
+   const trunkVariance = useMemo(() => {
+      const arr = result.trunk_sway_array;
+      if (!arr || arr.length < 2) return null;
+      const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+      return arr.reduce((sum, x) => sum + (x - mean) ** 2, 0) / arr.length;
+   }, [result.trunk_sway_array]);
+
+   // Calculate shoulder tilt variance
+   const shoulderVariance = useMemo(() => {
+      const arr = result.shoulder_tilt_array;
+      if (!arr || arr.length < 2) return null;
+      const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+      return arr.reduce((sum, x) => sum + (x - mean) ** 2, 0) / arr.length;
+   }, [result.shoulder_tilt_array]);
+
+   // Build personalized insights
+   const insights: { icon: string; text: string; severity: 'good' | 'mild' | 'concern' }[] = [];
+
+   // Symmetry
+   const si = result.symmetry_index;
+   if (si < 0.85 || si > 1.15) {
+      const pct = Math.round(result.asymmetry_percentage ?? Math.abs(1 - si) * 100);
+      const favoredSide = si < 1.0 ? 'right' : 'left';
+      insights.push({
+         icon: 'swap_horiz',
+         text: `Your child appears to favor their ${favoredSide} side while walking, with a ${pct}% difference in how each leg moves. In everyday terms, this means one leg is doing more work than the other — similar to how carrying a heavy bag on one shoulder makes you lean. This imbalance can cause your child to tire more quickly during long walks, feel less steady on uneven surfaces like playground gravel, and may lead to soreness in the leg or hip that's compensating. Over time, persistent asymmetry is something a physical therapist can help correct with targeted exercises.`,
+         severity: si < 0.75 || si > 1.25 ? 'concern' : 'mild'
+      });
+   } else {
+      insights.push({
+         icon: 'check_circle',
+         text: `Great news — both legs are moving with strong symmetry (${(si * 100).toFixed(0)}% balanced). This means your child's left and right sides are sharing the work evenly during walking, which is a sign of healthy, well-coordinated movement. Even weight distribution reduces strain on joints and muscles, and supports good posture as they grow. This is exactly what we like to see in a developing child.`,
+         severity: 'good'
+      });
+   }
+
+   // Range of Motion
+   const leftRom = result.left_rom;
+   const rightRom = result.right_rom;
+   if (leftRom < 35 || rightRom < 35) {
+      const stiffSide = leftRom < rightRom ? 'left' : 'right';
+      const stiffVal = Math.round(Math.min(leftRom, rightRom));
+      const otherVal = Math.round(Math.max(leftRom, rightRom));
+      insights.push({
+         icon: 'accessibility_new',
+         text: `The ${stiffSide} knee is bending only about ${stiffVal}° during walking, while the other side reaches ${otherVal}°. For context, a healthy walking knee typically bends between 40° and 60° with each step — think of how a door swings open and closed. When the knee doesn't bend enough, it's like trying to walk without fully lifting your foot, which can cause a shuffling or stiff-legged gait. Your child might find it harder to run freely, climb stairs comfortably, or keep up with peers during active play. This reduced range of motion can sometimes be improved with stretching exercises or physical therapy.`,
+         severity: stiffVal < 25 ? 'concern' : 'mild'
+      });
+   } else {
+      insights.push({
+         icon: 'check_circle',
+         text: `Both knees are bending within a healthy range during walking (Left: ${Math.round(leftRom)}°, Right: ${Math.round(rightRom)}°). The normal range for walking is between 40° and 60°. This means your child's knees are flexing and extending properly with each step, allowing for smooth, efficient movement. Good knee mobility supports everything from running and jumping to climbing stairs — all the activities that are important for a growing child's development and daily life.`,
+         severity: 'good'
+      });
+   }
+
+   // Knee Valgus (Bowlegs / Knock-knees)
+   const valgus = result.knee_valgus_angle;
+   if (valgus != null) {
+      if (valgus < 170) {
+         const deviation = Math.round(180 - valgus);
+         insights.push({
+            icon: 'straighten',
+            text: `The knee alignment shows an outward curvature of about ${deviation}° beyond neutral (measured at ${valgus.toFixed(1)}°, where 180° is perfectly straight). This is sometimes called "Bowlegs" or Genu Varum. Imagine standing with your ankles together — if the knees don't touch and curve outward, that's what we're seeing here. In toddlers (ages 1-3), this is usually part of normal development and corrects itself naturally. However, if your child is older than 3 or the curvature seems to be increasing, it's worth discussing with your pediatrician. Persistent bowlegs can affect how forces distribute through the leg during walking and running.`,
+            severity: valgus < 160 ? 'concern' : 'mild'
+         });
+      } else if (valgus > 190) {
+         const deviation = Math.round(valgus - 180);
+         insights.push({
+            icon: 'straighten',
+            text: `The knees are angling inward by about ${deviation}° beyond neutral (measured at ${valgus.toFixed(1)}°). This is commonly called "Knock-knees" or Genu Valgum, where the knees come close together while the ankles stay apart. Between ages 3 and 7, a mild degree of knock-knees is actually a very normal phase of leg development — most children naturally grow out of it. However, if it persists past age 7-8 or if your child complains of knee pain during activities, a follow-up orthopedic check is recommended. Knock-knees can sometimes affect running form and may cause discomfort during prolonged physical activity.`,
+            severity: valgus > 200 ? 'concern' : 'mild'
+         });
+      }
+   }
+
+   // Ankle Dorsiflexion (Toe-Walking)
+   const ankle = result.ankle_dorsiflexion;
+   if (ankle != null && ankle > 100) {
+      const deviation = Math.round(ankle - 90);
+      insights.push({
+         icon: 'directions_walk',
+         text: `The ankle angle during walking is ${ankle.toFixed(1)}°, which is ${deviation}° above the neutral 90° position. This means the heels are staying off the ground more than expected — a pattern often called "Toe-Walking." Think of it like walking on tiptoes: the calf muscles are staying shortened instead of stretching with each step. Over time, this can cause the calf muscles and Achilles tendon to tighten, making it harder for your child to put their heels down flat. This pattern can affect balance, make running less efficient, and increase the risk of tripping. Many children who toe-walk benefit from gentle calf stretching exercises, and in some cases a pediatrician may recommend further evaluation to understand the underlying cause.`,
+         severity: ankle > 115 ? 'concern' : 'mild'
+      });
+   }
+
+   // Trunk Sway
+   if (trunkVariance != null && trunkVariance > 15) {
+      insights.push({
+         icon: 'self_improvement',
+         text: `The upper body shows more side-to-side swaying motion than typical during walking (measured variance: ${trunkVariance.toFixed(1)}, where values above 15 indicate significant movement). Imagine trying to walk on a balance beam — your body naturally sways to keep centered. When this swaying happens during normal flat-ground walking, it suggests your child's core muscles are working extra hard to maintain balance. This can lead to quicker fatigue during walks, less confidence on unstable surfaces, and a "waddling" appearance to the gait. Strengthening the core muscles through age-appropriate exercises like swimming, yoga poses, or balance games can often help improve stability over time.`,
+         severity: trunkVariance > 25 ? 'concern' : 'mild'
+      });
+   }
+
+   // Shoulder Tilt
+   if (shoulderVariance != null && shoulderVariance > 10) {
+      insights.push({
+         icon: 'accessibility',
+         text: `The shoulders are tilting unevenly during walking (measured variance: ${shoulderVariance.toFixed(1)}, where values above 10 suggest asymmetry). During a healthy walk, both shoulders should stay relatively level — like a balanced seesaw. When one shoulder consistently dips or rises more than the other, it can mean the spine or trunk is compensating for an imbalance somewhere else in the body, such as a leg length difference or hip weakness. This doesn't necessarily mean there's a spinal problem, but it is a pattern worth discussing with your pediatrician, who may recommend a closer look or referral to an orthopedic specialist.`,
+         severity: shoulderVariance > 20 ? 'concern' : 'mild'
+      });
+   }
+
+   // Pelvic Tilt
+   const pelvic = result.pelvic_tilt;
+   if (pelvic != null && pelvic > 5) {
+      insights.push({
+         icon: 'height',
+         text: `There is a noticeable tilt in the pelvis during walking (${pelvic.toFixed(1)}°, where less than 5° is considered normal). The pelvis is like the body's foundation — if it's tilted, everything above and below has to adjust. This tilt can sometimes indicate a difference in leg length, hip muscle weakness, or a habitual posture pattern. Your child might unconsciously compensate by slightly limping, leaning to one side, or taking uneven steps. A physical therapist can assess whether this tilt is structural (bone-related) or functional (muscle-related) and recommend appropriate stretches or strengthening exercises.`,
+         severity: pelvic > 10 ? 'concern' : 'mild'
+      });
+   }
+
+   // Foot Progression
+   const footProg = result.foot_progression_angle;
+   if (footProg != null) {
+      if (footProg < 0) {
+         insights.push({
+            icon: 'do_not_step',
+            text: `The feet are pointing inward during walking at ${footProg.toFixed(1)}° (normal is 10-15° outward). This is commonly called "In-toeing" or "Pigeon-toed" walking. It can originate from the foot, shin bone, or hip rotating inward. The good news is that most children naturally outgrow in-toeing as their bones mature and muscles strengthen — typically by age 8-10. However, if your child frequently trips over their own feet during running or play, it's worth mentioning to your pediatrician. In rare cases, persistent in-toeing may benefit from physical therapy or monitoring.`,
+            severity: footProg < -10 ? 'concern' : 'mild'
+         });
+      } else if (footProg > 30) {
+         insights.push({
+            icon: 'do_not_step',
+            text: `The feet are pointing outward more than the typical range during walking (${footProg.toFixed(1)}° vs. the normal 10-15°). This "Out-toeing" pattern means the feet splay outward with each step, which can reduce walking and running efficiency — imagine trying to run fast with your feet pointing sideways instead of forward. While some outward rotation is normal, particularly in younger children who are still developing their walking pattern, a more pronounced angle can affect how muscles and joints work together. If this persists or your child seems to tire easily during physical activities, discussing it with a pediatrician or physical therapist would be a good next step.`,
+            severity: 'mild'
+         });
+      }
+   }
+
+   const concernCount = insights.filter(i => i.severity === 'concern').length;
+   const mildCount = insights.filter(i => i.severity === 'mild').length;
+
+   const severityColors = {
+      good: 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800/30 text-emerald-700 dark:text-emerald-300',
+      mild: 'bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800/30 text-amber-700 dark:text-amber-300',
+      concern: 'bg-rose-50 dark:bg-rose-900/10 border-rose-200 dark:border-rose-800/30 text-rose-700 dark:text-rose-300',
+   };
+
+   const iconColors = {
+      good: 'text-emerald-500',
+      mild: 'text-amber-500',
+      concern: 'text-rose-500',
+   };
+
+   return (
+      <div className="bg-gradient-to-br from-blue-50 via-indigo-50/50 to-blue-50 dark:from-blue-950/20 dark:via-indigo-950/10 dark:to-blue-950/20 border border-blue-200 dark:border-blue-800/30 rounded-xl shadow-sm overflow-hidden">
+         {/* Toggle Header */}
+         <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="w-full flex items-center gap-3 px-6 py-4 hover:bg-blue-100/30 dark:hover:bg-blue-900/10 transition-colors cursor-pointer"
+         >
+            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center border border-blue-200 dark:border-blue-800/30 shrink-0">
+               <span className="material-icons text-blue-600 dark:text-blue-400">lightbulb</span>
+            </div>
+            <div className="text-left">
+               <h3 className="font-semibold text-gray-900 dark:text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>Quick Summary for Parents</h3>
+               <p className="text-xs text-gray-500 dark:text-gray-400">Personalized insights based on your child's gait data</p>
+            </div>
+            {concernCount > 0 && (
+               <span className="ml-auto mr-3 text-[10px] font-bold uppercase tracking-widest bg-rose-100 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 px-2.5 py-1 rounded-full border border-rose-200 dark:border-rose-800/30 shrink-0">
+                  {concernCount} area{concernCount > 1 ? 's' : ''} to discuss
+               </span>
+            )}
+            <span className={`material-icons text-gray-400 dark:text-gray-500 transition-transform duration-300 shrink-0 ${isOpen ? 'rotate-180' : ''}`}>
+               expand_more
+            </span>
+         </button>
+
+         {/* Collapsible Content */}
+         <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? 'max-h-[3000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className="px-6 pb-6 pt-2 space-y-3">
+               {insights.map((insight, i) => (
+                  <div key={i} className={`flex items-start gap-3 px-4 py-3.5 rounded-lg border ${severityColors[insight.severity]} transition-colors`}>
+                     <span className={`material-icons text-lg mt-0.5 shrink-0 ${iconColors[insight.severity]}`}>{insight.icon}</span>
+                     <p className="text-sm leading-relaxed">{insight.text}</p>
+                  </div>
+               ))}
+
+               {(concernCount > 0 || mildCount > 0) && (
+                  <div className="mt-2 flex items-start gap-2.5 bg-white/60 dark:bg-gray-900/30 px-4 py-3.5 rounded-lg border border-blue-100 dark:border-blue-900/20">
+                     <span className="material-icons text-blue-500 text-lg mt-0.5 shrink-0">arrow_forward</span>
+                     <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        <span className="font-semibold text-gray-800 dark:text-gray-200">Suggested Next Step: </span>
+                        We recommend discussing these insights with your child's pediatrician or physical therapist. You can use the detailed clinical graphs further down this page as a reference during your visit — they provide the precise measurements that a specialist can use to track progress over time.
+                     </p>
+                  </div>
+               )}
+            </div>
+         </div>
+      </div>
+   );
+};
+
 // --- Orthopedic Components ---
 const OrthopedicSummaryCard = ({ result }: { result: Result }) => {
    const valgus = result.knee_valgus_angle ?? 180;
@@ -71,7 +273,22 @@ const OrthopedicSummaryCard = ({ result }: { result: Result }) => {
    );
 };
 
-const OrthopedicGraphArea = ({ chartData }: { chartData: any[] }) => {
+const OrthopedicGraphArea = ({ chartData, result }: { chartData: any[]; result: Result }) => {
+   const valgus = result.knee_valgus_angle;
+   const pelvic = result.pelvic_tilt;
+   const ankle = result.ankle_dorsiflexion;
+   const orthoInsight = valgus != null && valgus < 170
+      ? `The blue line (Knee Valgus) stays below 170°, indicating an outward knee curvature. This means your child's knees bow outward more than typical when walking.`
+      : valgus != null && valgus > 190
+      ? `The blue line (Knee Valgus) exceeds 190°, showing the knees angle inward. This knock-knee pattern is common in young children but worth monitoring.`
+      : `The blue line (Knee Valgus) stays near the neutral 180°, indicating healthy knee alignment.`;
+   const pelvicInsight = pelvic != null && pelvic > 5
+      ? ` The yellow line (Pelvic Tilt) shows noticeable asymmetry — one hip is sitting higher than the other during walking.`
+      : ``;
+   const ankleInsight = ankle != null && ankle > 100
+      ? ` The purple line (Dorsiflexion) exceeds the 90° neutral zone, suggesting a toe-walking tendency.`
+      : ``;
+
    return (
       <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-md rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col mt-6">
          <div className="mb-4">
@@ -102,6 +319,14 @@ const OrthopedicGraphArea = ({ chartData }: { chartData: any[] }) => {
                <Line type="monotone" dataKey="dorsiflexion" name="Dorsiflexion" stroke="#8b5cf6" strokeWidth={2} dot={false} />
             </LineChart>
          </ResponsiveContainer>
+         {/* Graph Insight */}
+         <div className="mt-4 flex items-start gap-2.5 bg-indigo-50 dark:bg-indigo-950/20 px-4 py-3 rounded-lg border border-indigo-100 dark:border-indigo-900/30">
+            <span className="material-icons text-indigo-500 text-base mt-0.5 shrink-0">info</span>
+            <p className="text-xs text-indigo-700 dark:text-indigo-300 leading-relaxed">
+               <span className="font-semibold">What this graph shows: </span>
+               {orthoInsight}{pelvicInsight}{ankleInsight}
+            </p>
+         </div>
       </div>
    );
 };
@@ -175,7 +400,23 @@ const NeuromuscularSummaryCard = ({ result }: { result: Result }) => {
    );
 };
 
-const NeuromuscularGraphArea = ({ chartData }: { chartData: any[] }) => {
+const NeuromuscularGraphArea = ({ chartData, result }: { chartData: any[]; result: Result }) => {
+   // Calculate trunk sway variance for insight
+   const trunkArr = result.trunk_sway_array || [];
+   const trunkMean = trunkArr.length ? trunkArr.reduce((a, b) => a + b, 0) / trunkArr.length : 0;
+   const trunkVar = trunkArr.length > 1 ? trunkArr.reduce((s, x) => s + (x - trunkMean) ** 2, 0) / trunkArr.length : 0;
+
+   const shoulderArr = result.shoulder_tilt_array || [];
+   const shoulderMean = shoulderArr.length ? shoulderArr.reduce((a, b) => a + b, 0) / shoulderArr.length : 0;
+   const shoulderVar = shoulderArr.length > 1 ? shoulderArr.reduce((s, x) => s + (x - shoulderMean) ** 2, 0) / shoulderArr.length : 0;
+
+   const trunkInsight = trunkVar > 15
+      ? `The purple line (Trunk Sway) shows lots of up-and-down movement — this means your child's upper body is swaying side to side while walking, like trying to keep balance on a moving bus.`
+      : `The purple line (Trunk Sway) is relatively steady, showing your child's upper body stays stable during walking — a good sign of core strength.`;
+   const shoulderInsight = shoulderVar > 10
+      ? ` The pink line (Shoulder Tilt) fluctuates noticeably, meaning the shoulders aren't staying level — one side dips more than the other during each step.`
+      : ` The pink line (Shoulder Tilt) stays fairly level, indicating even shoulder movement.`;
+
    return (
       <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-md rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col mt-6">
          <div className="mb-4">
@@ -206,6 +447,14 @@ const NeuromuscularGraphArea = ({ chartData }: { chartData: any[] }) => {
                <Line type="monotone" dataKey="pelvicTilt" name="Pelvic Tilt" stroke="#f59e0b" strokeWidth={2} strokeDasharray="5 5" dot={false} />
             </LineChart>
          </ResponsiveContainer>
+         {/* Graph Insight */}
+         <div className="mt-4 flex items-start gap-2.5 bg-purple-50 dark:bg-purple-950/20 px-4 py-3 rounded-lg border border-purple-100 dark:border-purple-900/30">
+            <span className="material-icons text-purple-500 text-base mt-0.5 shrink-0">info</span>
+            <p className="text-xs text-purple-700 dark:text-purple-300 leading-relaxed">
+               <span className="font-semibold">What this graph shows: </span>
+               {trunkInsight}{shoulderInsight}
+            </p>
+         </div>
       </div>
    );
 };
@@ -448,16 +697,33 @@ export default function ResultsPage() {
             </div>
 
             {/* Patient Info Bar (Horizontal) */}
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-6 py-4 flex flex-wrap gap-x-12 gap-y-4 items-center shadow-sm">
-               <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Patient ID</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">{job.patient_ref}</span>
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-6 py-4 flex flex-col gap-4 shadow-sm">
+               <div className="flex flex-wrap gap-x-12 gap-y-4 items-center">
+                  <div className="flex flex-col">
+                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Patient ID</span>
+                     <span className="font-semibold text-gray-900 dark:text-white">{job.patients?.patient_id || job.patient_ref.substring(0, 8)}</span>
+                  </div>
+                  {job.patients?.patient_name && (
+                  <div className="flex flex-col">
+                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Patient Name</span>
+                     <span className="font-semibold text-gray-900 dark:text-white">{job.patients.patient_name}</span>
+                  </div>
+                  )}
+                  <div className="flex flex-col">
+                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Analysis Date</span>
+                     <span className="font-semibold text-gray-900 dark:text-white">{new Date(job.created_at).toLocaleDateString()}</span>
+                  </div>
                </div>
-               <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Analysis Date</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">{new Date(job.created_at).toLocaleDateString()}</span>
-               </div>
+               {job.patients?.notes && (
+                  <div className="pt-4 border-t border-gray-100 dark:border-gray-800 mt-2">
+                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><span className="material-icons text-sm">assignment</span>Clinical Notes</span>
+                     <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg border border-gray-100 dark:border-gray-800/80">{job.patients.notes}</p>
+                  </div>
+               )}
             </div>
+
+            {/* Parent Insights Panel */}
+            <ParentInsightsPanel result={firstResult} />
 
             {/* Metrics Grid (4 Cards Horizontal) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -634,6 +900,17 @@ export default function ResultsPage() {
                         <p className="text-sm text-gray-400 font-medium">No angle data recorded for this analysis</p>
                      </div>
                   )}
+                   {/* Graph Insight */}
+                   <div className="mt-4 flex items-start gap-2.5 bg-sky-50 dark:bg-sky-950/20 px-4 py-3 rounded-lg border border-sky-100 dark:border-sky-900/30">
+                      <span className="material-icons text-sky-500 text-base mt-0.5 shrink-0">info</span>
+                      <p className="text-xs text-sky-700 dark:text-sky-300 leading-relaxed">
+                         <span className="font-semibold">What this graph shows: </span>
+                         {firstResult.symmetry_index < 0.85 || firstResult.symmetry_index > 1.15
+                            ? `The red and gray lines represent how each knee bends during walking. Notice how the two lines don't mirror each other well — there's a ${Math.round(firstResult.asymmetry_percentage ?? Math.abs(1 - firstResult.symmetry_index) * 100)}% difference, meaning one leg is bending differently from the other. In a balanced gait, these lines would closely overlap.`
+                            : `The red and gray lines show how each knee bends during the walking cycle. Both lines follow a similar pattern and closely overlap, which means your child's legs are moving symmetrically — a sign of healthy, balanced walking.`
+                         }
+                      </p>
+                   </div>
                </div>
         </div>
 
@@ -699,13 +976,13 @@ export default function ResultsPage() {
         <OrthopedicSummaryCard result={firstResult} />
         
         {/* Orthopedic Graphs */}
-        <OrthopedicGraphArea chartData={chartData} />
+        <OrthopedicGraphArea chartData={chartData} result={firstResult} />
 
         {/* Neuromuscular Summary */}
         <NeuromuscularSummaryCard result={firstResult} />
 
         {/* Neuromuscular Graphs */}
-        <NeuromuscularGraphArea chartData={chartData} />
+        <NeuromuscularGraphArea chartData={chartData} result={firstResult} />
 
             {/* AI Clinical Summary Card */}
             <div className="bg-white dark:bg-[#18181b] rounded-xl shadow-sm border border-gray-100 dark:border-[#27272a] overflow-hidden">

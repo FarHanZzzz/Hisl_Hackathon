@@ -39,7 +39,7 @@ class VideoViewType(str, Enum):
 
 class PatientInfo(BaseModel):
     """Patient information for analysis."""
-    patient_id: str = Field(..., min_length=1, description="Unique patient identifier")
+    patient_id: Optional[str] = Field(None, description="Unique patient identifier")
     patient_name: Optional[str] = Field(None, description="Patient name (optional)")
     age: Optional[int] = Field(None, ge=0, le=18, description="Patient age in years")
     notes: Optional[str] = Field(None, description="Additional clinical notes")

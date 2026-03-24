@@ -5,8 +5,8 @@
 
 // --- Patient ---
 export interface PatientInput {
-  patient_id: string;
-  patient_name?: string;
+  patient_id?: string;
+  patient_name: string;
   age?: number;
   notes?: string;
 }
@@ -24,6 +24,11 @@ export interface Job {
   created_at: string;
   completed_at?: string;
   results?: Result;  // Nested from Supabase join (one-to-one)
+  patients?: {
+    patient_id: string;
+    patient_name?: string;
+    notes?: string;
+  };
 }
 
 // --- Result ---

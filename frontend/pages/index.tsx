@@ -251,13 +251,6 @@ export default function LandingPage() {
                   Start Analysis
                   <ArrowRight size={20} />
                 </button>
-                <button
-                  className="glass-card"
-                  style={{ display:'flex', alignItems:'center', justifyContent:'center', height:56, padding:'0 32px', borderRadius:12, color:'#f8fafc', fontWeight:500, border:'1px solid rgba(6,182,212,0.3)', cursor:'pointer', background:'transparent', gap:8 }}
-                >
-                  <PlayCircle size={20} />
-                  View Demo
-                </button>
               </motion.div>
             </div>
           </LampContainer>
@@ -332,9 +325,6 @@ export default function LandingPage() {
                   style={{ height:56, padding:'0 32px', borderRadius:12, background:'linear-gradient(to right, #0891b2, #06b6d4)', color:'white', fontWeight:700, fontSize:18, border:'none', cursor:'pointer', transition:'all 0.3s' }}
                 >
                   Get Started Now
-                </button>
-                <button style={{ height:56, padding:'0 32px', borderRadius:12, background:'transparent', border:'1px solid rgba(6,182,212,0.4)', color:'#f8fafc', fontWeight:500, cursor:'pointer', transition:'all 0.3s' }}>
-                  Schedule Demo
                 </button>
               </div>
             </div>

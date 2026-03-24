@@ -8,6 +8,7 @@ Tables (already exist in Supabase):
 """
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timezone
+import re
 from ..dependencies import get_supabase
 
 
@@ -18,12 +19,41 @@ class PatientService:
         self.db = get_supabase()
         self.table = "patients"
     
-    def get_or_create(self, patient_id: str, patient_name: str = None, 
+    def generate_patient_id(self, patient_name: str) -> str:
+        """Generate a sequential patient ID based on the patient's name."""
+        if patient_name:
+            safe_name = re.sub(r'[^a-zA-Z0-9]', '', patient_name)
+            prefix = safe_name[:15] if safe_name else "Patient"
+        else:
+            prefix = "Patient"
+            
+        result = (self.db.table(self.table)
+                  .select("patient_id")
+                  .ilike("patient_id", f"{prefix}-%")
+                  .execute())
+                  
+        max_num = 0
+        if result.data:
+            for row in result.data:
+                pid = row.get("patient_id", "")
+                parts = pid.rsplit("-", 1)
+                if len(parts) == 2 and parts[1].isdigit():
+                    num = int(parts[1])
+                    if num > max_num:
+                        max_num = num
+                        
+        next_num = max_num + 1
+        return f"{prefix}-{next_num:03d}"
+    
+    def get_or_create(self, patient_id: str = None, patient_name: str = None, 
                       age: int = None, notes: str = None) -> Dict[str, Any]:
         """
         Find existing patient by patient_id, or create a new one.
         Returns the patient row as a dict.
         """
+        if not patient_id:
+            patient_id = self.generate_patient_id(patient_name)
+            
         # Try to find existing
         result = (self.db.table(self.table)
                   .select("*")
@@ -68,7 +98,7 @@ class JobService:
     def get(self, job_id: str) -> Optional[Dict[str, Any]]:
         """Get job by UUID, including nested results if completed."""
         result = (self.db.table(self.table)
-                  .select("*, results(*), patients!patient_ref(patient_id, patient_name)")
+                  .select("*, results(*), patients!patient_ref(patient_id, patient_name, notes)")
                   .eq("id", job_id)
                   .execute())
         return result.data[0] if result.data else None
@@ -90,7 +120,7 @@ class JobService:
     def list_all(self, status: str = None, limit: int = 50) -> List[Dict[str, Any]]:
         """List jobs, optionally filtered by status, ordered by newest first."""
         query = (self.db.table(self.table)
-                 .select("*, results(*), patients!patient_ref(patient_id, patient_name)")
+                 .select("*, results(*), patients!patient_ref(patient_id, patient_name, notes)")
                  .order("created_at", desc=True)
                  .limit(limit))
         if status:
