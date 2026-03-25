@@ -506,7 +506,8 @@ export default function ResultsPage() {
    useEffect(() => {
       if (!job?.id) return;
       const checkVideo = async () => {
-         const baseUrl = 'http://localhost:8000/results';
+         // Use Next.js API rewrite to avoid CORS issues
+         const baseUrl = '/api/results';
          // Try MP4 first (newest format), then WebM
          for (const ext of ['mp4', 'webm']) {
             try {
