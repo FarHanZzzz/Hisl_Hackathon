@@ -8,7 +8,7 @@ import type { UploadResponse, CreateJobResponse, Job, PatientInput, AISummary } 
 
 const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
-  timeout: 30000,
+  timeout: 90000, // Render free-tier cold starts can take ~60s
 });
 
 /**

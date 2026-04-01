@@ -7,17 +7,25 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load .env from project root
+# Load .env — try project root first (local dev), then backend dir (Render)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-load_dotenv(PROJECT_ROOT / ".env", override=True)
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+
+env_path = PROJECT_ROOT / ".env"
+if not env_path.exists():
+    env_path = BACKEND_DIR / ".env"
+if env_path.exists():
+    load_dotenv(env_path, override=True)
 
 # =============================================================================
 # DIRECTORIES
 # =============================================================================
 
-UPLOAD_DIR = PROJECT_ROOT / "uploads"
-RESULTS_DIR = PROJECT_ROOT / "results"
-MODELS_DIR = PROJECT_ROOT / "models"
+# Use BACKEND_DIR as base for uploads/results on Render
+_base = BACKEND_DIR if not (PROJECT_ROOT / "frontend").exists() else PROJECT_ROOT
+UPLOAD_DIR = _base / "uploads"
+RESULTS_DIR = _base / "results"
+MODELS_DIR = _base / "models"
 
 # Ensure dirs exist
 UPLOAD_DIR.mkdir(exist_ok=True)
@@ -44,7 +52,16 @@ OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "google/gemini-3.1-pro-preview"
 CORS_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://hisl-hackathon.onrender.com",
 ]
+
+# Add any Vercel deployment URLs (they change per deploy)
+_extra = os.getenv("CORS_EXTRA_ORIGINS", "")
+if _extra:
+    CORS_ORIGINS.extend([o.strip() for o in _extra.split(",") if o.strip()])
+
+# Also allow all .vercel.app subdomains
+CORS_ORIGINS.append("*")  # For hackathon; tighten in production
 
 # =============================================================================
 # FILE UPLOAD
