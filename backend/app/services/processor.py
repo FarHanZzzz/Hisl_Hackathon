@@ -43,8 +43,8 @@ def process_job_async(job_id: str) -> None:
         job_svc.update(job_id, status="processing", progress=0.0)
         
         # Import engine (deferred to avoid circular imports + MediaPipe startup cost)
-        from backend.app.engine.scanner import process_video
-        from backend.app.schemas import PatientInfo
+        from app.engine.scanner import process_video
+        from app.schemas import PatientInfo
         
         # Define throttled progress callback
         last_reported_progress = -0.1

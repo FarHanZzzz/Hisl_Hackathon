@@ -13,8 +13,8 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-from backend.app.utils import calculate_angle
-from backend.app.schemas import (
+from app.utils import calculate_angle
+from app.schemas import (
     AnalysisMetrics,
     AngleData,
     DiagnosisInfo,
@@ -548,7 +548,7 @@ if __name__ == "__main__":
     import sys
 
     if len(sys.argv) < 2:
-        print("Usage: python -m backend.app.engine.scanner <video_path>")
+        print("Usage: python -m app.engine.scanner <video_path>")
         sys.exit(1)
 
     video_path = sys.argv[1]

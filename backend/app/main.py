@@ -2,7 +2,7 @@
 Pedi-Growth Backend API
 FastAPI application for video upload, job management, and results retrieval.
 
-Run: uvicorn backend.app.main:app --reload --port 8000
+Run: uvicorn app.main:app --reload --port 8000
 (from project root: d:\\\\Hisl_hackathon_project)
 """
 
@@ -10,8 +10,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from backend.app.config import UPLOAD_DIR, RESULTS_DIR, CORS_ORIGINS
-from backend.app.routes import health_router, upload_router, jobs_router, ai_summary_router
+from app.config import UPLOAD_DIR, RESULTS_DIR, CORS_ORIGINS
+from app.routes import health_router, upload_router, jobs_router, ai_summary_router
 
 import mimetypes
 mimetypes.add_type("video/webm", ".webm")

@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
-from backend.app.engine.smoothing import interpolate_zeros, smooth_angles
-from backend.app.engine.analysis import calculate_rom
+from app.engine.smoothing import interpolate_zeros, smooth_angles
+from app.engine.analysis import calculate_rom
 
 class TestAnalysisRobustness(unittest.TestCase):
     def test_sparse_data_interpolation(self):

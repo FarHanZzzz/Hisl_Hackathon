@@ -14,7 +14,7 @@ Test Categories:
 
 import pytest
 import numpy as np
-from backend.app.engine.math_utils import (
+from app.engine.math_utils import (
     calculate_angle_2d,
     calculate_angle_3d_projected,
     calculate_pelvic_tilt,
@@ -28,7 +28,7 @@ from backend.app.engine.math_utils import (
     _find_local_minima,
     apply_smoothing,
 )
-from backend.app.engine.analysis import (
+from app.engine.analysis import (
     calculate_rom,
     calculate_symmetry_index,
     calculate_asymmetry,
@@ -44,8 +44,8 @@ from backend.app.engine.analysis import (
     CALCANEUS_THRESHOLD,
     TRUNK_SWAY_VARIANCE_THRESHOLD,
 )
-from backend.app.utils import calculate_angle, clean_angle_data
-from backend.app.schemas import DiagnosisResult
+from app.utils import calculate_angle, clean_angle_data
+from app.schemas import DiagnosisResult
 
 
 # =============================================================================

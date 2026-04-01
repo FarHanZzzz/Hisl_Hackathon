@@ -1,6 +1,6 @@
 """
 Shared utility functions for Pedi-Growth.
-Consolidated from shared/utils.py — imports now reference backend.app.schemas.
+Consolidated from shared/utils.py — imports now reference app.schemas.
 """
 
 import numpy as np
