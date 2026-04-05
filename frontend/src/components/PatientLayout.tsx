@@ -2,6 +2,8 @@ import { ReactNode } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useTranslation } from 'next-i18next';
+import { LanguageToggle } from './LanguageToggle';
 
 interface PatientLayoutProps {
   children: ReactNode;
@@ -11,12 +13,13 @@ interface PatientLayoutProps {
 
 export function PatientLayout({ children, title = 'Pedi-Growth', hideNav = false }: PatientLayoutProps) {
   const router = useRouter();
+  const { t } = useTranslation('common');
 
   const navItems = [
-    { name: 'Home', path: '/patient/home', icon: 'home' },
-    { name: 'Record', path: '/patient/capture', icon: 'videocam' },
-    { name: 'Results', path: '/patient/results', icon: 'insert_chart' },
-    { name: 'Profile', path: '/patient/profile', icon: 'person' },
+    { name: t('nav_home', 'Home'), path: '/patient/home', icon: 'home' },
+    { name: t('nav_record', 'Record'), path: '/patient/capture', icon: 'videocam' },
+    { name: t('nav_results', 'Results'), path: '/patient/results', icon: 'insert_chart' },
+    { name: t('nav_profile', 'Profile'), path: '/patient/profile', icon: 'person' },
   ];
 
   return (
@@ -25,6 +28,8 @@ export function PatientLayout({ children, title = 'Pedi-Growth', hideNav = false
         <title>{title}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
       </Head>
+
+      <LanguageToggle />
 
       {/* Background Gradient */}
       <div className="fixed inset-0 pointer-events-none z-0">
@@ -42,7 +47,7 @@ export function PatientLayout({ children, title = 'Pedi-Growth', hideNav = false
             </div>
             <span className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>Pedi-Growth</span>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6 pr-24">
             {navItems.map((item) => (
               <Link key={item.path} href={item.path}>
                 <span className={`flex items-center gap-2 text-sm font-medium transition-colors ${
@@ -76,7 +81,7 @@ export function PatientLayout({ children, title = 'Pedi-Growth', hideNav = false
                                (item.path === '/patient/results' && router.pathname.startsWith('/patient/results'));
               
               // Special styling for the Record button
-              if (item.name === 'Record') {
+              if (item.name === t('nav_record', 'Record')) {
                 return (
                   <button 
                     key={item.path}
@@ -97,9 +102,9 @@ export function PatientLayout({ children, title = 'Pedi-Growth', hideNav = false
                   className="flex flex-col items-center justify-center w-16 h-full space-y-1"
                 >
                   <span className={`material-icons text-2xl transition-colors ${isActive ? 'text-cyan-400' : 'text-slate-400'}`}>
-                    {isActive && item.name === 'Home' ? 'home' : 
-                     isActive && item.name === 'Results' ? 'insights' : 
-                     isActive && item.name === 'Profile' ? 'person' : 
+                    {isActive && item.name === t('nav_home', 'Home') ? 'home' : 
+                     isActive && item.name === t('nav_results', 'Results') ? 'insights' : 
+                     isActive && item.name === t('nav_profile', 'Profile') ? 'person' : 
                      item.icon}
                   </span>
                   <span className={`text-[10px] font-medium transition-colors ${isActive ? 'text-cyan-400' : 'text-slate-500'}`}>

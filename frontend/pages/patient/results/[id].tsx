@@ -2,10 +2,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { PatientLayout } from '../../../src/components/PatientLayout';
+import { useTranslation } from 'next-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 export default function PatientResultDetail() {
   const router = useRouter();
   const { id } = router.query;
+  const { t } = useTranslation('patient');
   
   // Mock fetch based on ID for demo purposes
   const [loading, setLoading] = useState(true);
@@ -21,11 +24,11 @@ export default function PatientResultDetail() {
 
   if (loading) {
     return (
-      <PatientLayout title="Loading Results...">
+      <PatientLayout title={`${t('loading_results')} | Pedi-Growth`}>
         <div className="flex h-[60vh] items-center justify-center">
           <div className="flex flex-col items-center gap-4">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-cyan-500/30 border-t-cyan-500" />
-            <p className="text-slate-400">Loading your results...</p>
+            <p className="text-slate-400">{t('loading_results')}</p>
           </div>
         </div>
       </PatientLayout>
@@ -33,7 +36,7 @@ export default function PatientResultDetail() {
   }
 
   return (
-    <PatientLayout title="Result Summary | Pedi-Growth" hideNav={true}>
+    <PatientLayout title={`${t('result_summary')} | Pedi-Growth`} hideNav={true}>
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-8">
         
         {/* Header with Back Button */}
@@ -44,7 +47,7 @@ export default function PatientResultDetail() {
           >
             <span className="material-icons">arrow_back</span>
           </button>
-          <span className="text-slate-400 font-medium">Result Summary</span>
+          <span className="text-slate-400 font-medium">{t('result_summary')}</span>
         </div>
 
         {/* Top Big Badge */}
@@ -58,13 +61,11 @@ export default function PatientResultDetail() {
           }`}>
             <span className="material-icons text-3xl">{isHealthy ? 'check' : 'priority_high'}</span>
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: "'Outfit', sans-serif" }}>
-            {isHealthy ? "Your Child's Walking Looks Healthy" : "Some Areas Need Attention"}
+          <h1 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: "'Noto Sans Bengali', 'Outfit', sans-serif" }}>
+            {isHealthy ? t('looks_healthy') : t('some_areas_attention')}
           </h1>
           <p className="text-slate-300 text-sm max-w-sm">
-            {isHealthy 
-              ? "We analyzed the video and found no significant issues with stability or alignment. Great job!" 
-              : "We noticed a few out-of-the-ordinary movements. A clinical professional should review this to be sure everything is okay."}
+            {isHealthy ? t('healthy_desc') : t('attention_desc')}
           </p>
         </div>
 
@@ -80,8 +81,8 @@ export default function PatientResultDetail() {
                   <span className="text-2xl">👨‍⚕️</span>
                 </div>
                 <div className="text-left flex-1">
-                  <h3 className="text-white font-bold text-lg">Consult a Doctor</h3>
-                  <p className="text-cyan-400 text-xs font-medium">Schedule a free online appointment now</p>
+                  <h3 className="text-white font-bold text-lg">{t('consult_cta')}</h3>
+                  <p className="text-cyan-400 text-xs font-medium">{t('schedule_free')}</p>
                 </div>
                 <span className="material-icons text-cyan-500">arrow_forward</span>
               </div>
@@ -90,7 +91,7 @@ export default function PatientResultDetail() {
         )}
 
         {/* Key Insights */}
-        <h2 className="text-lg font-bold text-white mb-4 px-1" style={{ fontFamily: "'Outfit', sans-serif" }}>Key Insights</h2>
+        <h2 className="text-lg font-bold text-white mb-4 px-1" style={{ fontFamily: "'Noto Sans Bengali', 'Outfit', sans-serif" }}>{t('key_insights')}</h2>
         <div className="space-y-4">
           
           {/* Insight 1 */}
@@ -99,11 +100,9 @@ export default function PatientResultDetail() {
               <span className="material-icons text-sm">{isHealthy ? 'thumb_up' : 'thumb_up'}</span>
             </div>
             <div>
-              <h3 className="text-white font-semibold mb-1">Balance & Symmetry</h3>
+              <h3 className="text-white font-semibold mb-1">{t('balance_symmetry')}</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                {isHealthy 
-                  ? "Both legs are moving identically, which is a great sign of strength and coordination."
-                  : "Both legs are moving similarly overall, meaning no major limping is detected."}
+                {isHealthy ? t('balance_healthy') : t('balance_attention')}
               </p>
             </div>
           </div>
@@ -114,11 +113,9 @@ export default function PatientResultDetail() {
               <span className="material-icons text-sm">{isHealthy ? 'straighten' : 'warning'}</span>
             </div>
             <div>
-              <h3 className="text-white font-semibold mb-1">Knee Alignment</h3>
+              <h3 className="text-white font-semibold mb-1">{t('knee_alignment')}</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                {isHealthy 
-                  ? "The knees are pointing straight ahead during typical motion."
-                  : "The knees are pointing slightly inward more than usual (often called 'knock-knees'). This is common in young children but worth checking."}
+                {isHealthy ? t('knee_healthy') : t('knee_attention')}
               </p>
             </div>
           </div>
@@ -129,9 +126,9 @@ export default function PatientResultDetail() {
               <span className="material-icons text-sm">directions_walk</span>
             </div>
             <div>
-              <h3 className="text-white font-semibold mb-1">Foot Position</h3>
+              <h3 className="text-white font-semibold mb-1">{t('foot_position')}</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                The heels are striking the ground normally, showing a good walking pattern without tip-toeing.
+                {t('foot_desc')}
               </p>
             </div>
           </div>
@@ -141,4 +138,12 @@ export default function PatientResultDetail() {
       </div>
     </PatientLayout>
   );
+}
+
+export async function getServerSideProps({ locale }: { locale: string }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale, ['common', 'patient'])),
+    },
+  };
 }

@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import '@/styles/globals.css';
 import { FileText, Home, LayoutDashboard, User } from 'lucide-react';
 import { NavBar } from '@/src/components/ui/tubelight-navbar';
+import { appWithTranslation } from 'next-i18next';
 
 const navItems = [
   { name: 'Home', url: '/', icon: Home },
@@ -41,7 +42,7 @@ function useRouteTheme() {
   }, [router.pathname]);
 }
 
-export default function App({ Component, pageProps }: AppProps) {
+function App({ Component, pageProps }: AppProps) {
   useRouteTheme();
 
   return (
@@ -51,3 +52,5 @@ export default function App({ Component, pageProps }: AppProps) {
     </>
   );
 }
+
+export default appWithTranslation(App);

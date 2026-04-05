@@ -1,9 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { useTranslation } from 'next-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 export default function RecordVideo() {
   const router = useRouter();
+  const { t } = useTranslation('patient');
   
   const [recordingState, setRecordingState] = useState<'instructions' | 'preview' | 'recording' | 'review'>('instructions');
   const [timeCounter, setTimeCounter] = useState(0);
@@ -105,33 +108,33 @@ export default function RecordVideo() {
               <div className="absolute inset-0 bg-cyan-900/20" />
               <div className="text-center p-6 relative z-10">
                 <span className="material-icons text-6xl text-cyan-400 mb-4 animate-bounce">directions_walk</span>
-                <h3 className="text-lg font-bold text-white mb-2">How to Record</h3>
+                <h3 className="text-lg font-bold text-white mb-2">{t('capture_title')}</h3>
                 <ol className="text-sm text-slate-300 text-left space-y-3 mt-4">
                   <li className="flex items-start gap-2">
                     <span className="bg-cyan-500 text-slate-900 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">1</span>
-                    User a well-lit room or hallway.
+                    {t('capture_step1')}
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="bg-cyan-500 text-slate-900 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">2</span>
-                    Stand back about 2 meters (6 feet).
+                    {t('capture_step2')}
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="bg-cyan-500 text-slate-900 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">3</span>
-                    Film your child walking sideways across the screen.
+                    {t('capture_step3')}
                   </li>
                 </ol>
               </div>
             </div>
 
             <div className="space-y-4 text-center">
-              <h2 className="text-2xl font-bold text-white">Ready to start?</h2>
-              <p className="text-slate-400 text-sm">We'll guide you through the process.</p>
+              <h2 className="text-2xl font-bold text-white">{t('ready_start')}</h2>
+              <p className="text-slate-400 text-sm">{t('we_guide')}</p>
               
               <button 
                 onClick={startCamera}
                 className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-lg py-4 rounded-full mt-4 transition-colors shadow-lg shadow-cyan-500/25 active:scale-95 transform"
               >
-                Open Camera
+                {t('open_camera')}
               </button>
             </div>
           </div>
@@ -173,7 +176,7 @@ export default function RecordVideo() {
           {recordingState === 'preview' && (
             <div className="absolute top-20 left-0 right-0 text-center pointer-events-none">
               <p className="bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-full inline-block text-sm">
-                Align subject within the guidelines
+                {t('align_subject')}
               </p>
             </div>
           )}
@@ -206,30 +209,38 @@ export default function RecordVideo() {
             {/* Mock video placeholder */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="material-icons text-6xl text-cyan-400 opacity-50 mb-4">play_circle_outline</span>
-              <p className="text-white text-lg font-medium">Video Preview</p>
-              <p className="text-slate-400 text-sm mt-1">{formatTime(timeCounter)} recorded</p>
+              <p className="text-white text-lg font-medium">{t('video_preview')}</p>
+              <p className="text-slate-400 text-sm mt-1">{formatTime(timeCounter)} {t('recorded')}</p>
             </div>
           </div>
 
           <div className="bg-slate-950 p-6 space-y-4 pb-[env(safe-area-inset-bottom)]">
-            <h3 className="text-white text-center font-bold text-xl mb-6">How does it look?</h3>
+            <h3 className="text-white text-center font-bold text-xl mb-6">{t('how_looks')}</h3>
             
             <button 
               onClick={handleUseVideo}
               className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-lg py-4 rounded-2xl shadow-lg shadow-cyan-500/25 active:scale-95 transform transition-transform"
             >
-              Use This Video
+              {t('use_video')}
             </button>
             
             <button 
               onClick={() => { setRecordingState('preview'); startCamera(); }}
               className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold text-lg py-4 rounded-2xl active:scale-95 transform transition-transform"
             >
-              Retake
+              {t('retake')}
             </button>
           </div>
         </div>
       )}
     </div>
   );
+}
+
+export async function getStaticProps({ locale }: { locale: string }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale, ['common', 'patient'])),
+    },
+  };
 }

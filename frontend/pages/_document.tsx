@@ -1,12 +1,14 @@
 import { Html, Head, Main, NextScript } from 'next/document';
 
-export default function Document() {
+export default function Document(props: any) {
+  const currentLocale = props.__NEXT_DATA__?.locale || 'en';
   return (
-    <Html lang="en">
+    <Html lang={currentLocale}>
       <Head>
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
         <style>{`
           @keyframes gauge-sweep {
@@ -18,6 +20,15 @@ export default function Document() {
             100% { transform: translateX(-50%) translateY(0); opacity: 1; }
           }
           .animate-bounce-in { animation: bounce-in 0.4s ease-out; }
+          
+          /* Bengali Typography Support */
+          [lang="bn"] {
+            font-family: 'Noto Sans Bengali', sans-serif !important;
+          }
+          [lang="bn"] body {
+            font-family: 'Noto Sans Bengali', sans-serif !important;
+          }
+
           @media print {
             nav, footer, .no-print, button { display: none !important; }
             body { background: white !important; color: black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }

@@ -249,7 +249,7 @@ def _extract_json(text: str) -> dict:
 # --- Endpoint ---
 
 @router.post("/{job_id}", response_model=AISummaryResponse)
-async def generate_summary(job_id: str):
+async def generate_summary(job_id: str, lang: str = "en"):
     """
     Generate an AI clinical summary for a completed gait analysis job.
     """
@@ -292,6 +292,11 @@ async def generate_summary(job_id: str):
         
         last_error_detail = "Failed to connect to OpenRouter"
         
+        # Dynamic language instructions
+        target_system_prompt = SYSTEM_PROMPT
+        if lang == "bn":
+            target_system_prompt += "\n\nCRITICAL LANGUAGE REQUIREMENT: You MUST write the ENTIRE body of your response in natural, fluent Bengali (বাংলা). Maintain the JSON structure and keys in EXACTLY English (e.g., 'overview', 'key_findings'), but translate ALL string VALUES into Bengali."
+
         for attempt, model_id in enumerate(models_to_try):
             try:
                 async with httpx.AsyncClient(timeout=120.0) as client:
@@ -304,7 +309,7 @@ async def generate_summary(job_id: str):
                         json={
                             "model": model_id,
                             "messages": [
-                                {"role": "system", "content": SYSTEM_PROMPT},
+                                {"role": "system", "content": target_system_prompt},
                                 {"role": "user", "content": user_prompt},
                             ],
                             "temperature": 0.3,

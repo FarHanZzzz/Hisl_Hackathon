@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { useTranslation } from 'next-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 export default function PatientUpload() {
   const router = useRouter();
+  const { t } = useTranslation('patient');
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState<'uploading' | 'analyzing' | 'done'>('uploading');
 
@@ -35,7 +38,7 @@ export default function PatientUpload() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 p-6 font-sans relative overflow-hidden">
       <Head>
-        <title>Upload | Pedi-Growth</title>
+        <title>{t('uploading')} | Pedi-Growth</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
       </Head>
 
@@ -71,7 +74,7 @@ export default function PatientUpload() {
               </svg>
             </div>
 
-            <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">Uploading Video...</h1>
+            <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">{t('uploading')}</h1>
             <div className="flex items-baseline gap-1 mb-8">
               <span className="text-4xl font-black text-cyan-400">{Math.min(100, Math.floor(progress))}</span>
               <span className="text-lg font-bold text-cyan-500/50">%</span>
@@ -79,18 +82,18 @@ export default function PatientUpload() {
 
             <div className="w-full bg-slate-900/80 border border-slate-800 rounded-2xl p-5 mb-8 text-left">
               <div className="flex justify-between items-center mb-3">
-                <span className="text-sm text-slate-400">File Size</span>
+                <span className="text-sm text-slate-400">{t('file_size')}</span>
                 <span className="text-sm font-semibold text-white">24.5 MB</span>
               </div>
               <div className="flex justify-between items-center mb-3">
-                <span className="text-sm text-slate-400">Est. Time Remaining</span>
-                <span className="text-sm font-semibold text-white">~15 sec</span>
+                <span className="text-sm text-slate-400">{t('est_time')}</span>
+                <span className="text-sm font-semibold text-white">~15 {t('sec')}</span>
               </div>
               <div className="h-px bg-slate-800 my-4" />
               <div className="flex items-start gap-3">
                 <span className="material-icons text-amber-500 text-lg mt-0.5">warning_amber</span>
                 <p className="text-xs text-amber-400/90 leading-relaxed font-medium">
-                  Please keep this screen open until the upload finishes.
+                  {t('upload_keep_open')}
                 </p>
               </div>
             </div>
@@ -105,9 +108,9 @@ export default function PatientUpload() {
                 <span className="material-icons text-4xl text-indigo-400 animate-spin" style={{ animationDuration: '3s' }}>sync</span>
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">Processing...</h1>
+            <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">{t('processing')}</h1>
             <p className="text-slate-400 mb-8 max-w-[250px]">
-              Securely preparing your video for clinical AI analysis.
+              {t('securely_preparing')}
             </p>
           </div>
         )}
@@ -117,20 +120,28 @@ export default function PatientUpload() {
             <div className="w-24 h-24 bg-emerald-500/20 border border-emerald-500/40 rounded-full flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(16,185,129,0.2)]">
               <span className="material-icons text-5xl text-emerald-400">check</span>
             </div>
-            <h1 className="text-2xl font-bold text-white mb-3 tracking-tight">Upload Complete!</h1>
+            <h1 className="text-2xl font-bold text-white mb-3 tracking-tight">{t('upload_complete')}</h1>
             <p className="text-slate-300 text-center mb-8 max-w-[280px] leading-relaxed">
-              Your video is now being analyzed by our AI. You'll be notified when your results are ready to view.
+              {t('upload_success_desc')}
             </p>
             
             <button 
               onClick={() => router.push('/patient/home')}
               className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold text-lg py-4 rounded-full active:scale-95 transform transition-transform"
             >
-              Return Home
+              {t('return_home')}
             </button>
           </div>
         )}
       </div>
     </div>
   );
+}
+
+export async function getStaticProps({ locale }: { locale: string }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale, ['common', 'patient'])),
+    },
+  };
 }
