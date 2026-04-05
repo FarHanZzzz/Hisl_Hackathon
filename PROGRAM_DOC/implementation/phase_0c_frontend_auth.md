@@ -144,5 +144,31 @@ User opens app
 - [ ] Clinician cannot access `/patient/*` routes
 - [ ] Patient cannot access `/clinician/*` routes
 
+---
+
+### Sub-Phase 0C.1: Navigation Bar Overhaul
+
+**Problem:** The current Layout header contains a static `Home | Dashboard | About` pill-style navigation bar that does not reflect user roles and has no login/logout awareness.
+
+**Fix:**
+- [ ] Remove the existing `Home | Dashboard | About` navigation pill bar entirely from the Layout header.
+- [ ] Replace it with a **Login button** (when unauthenticated) and a **user avatar/name + role badge** (when authenticated).
+- [ ] When a logged-in user clicks their avatar or the "Dashboard" link, they are redirected to their **role-specific dashboard**:
+  - Clinician → `/clinician/dashboard`
+  - Patient → `/patient/home`
+  - Admin → `/admin/dashboard`
+- [ ] Add a **Logout** button visible when authenticated.
+- [ ] The Pedi-Growth logo on the left remains and always links to `/` (the public home page).
+
+**Layout Header (After):**
+```
+┌──────────────────────────────────────────────────────────────┐
+│ [🏥 Pedi-Growth]                          [🔔] [Login ▸]    │  ← unauthenticated
+│ [🏥 Pedi-Growth]              [🔔] [Dr. Farhan 👤] [Logout] │  ← authenticated
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## Exit Criteria
-Users can register, login, and are routed to the correct portal based on their role.
+Users can register, login, and are routed to the correct portal based on their role. The old navigation bar is gone and replaced with role-aware auth controls.
