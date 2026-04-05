@@ -12,6 +12,7 @@ reportlab>=4.0.0
 
 # --- Supabase ---
 supabase>=2.0.0
+PyJWT>=2.8.0
 
 # --- Computer Vision & ML ---
 mediapipe>=0.10.0

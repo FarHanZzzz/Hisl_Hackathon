@@ -159,3 +159,101 @@ class ResultService:
         """Get result by job UUID."""
         result = self.db.table(self.table).select("*").eq("job_id", job_id).execute()
         return result.data[0] if result.data else None
+
+
+class ProfileService:
+    """CRUD for the profiles table (Phase 0A)."""
+
+    def __init__(self):
+        self.db = get_supabase()
+        self.table = "profiles"
+
+    def get_by_id(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """Get profile by auth user UUID."""
+        result = (
+            self.db.table(self.table)
+            .select("*")
+            .eq("id", user_id)
+            .execute()
+        )
+        return result.data[0] if result.data else None
+
+    def create(
+        self,
+        user_id: str,
+        role: str,
+        display_name: str = None,
+        phone: str = None,
+        language: str = "en",
+    ) -> Dict[str, Any]:
+        """Create a new profile row for a registered user."""
+        data: Dict[str, Any] = {
+            "id": user_id,
+            "role": role,
+            "language": language,
+        }
+        if display_name:
+            data["display_name"] = display_name
+        if phone:
+            data["phone"] = phone
+
+        return self.db.table(self.table).insert(data).execute().data[0]
+
+    def update(self, user_id: str, **kwargs) -> Dict[str, Any]:
+        """Update profile fields (display_name, language, phone, etc.)."""
+        return (
+            self.db.table(self.table)
+            .update(kwargs)
+            .eq("id", user_id)
+            .execute()
+            .data[0]
+        )
+
+
+class SessionService:
+    """CRUD for the sessions table (Phase 0A)."""
+
+    def __init__(self):
+        self.db = get_supabase()
+        self.table = "sessions"
+
+    def create(
+        self,
+        patient_id: str,
+        clinician_id: str,
+        title: str = None,
+        notes: str = None,
+    ) -> Dict[str, Any]:
+        """Create a new clinical session."""
+        data: Dict[str, Any] = {
+            "patient_id": patient_id,
+            "clinician_id": clinician_id,
+        }
+        if title:
+            data["title"] = title
+        if notes:
+            data["notes"] = notes
+
+        return self.db.table(self.table).insert(data).execute().data[0]
+
+    def list_by_patient(self, patient_id: str) -> List[Dict[str, Any]]:
+        """List all sessions for a given patient, newest first."""
+        return (
+            self.db.table(self.table)
+            .select("*")
+            .eq("patient_id", patient_id)
+            .order("created_at", desc=True)
+            .execute()
+            .data
+        )
+
+    def get(self, session_id: str) -> Optional[Dict[str, Any]]:
+        """Get a single session by UUID."""
+        result = (
+            self.db.table(self.table)
+            .select("*")
+            .eq("id", session_id)
+            .execute()
+        )
+        return result.data[0] if result.data else None
+
