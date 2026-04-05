@@ -37,6 +37,46 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
+@media print {
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  header,
+  footer,
+  nav,
+  button,
+  .report-print-hide {
+    display: none !important;
+  }
+
+  .report-page,
+  .report-page * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  .report-page {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .report-page .bg-slate-900\/40,
+  .report-page .bg-white,
+  .report-page .dark\:bg-gray-900,
+  .report-page .dark\:bg-\[\#18181b\] {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-color: #d1d5db !important;
+  }
+
+  .report-page .material-icons {
+    color: #111827 !important;
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

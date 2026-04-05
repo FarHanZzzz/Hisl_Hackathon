@@ -1,13 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { Activity } from 'lucide-react';
+import Link from 'next/link';
 import { Layout } from '../src/components/Layout';
 import { UploadForm } from '../src/components/UploadForm';
-import { ProgressBar } from '../src/components/ProgressBar';
-import { JobHistoryTable } from '../src/components/JobHistoryTable';
 import { uploadVideo, createJob, getJob } from '../src/services/api';
 import type { PatientInput } from '../src/types';
-import Image from 'next/image';
 
 export default function Home() {
   const router = useRouter();
@@ -106,8 +103,23 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Recent Analyses Table */}
-        <JobHistoryTable />
+            <div className="bg-slate-900/40 rounded-xl shadow-[0_4px_30px_rgba(0,0,0,0.5)] border border-cyan-500/20 backdrop-blur-md p-6">
+               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div>
+                     <h3 className="text-lg font-semibold text-slate-50">Reports live in a dedicated page now</h3>
+                     <p className="text-sm text-slate-400 mt-1 max-w-2xl">
+                        Use the reports library to browse completed analyses, open the full viewer, switch audience modes, and export professional PDF reports.
+                     </p>
+                  </div>
+                  <Link
+                     href="/reports"
+                     className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold transition-colors"
+                  >
+                     Open reports
+                     <span className="material-icons text-sm">arrow_forward</span>
+                  </Link>
+               </div>
+            </div>
 
         {/* Processing State Overlay */}
         {processing && (

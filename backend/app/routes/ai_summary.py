@@ -33,6 +33,12 @@ OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 # --- Response Model ---
 
+class Conclusiveness(BaseModel):
+    """Confidence assessment for the diagnosis."""
+    confidence_percentage: float  # 0-100
+    confidence_reasoning: str     # 1-2 sentence explanation
+
+
 class AISummaryResponse(BaseModel):
     overview: str
     what_this_means: str
@@ -40,6 +46,7 @@ class AISummaryResponse(BaseModel):
     risk_assessment: str
     recommendations: List[str]
     disclaimer: str
+    conclusiveness: Conclusiveness
 
 
 # --- Prompt ---
@@ -65,6 +72,20 @@ IMPORTANT RULES:
 - ONLY comment on data points that have actual values. If a measurement is 'N/A' or 'Not measured', skip it entirely.
 - Generate at least 4 but up to 8 key findings, covering ALL available data sections (knee, orthopedic, neuromuscular).
 
+CONFIDENCE ASSESSMENT RULES:
+- Analyze the following factors to generate a confidence_percentage (0-100):
+  * Detection Rate: Below 70% = lower confidence penalty (-20%). 70-85% = -10%. 85%+ = no penalty.
+  * Data Consistency: Are findings consistent across frames? Look for:
+    - Angular values with low variance = higher consistency = +10% bonus
+    - High variance or contradictory angles = consistency concern = -15% penalty
+  * Symmetry Quality: Is symmetry index near 1.0 (good) or far from it (extreme)?
+    - Index between 0.95-1.05 = normal range = +10% bonus
+    - Index <0.85 or >1.15 = extreme asymmetry = harder to interpret = -10% penalty
+  * Sample Size: Frames with clear detection: <30% of total = -20%, 30-70% = -5%, 70%+ = no penalty
+- Start baseline: 75% (conservative, acknowledges limitations of AI video screening)
+- Apply penalties and bonuses to calculate final confidence_percentage
+- confidence_reasoning: A 1-2 sentence explanation. Example: "We have high confidence (92%) because the detection rate was excellent (95%) and the findings were very consistent across all frames with a normal symmetry ratio." OR "Confidence is moderate (65%) due to some frames with poor visibility and inconsistent ankle measurements."
+
 OUTPUT FORMAT — You MUST respond with valid JSON only, no markdown, no extra text:
 {
   "overview": "A 3-4 sentence summary written in simple language explaining what was observed in the child's walking pattern. Avoid medical jargon. Reference the child's age if provided.",
@@ -82,7 +103,11 @@ OUTPUT FORMAT — You MUST respond with valid JSON only, no markdown, no extra t
     "Recommendation 2: Another clear next step addressing a different finding",
     "Recommendation 3: Another clear next step",
     "Recommendation 4: Another clear next step"
-  ]
+  ],
+  "conclusiveness": {
+    "confidence_percentage": 85,
+    "confidence_reasoning": "Detection rate was 92% with consistent measurements across frames, providing strong confidence in these findings."
+  }
 }
 """
 
@@ -311,13 +336,21 @@ async def generate_summary(job_id: str):
                     
                 summary_data = _extract_json(raw_text)
 
+                # Parse conclusiveness if present
+                conclusiveness_data = summary_data.get("conclusiveness", {})
+                conclusiveness = Conclusiveness(
+                    confidence_percentage=float(conclusiveness_data.get("confidence_percentage", 75.0)),
+                    confidence_reasoning=str(conclusiveness_data.get("confidence_reasoning", "Assessment in progress."))
+                )
+
                 return AISummaryResponse(
                     overview=summary_data.get("overview", "Summary unavailable."),
                     what_this_means=summary_data.get("what_this_means", "Information currently processing."),
                     key_findings=summary_data.get("key_findings", []),
                     risk_assessment=summary_data.get("risk_assessment", "Assessment unavailable."),
                     recommendations=summary_data.get("recommendations", []),
-                    disclaimer="This is an AI-assisted screening tool and does not constitute a medical diagnosis. All findings should be verified through clinical observation and professional medical judgment."
+                    disclaimer="This is an AI-assisted screening tool and does not constitute a medical diagnosis. All findings should be verified through clinical observation and professional medical judgment.",
+                    conclusiveness=conclusiveness
                 )
                 
             except httpx.RequestError as e:
