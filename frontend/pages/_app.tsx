@@ -2,12 +2,13 @@ import { useLayoutEffect } from 'react';
 import type { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
 import '@/styles/globals.css';
-import { Home, LayoutDashboard, User } from 'lucide-react';
+import { FileText, Home, LayoutDashboard, User } from 'lucide-react';
 import { NavBar } from '@/src/components/ui/tubelight-navbar';
 
 const navItems = [
   { name: 'Home', url: '/', icon: Home },
   { name: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
+  { name: 'Reports', url: '/reports', icon: FileText },
   { name: 'About', url: '/about', icon: User },
 ];
 

@@ -2,9 +2,9 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { Layout } from '../../src/components/Layout';
 import { VisualLocalization } from '../../src/components/VisualLocalization';
-import { getJob, getAISummary } from '../../src/services/api';
+import { downloadReportPdf, getJob, getAISummary } from '../../src/services/api';
 import { DiagnosisBanner } from '../../src/components/DiagnosisBanner';
-import type { Job, AISummary, Result, DiagnosisType } from '../../src/types';
+import type { Job, AISummary, Result, DiagnosisType, ReportMode } from '../../src/types';
 import Head from 'next/head';
 import {
    LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -472,12 +472,42 @@ export default function ResultsPage() {
    const [showToast, setShowToast] = useState(false);
    const [videoError, setVideoError] = useState(false);
    const [videoUrl, setVideoUrl] = useState<string | null>(null);
+   const [isConclusivenessOpen, setIsConclusivenessOpen] = useState(false);
+   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+   const [reportMode, setReportMode] = useState<ReportMode>('normal');
+   const isTechnicianMode = reportMode === 'technician';
 
    const handleShare = () => {
       navigator.clipboard.writeText(window.location.href).then(() => {
          setShowToast(true);
          setTimeout(() => setShowToast(false), 2500);
       });
+   };
+
+   const handleModeChange = (mode: ReportMode) => {
+      setReportMode(mode);
+      if (typeof window !== 'undefined') {
+         window.localStorage.setItem('pedigrowth-report-mode', mode);
+      }
+      if (router.isReady) {
+         router.replace(
+            {
+               pathname: router.pathname,
+               query: { ...router.query, mode },
+            },
+            undefined,
+            { shallow: true, scroll: false }
+         );
+      }
+   };
+
+   const handleExportPdf = async () => {
+      if (!job?.id) return;
+      try {
+         await downloadReportPdf(job.id);
+      } catch (err: any) {
+         alert(err?.response?.data?.detail || err.message || 'Failed to export PDF');
+      }
    };
 
    useEffect(() => {
@@ -546,6 +576,43 @@ export default function ResultsPage() {
          fetchSummary(job.id);
       }
    }, [job?.id]);
+
+   useEffect(() => {
+      if (!router.isReady) return;
+
+      const queryMode = router.query.mode;
+      const storedMode = typeof window !== 'undefined' ? window.localStorage.getItem('pedigrowth-report-mode') : null;
+      const nextMode: ReportMode = queryMode === 'technician'
+         ? 'technician'
+         : queryMode === 'normal'
+            ? 'normal'
+            : storedMode === 'technician'
+               ? 'technician'
+               : 'normal';
+
+      setReportMode(nextMode);
+
+      if (!queryMode) {
+         router.replace(
+            {
+               pathname: router.pathname,
+               query: { ...router.query, mode: nextMode },
+            },
+            undefined,
+            { shallow: true, scroll: false }
+         );
+      }
+   }, [router.isReady, router.query.mode]);
+
+   useEffect(() => {
+      if (reportMode === 'technician') {
+         setIsConclusivenessOpen(true);
+         setIsDetailsOpen(true);
+      } else {
+         setIsConclusivenessOpen(false);
+         setIsDetailsOpen(false);
+      }
+   }, [reportMode]);
 
    // Build chart data from angle series (must be before conditional returns)
    const chartData = useMemo(() => {
@@ -620,24 +687,41 @@ export default function ResultsPage() {
 
    return (
       <Layout title={`Analysis Results | ${job.patient_ref}`}>
-         <div className="max-w-7xl mx-auto space-y-6">
+         <div className="report-page max-w-7xl mx-auto space-y-6">
 
             {/* Header Actions */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
                <button
-                  onClick={() => router.push('/dashboard')}
+                  onClick={() => router.push('/reports')}
                   className="flex items-center gap-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
                >
                   <span className="material-icons text-sm">arrow_back</span>
-                  <span className="text-sm font-medium">Back to Dashboard</span>
+                  <span className="text-sm font-medium">Back to Reports</span>
                </button>
-               <div className="flex gap-3 w-full sm:w-auto">
-                  <button onClick={() => window.print()} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                     <span className="material-icons text-sm">print</span>
-                     Print Report
-                  </button>
+               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                  <div className="inline-flex rounded-lg border border-slate-700 bg-slate-900/60 p-1">
+                     <button
+                        onClick={() => handleModeChange('normal')}
+                        className={`px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-md transition-colors ${reportMode === 'normal' ? 'bg-cyan-500 text-slate-950' : 'text-slate-400 hover:text-slate-100'}`}
+                     >
+                        Normal
+                     </button>
+                     <button
+                        onClick={() => handleModeChange('technician')}
+                        className={`px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-md transition-colors ${reportMode === 'technician' ? 'bg-cyan-500 text-slate-950' : 'text-slate-400 hover:text-slate-100'}`}
+                     >
+                        Technician
+                     </button>
+                  </div>
                   <button
                      onClick={() => window.print()}
+                     className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                     <span className="material-icons text-sm">print</span>
+                     Print
+                  </button>
+                  <button
+                     onClick={handleExportPdf}
                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-primary-500/20"
                   >
                      <span className="material-icons text-sm">download</span>
@@ -722,6 +806,8 @@ export default function ResultsPage() {
                   </div>
                )}
             </div>
+
+            <div className={isTechnicianMode ? 'space-y-6' : 'hidden'}>
 
             {/* Parent Insights Panel */}
             <ParentInsightsPanel result={firstResult} />
@@ -985,6 +1071,29 @@ export default function ResultsPage() {
         {/* Neuromuscular Graphs */}
         <NeuromuscularGraphArea chartData={chartData} result={firstResult} />
 
+            </div>
+
+            {!isTechnicianMode && (
+               <div className="bg-slate-900/40 border border-cyan-500/20 rounded-2xl p-6 backdrop-blur-md">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                     <div className="space-y-2 max-w-2xl">
+                        <p className="text-xs font-bold uppercase tracking-[0.25em] text-cyan-300">Summary mode</p>
+                        <h3 className="text-xl font-semibold text-slate-50">Technical detail is hidden by default</h3>
+                        <p className="text-sm text-slate-400 leading-relaxed">
+                           Switch to technician mode when you need the chart set, orthopedic interpretation, neuromuscular analysis, and numerical breakdowns.
+                        </p>
+                     </div>
+                     <button
+                        onClick={() => handleModeChange('technician')}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold transition-colors"
+                     >
+                        Switch to technician mode
+                        <span className="material-icons text-sm">arrow_forward</span>
+                     </button>
+                  </div>
+               </div>
+            )}
+
             {/* AI Clinical Summary Card */}
             <div className="bg-white dark:bg-[#18181b] rounded-xl shadow-sm border border-gray-100 dark:border-[#27272a] overflow-hidden">
                {/* Header */}
@@ -1036,77 +1145,172 @@ export default function ResultsPage() {
                         </div>
                      </div>
                   ) : summary ? (
-                     /* Rendered Summary */
-                     <div className="space-y-6">
-                        {/* Overview */}
-                        <div>
-                           <h4 className="text-[10px] font-bold text-gray-400 dark:text-[#a1a1aa] uppercase tracking-widest mb-2.5">Overview</h4>
-                           <p className="text-sm text-gray-700 dark:text-[#d4d4d8] leading-relaxed">{summary.overview}</p>
-                        </div>
-
-                        {/* What This Means - Highlighted for parents */}
-                        {summary.what_this_means && (
-                           <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/30 rounded-lg p-4">
-                              <h4 className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                                 <span className="material-icons text-sm">lightbulb</span>
-                                 What This Means For You
-                              </h4>
-                              <p className="text-sm text-blue-900 dark:text-blue-200 leading-relaxed">{summary.what_this_means}</p>
+                     reportMode === 'technician' ? (
+                        /* Technician Summary */
+                        <div className="space-y-6">
+                           {/* Overview */}
+                           <div>
+                              <h4 className="text-[10px] font-bold text-gray-400 dark:text-[#a1a1aa] uppercase tracking-widest mb-2.5">Overview</h4>
+                              <p className="text-sm text-gray-700 dark:text-[#d4d4d8] leading-relaxed">{summary.overview}</p>
                            </div>
-                        )}
 
-                        {/* Key Findings */}
-                        <div>
-                           <h4 className="text-[10px] font-bold text-gray-400 dark:text-[#a1a1aa] uppercase tracking-widest mb-2.5">Key Findings</h4>
-                           <ul className="space-y-2">
-                              {summary.key_findings.map((finding, i) => (
-                                 <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700 dark:text-[#d4d4d8]">
-                                    <span className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${finding.toLowerCase().includes('normal') || finding.toLowerCase().includes('within')
-                                          ? 'bg-green-500'
-                                          : finding.toLowerCase().includes('concern') || finding.toLowerCase().includes('risk') || finding.toLowerCase().includes('below') || finding.toLowerCase().includes('significant') || finding.toLowerCase().includes('reduced')
-                                             ? 'bg-danger-500'
-                                             : 'bg-[#137fec]'
-                                       }`}></span>
-                                    <span className="leading-relaxed">{finding}</span>
-                                 </li>
-                              ))}
-                           </ul>
-                        </div>
+                           {/* What This Means - Highlighted for parents */}
+                           {summary.what_this_means && (
+                              <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/30 rounded-lg p-4">
+                                 <h4 className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                    <span className="material-icons text-sm">lightbulb</span>
+                                    What This Means For You
+                                 </h4>
+                                 <p className="text-sm text-blue-900 dark:text-blue-200 leading-relaxed">{summary.what_this_means}</p>
+                              </div>
+                           )}
 
-                        {/* Risk Assessment */}
-                        <div>
-                           <div className="flex items-center gap-3 mb-2.5">
-                              <h4 className="text-[10px] font-bold text-gray-400 dark:text-[#a1a1aa] uppercase tracking-widest">Risk Assessment</h4>
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider ${isHighRisk
-                                    ? 'bg-danger-100 text-danger-700 dark:bg-danger-900/30 dark:text-danger-400'
-                                    : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                 }`}>
-                                 {isHighRisk ? 'HIGH RISK' : 'NORMAL'}
-                              </span>
+                           {/* Conclusiveness Dropdown */}
+                           {summary.conclusiveness && (
+                              <div className="border border-gray-200 dark:border-[#3f3f46] rounded-lg overflow-hidden">
+                                 <button
+                                    onClick={() => setIsConclusivenessOpen(!isConclusivenessOpen)}
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-[#27272a] hover:bg-gray-100 dark:hover:bg-[#3f3f46] transition-colors flex items-center justify-between"
+                                 >
+                                    <div className="flex items-center gap-3">
+                                       <span className="material-icons text-[#137fec] text-sm">trending_up</span>
+                                       <div className="text-left">
+                                          <h4 className="text-[10px] font-bold text-gray-400 dark:text-[#a1a1aa] uppercase tracking-widest">Conclusiveness</h4>
+                                          <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">Confidence: <span className="font-bold text-gray-900 dark:text-white">{Math.round(summary.conclusiveness.confidence_percentage)}%</span></p>
+                                       </div>
+                                    </div>
+                                    <span className={`material-icons text-gray-400 dark:text-gray-500 transition-transform ${isConclusivenessOpen ? 'rotate-180' : ''}`}>expand_more</span>
+                                 </button>
+                                 <div className={`overflow-hidden transition-all duration-300 ${isConclusivenessOpen ? 'max-h-96' : 'max-h-0'}`}>
+                                    <div className="px-4 py-4 bg-white dark:bg-[#18181b] border-t border-gray-200 dark:border-[#3f3f46]">
+                                       <p className="text-sm text-gray-700 dark:text-[#d4d4d8] leading-relaxed">{summary.conclusiveness.confidence_reasoning}</p>
+                                    </div>
+                                 </div>
+                              </div>
+                           )}
+
+                           {/* Details Dropdown */}
+                           <div className="border border-gray-200 dark:border-[#3f3f46] rounded-lg overflow-hidden">
+                              <button
+                                 onClick={() => setIsDetailsOpen(!isDetailsOpen)}
+                                 className="w-full px-4 py-3 bg-gray-50 dark:bg-[#27272a] hover:bg-gray-100 dark:hover:bg-[#3f3f46] transition-colors flex items-center justify-between"
+                              >
+                                 <div className="flex items-center gap-3">
+                                    <span className="material-icons text-[#137fec] text-sm">notes</span>
+                                    <div className="text-left">
+                                       <h4 className="text-[10px] font-bold text-gray-400 dark:text-[#a1a1aa] uppercase tracking-widest">Details</h4>
+                                       <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{summary.key_findings.length} key findings</p>
+                                    </div>
+                                 </div>
+                                 <span className={`material-icons text-gray-400 dark:text-gray-500 transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`}>expand_more</span>
+                              </button>
+                              <div className={`overflow-hidden transition-all duration-300 ${isDetailsOpen ? 'max-h-[1200px]' : 'max-h-0'}`}>
+                                 <div className="px-4 py-4 bg-white dark:bg-[#18181b] border-t border-gray-200 dark:border-[#3f3f46] space-y-6">
+                                    {/* Key Findings */}
+                                    <div>
+                                       <h5 className="text-[10px] font-bold text-gray-400 dark:text-[#a1a1aa] uppercase tracking-widest mb-2.5">Key Findings</h5>
+                                       <ul className="space-y-2">
+                                          {summary.key_findings.map((finding, i) => (
+                                             <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700 dark:text-[#d4d4d8]">
+                                                <span className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${finding.toLowerCase().includes('normal') || finding.toLowerCase().includes('within')
+                                                      ? 'bg-green-500'
+                                                      : finding.toLowerCase().includes('concern') || finding.toLowerCase().includes('risk') || finding.toLowerCase().includes('below') || finding.toLowerCase().includes('significant') || finding.toLowerCase().includes('reduced')
+                                                         ? 'bg-danger-500'
+                                                         : 'bg-[#137fec]'
+                                                   }`}></span>
+                                                <span className="leading-relaxed">{finding}</span>
+                                             </li>
+                                          ))}
+                                       </ul>
+                                    </div>
+                                    {/* Risk Assessment */}
+                                    <div>
+                                       <div className="flex items-center gap-3 mb-2.5">
+                                          <h5 className="text-[10px] font-bold text-gray-400 dark:text-[#a1a1aa] uppercase tracking-widest">Risk Assessment</h5>
+                                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider ${isHighRisk
+                                                ? 'bg-danger-100 text-danger-700 dark:bg-danger-900/30 dark:text-danger-400'
+                                                : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                             }`}>
+                                             {isHighRisk ? 'HIGH RISK' : 'NORMAL'}
+                                          </span>
+                                       </div>
+                                       <p className="text-sm text-gray-700 dark:text-[#d4d4d8] leading-relaxed">{summary.risk_assessment}</p>
+                                    </div>
+                                    {/* Recommendations */}
+                                    <div>
+                                       <h5 className="text-[10px] font-bold text-gray-400 dark:text-[#a1a1aa] uppercase tracking-widest mb-2.5">Recommendations</h5>
+                                       <ol className="space-y-2 list-decimal list-inside">
+                                          {summary.recommendations.map((rec, i) => (
+                                             <li key={i} className="text-sm text-gray-700 dark:text-[#d4d4d8] leading-relaxed">
+                                                {rec}
+                                             </li>
+                                          ))}
+                                       </ol>
+                                    </div>
+                                 </div>
+                              </div>
                            </div>
-                           <p className="text-sm text-gray-700 dark:text-[#d4d4d8] leading-relaxed">{summary.risk_assessment}</p>
+                           {/* Disclaimer */}
+                           <div className="flex items-start gap-2 pt-4 border-t border-gray-100 dark:border-[#27272a]">
+                              <span className="material-icons text-gray-400 dark:text-[#52525b] text-sm mt-0.5">info</span>
+                              <p className="text-xs text-gray-400 dark:text-[#52525b] italic leading-relaxed">
+                                 {summary.disclaimer}
+                              </p>
+                           </div>
                         </div>
+                     ) : (
+                        /* Normal Summary Snapshot */
+                        <div className="space-y-5">
+                           <div className="flex items-center justify-between gap-3">
+                              <div>
+                                 <h4 className="text-[10px] font-bold text-gray-400 dark:text-[#a1a1aa] uppercase tracking-widest mb-2.5">Summary snapshot</h4>
+                                 <p className="text-sm text-gray-700 dark:text-[#d4d4d8] leading-relaxed">{summary.overview}</p>
+                              </div>
+                              {summary.conclusiveness && (
+                                 <div className="min-w-[160px] rounded-lg border border-cyan-200 dark:border-cyan-900/40 bg-cyan-50 dark:bg-cyan-900/10 px-4 py-3 text-right">
+                                    <div className="text-[10px] font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-300">Confidence</div>
+                                    <div className="text-2xl font-bold text-cyan-900 dark:text-cyan-200">{Math.round(summary.conclusiveness.confidence_percentage)}%</div>
+                                 </div>
+                              )}
+                           </div>
 
-                        {/* Recommendations */}
-                        <div>
-                           <h4 className="text-[10px] font-bold text-gray-400 dark:text-[#a1a1aa] uppercase tracking-widest mb-2.5">Recommendations</h4>
-                           <ol className="space-y-2 list-decimal list-inside">
-                              {summary.recommendations.map((rec, i) => (
-                                 <li key={i} className="text-sm text-gray-700 dark:text-[#d4d4d8] leading-relaxed">
-                                    {rec}
-                                 </li>
-                              ))}
-                           </ol>
-                        </div>
+                           {summary.what_this_means && (
+                              <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/30 rounded-lg p-4">
+                                 <h4 className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                    <span className="material-icons text-sm">lightbulb</span>
+                                    What This Means For You
+                                 </h4>
+                                 <p className="text-sm text-blue-900 dark:text-blue-200 leading-relaxed">{summary.what_this_means}</p>
+                              </div>
+                           )}
 
-                        {/* Disclaimer */}
-                        <div className="flex items-start gap-2 pt-4 border-t border-gray-100 dark:border-[#27272a]">
-                           <span className="material-icons text-gray-400 dark:text-[#52525b] text-sm mt-0.5">info</span>
-                           <p className="text-xs text-gray-400 dark:text-[#52525b] italic leading-relaxed">
-                              {summary.disclaimer}
-                           </p>
+                           {summary.recommendations?.length > 0 && (
+                              <div>
+                                 <h4 className="text-[10px] font-bold text-gray-400 dark:text-[#a1a1aa] uppercase tracking-widest mb-2.5">Top Recommendations</h4>
+                                 <ol className="space-y-2 list-decimal list-inside">
+                                    {summary.recommendations.slice(0, 3).map((rec, i) => (
+                                       <li key={i} className="text-sm text-gray-700 dark:text-[#d4d4d8] leading-relaxed">
+                                          {rec}
+                                       </li>
+                                    ))}
+                                 </ol>
+                              </div>
+                           )}
+
+                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2 border-t border-gray-100 dark:border-[#27272a]">
+                              <p className="text-xs text-gray-400 dark:text-[#52525b] italic leading-relaxed">
+                                 Summary mode keeps the report concise. Switch to technician mode for the full technical breakdown.
+                              </p>
+                              <button
+                                 onClick={() => handleModeChange('technician')}
+                                 className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold transition-colors"
+                              >
+                                 Open technician view
+                                 <span className="material-icons text-sm">arrow_forward</span>
+                              </button>
+                           </div>
                         </div>
-                     </div>
+                     )
                   ) : null}
                </div>
             </div>

@@ -87,7 +87,14 @@ export interface CreateJobResponse {
   message: string;
 }
 
+export type ReportMode = 'normal' | 'technician';
+
 // --- AI Summary ---
+export interface Conclusiveness {
+  confidence_percentage: number;  // 0-100
+  confidence_reasoning: string;
+}
+
 export interface AISummary {
   overview: string;
   what_this_means: string;
@@ -95,4 +102,5 @@ export interface AISummary {
   risk_assessment: string;
   recommendations: string[];
   disclaimer: string;
+  conclusiveness: Conclusiveness;
 }

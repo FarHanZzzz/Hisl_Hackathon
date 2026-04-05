@@ -8,12 +8,12 @@ const nextConfig = {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://hisl-hackathon.onrender.com';
     return [
       {
-        source: '/api/:path*',
-        destination: `${API_URL}/api/:path*`,
-      },
-      {
         source: '/api/results/:path*',
         destination: `${API_URL}/results/:path*`,
+      },
+      {
+        source: '/api/:path*',
+        destination: `${API_URL}/api/:path*`,
       },
     ];
   },

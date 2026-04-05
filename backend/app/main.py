@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.config import UPLOAD_DIR, RESULTS_DIR, CORS_ORIGINS
-from app.routes import health_router, upload_router, jobs_router, ai_summary_router
+from app.routes import health_router, upload_router, jobs_router, ai_summary_router, reports_router
 
 import mimetypes
 mimetypes.add_type("video/webm", ".webm")
@@ -50,6 +50,7 @@ app.include_router(health_router)
 app.include_router(upload_router)
 app.include_router(jobs_router)
 app.include_router(ai_summary_router)
+app.include_router(reports_router)
 
 # =============================================================================
 # RUN SERVER

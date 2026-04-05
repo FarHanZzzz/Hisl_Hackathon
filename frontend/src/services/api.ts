@@ -69,3 +69,22 @@ export async function getAISummary(jobId: string): Promise<AISummary> {
   });
   return res.data;
 }
+
+/**
+ * Download the professional PDF report for a completed job.
+ */
+export async function downloadReportPdf(jobId: string): Promise<void> {
+  const res = await api.get(`/api/v1/reports/${jobId}/pdf`, {
+    responseType: 'blob',
+    timeout: 120000,
+  });
+
+  const blobUrl = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+  const anchor = document.createElement('a');
+  anchor.href = blobUrl;
+  anchor.download = `pedi-growth-report-${jobId}.pdf`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.URL.revokeObjectURL(blobUrl);
+}
