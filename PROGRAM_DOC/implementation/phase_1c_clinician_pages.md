@@ -14,8 +14,8 @@ Build the clinician-facing pages that handle patient management, analysis creati
 ### Page 1: `/clinician/dashboard` — Overview & Quick Stats
 Displays welcome, quick stats, recent activity, and **Upcoming Consultations** for the day.
 
-### Page 2: `/clinician/patients` and `/clinician/patients/[patientId]`
-Patient registry and single patient profile showing longitudinal history.
+### Page 2: `/reports` (Already Created)
+The patient registry is now handled by the existing `pages/reports.tsx` file, which already includes a basic text search and status filter. We will enhance this rather than creating a new `patients` page.
 
 ### Page 3: `/clinician/analysis/new`
 Dedicated page for uploading or recording videos for clinical ingestion.
@@ -63,15 +63,14 @@ Clinicians can see when patients have booked them, review the flagged report (`j
 
 ---
 
-### Sub-Phase 1C.1: Patient Records Search & Filter
+### Sub-Phase 1C.1: Patient Records Search & Filter (Enhance `reports.tsx`)
 
-**Problem:** The patient records page (`/clinician/patients`) has no way to quickly find a specific patient when the list grows large.
+**Problem:** The existing `pages/reports.tsx` page has a basic text search and status filter, but lacks advanced clinical filters (Severity, Date) and active filter visibility.
 
 **Fix:**
-- [ ] Add a **Search bar** at the top of the patient list:
-  - Real-time search as you type (debounced at 300ms)
-  - Searches by: patient name, patient ID, date of analysis
-  - Shows "No results found" state with clear messaging
+- [ ] Keep the existing text search (job ID, patient name/ID) but ensure it debounces at 300ms.
+- [ ] Keep the existing Status filter but convert it to work alongside a new **Filter panel/dropdown**.
+- [ ] Add new advanced filters to `reports.tsx`:
 - [ ] Add a **Filter button** next to the search bar that opens a dropdown/panel with:
   - **Diagnosis filter:** Normal, High Risk, DMD Risk, All
   - **Date range filter:** Last 7 days, Last 30 days, Last 3 months, All time, Custom range

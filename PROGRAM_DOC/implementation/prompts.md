@@ -330,7 +330,7 @@ Build the clinician portal with 4 pages + sidebar layout + search/filter:
    - Sidebar navigation (fixed left, 240px width on desktop, collapsible on mobile):
      - Top: Pedi-Growth logo + "Clinical Portal" subtitle
      - User card: Avatar circle + name + "Clinician" role badge
-     - Nav items with icons: 🏠 Dashboard, 👥 Patients, 📹 New Analysis, 📅 Appointments
+     - Nav items with icons: 🏠 Dashboard, 👥 Patient Reports (`/reports`), 📹 New Analysis, 📅 Appointments
      - Active item: bg-cyan-500/10, text-cyan-400, left border accent
      - Bottom section: ⚙️ Settings, ❓ Help, "Export Report" button (cyan-500 bg)
    - Main content area: right of sidebar, full remaining width
@@ -342,20 +342,19 @@ Build the clinician portal with 4 pages + sidebar layout + search/filter:
    - Recent Activity feed (list of recent analyses with patient name, date, diagnosis badge)
    - Upcoming Consultations section: today's appointments with time, patient name, risk badge, [Join] button
 
-3. Create `frontend/pages/clinician/patients.tsx`:
-   - **SEARCH BAR** at the top: Full-width input with search icon, placeholder "Search patients by name, ID, or date...", debounced at 300ms, real-time filtering
-   - **FILTER BUTTON** next to search bar: Opens a dropdown panel with:
-     - Diagnosis filter: buttons/chips for All, Normal, High Risk, DMD Risk
-     - Date range: Last 7 days, Last 30 days, Last 3 months, All Time
-     - Sort: Most Recent, Name A-Z, Name Z-A, Highest Risk First
-   - Active filters shown as dismissible pill badges below the search bar (e.g., "✕ High Risk" "✕ Last 30 days")
-   - Patient list: Card-based or table layout with columns: Patient ID, Name, Last Analysis Date, Diagnosis (badge), Risk Level, Actions (View Report)
-   - "No results found" empty state with illustration
+3. **ENHANCE existing** `frontend/pages/reports.tsx`:
+   - Keep the existing functionality (table of jobs, basic text search, "Normal/Technician" links).
+   - Change the basic text search input to **debounced at 300ms**.
+   - Add a **Filter Button** next to the search bar. This toggles a dropdown panel holding **Advanced Filters**:
+     - Diagnosis filter: All, Normal, High Risk.
+     - Date range filter: Last 7 days, Last 30 days, Last 3 months, All Time.
+     - Severity Sort: Most Recent, Highest Risk First.
+   - Show active filters as dismissible pill badges below the search bar (e.g., "✕ High Risk").
+   - Tie the new filter states into the existing `filteredJobs` useMemo logic.
 
 4. Create `frontend/pages/clinician/patients/[patientId].tsx`:
-   - Patient profile header (name, ID, age, contact)
-   - Longitudinal analysis history: list of all past analyses with date, diagnosis, symmetry score
-   - Click any analysis to open the tabbed report
+   - Patient profile header (name, ID)
+   - Click any analysis to open the report
 
 5. Create `frontend/pages/clinician/analysis/new.tsx`:
    - Upload area (drag & drop or file picker) for video files
