@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { PatientLayout } from '../../../src/components/PatientLayout';
+import { AICopilotChat } from '../../../src/components/patient/AICopilotChat';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
@@ -73,7 +74,10 @@ export default function PatientResultDetail() {
         {!isHealthy && (
           <div className="mb-8">
             <button 
-              onClick={() => router.push(`/patient/book-consultation/${id}`)}
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('open-ai-copilot'));
+                router.push(`/patient/book-consultation/${id}`);
+              }}
               className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 p-1 rounded-2xl shadow-xl shadow-cyan-500/20 transform transition-transform active:scale-95 group"
             >
               <div className="bg-slate-950 rounded-xl p-4 flex items-center gap-4 group-hover:bg-opacity-80 transition-all">
@@ -135,6 +139,9 @@ export default function PatientResultDetail() {
 
         </div>
 
+        {/* AI Copilot Widget */}
+        {id && <AICopilotChat reportId={id as string} initialOpen={!isHealthy} />}
+        
       </div>
     </PatientLayout>
   );

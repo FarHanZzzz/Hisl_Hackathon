@@ -807,11 +807,10 @@ export default function ResultsPage() {
                )}
             </div>
 
-            <div className={isTechnicianMode ? 'space-y-6' : 'hidden'}>
-
             {/* Parent Insights Panel */}
             <ParentInsightsPanel result={firstResult} />
 
+            <div className={isTechnicianMode ? 'space-y-6' : 'hidden'}>
             {/* Metrics Grid (4 Cards Horizontal) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                {/* Metric 1 */}

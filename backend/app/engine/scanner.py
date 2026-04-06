@@ -13,8 +13,8 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-from app.utils import calculate_angle
-from app.schemas import (
+from ..utils import calculate_angle
+from ..schemas import (
     AnalysisMetrics,
     AngleData,
     DiagnosisInfo,

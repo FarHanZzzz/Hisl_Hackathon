@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { PatientLayout } from '../../src/components/PatientLayout';
+import { PatientOnboarding } from '../../src/components/walkthrough/PatientOnboarding';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
@@ -27,10 +28,11 @@ export default function PatientHome() {
 
   return (
     <PatientLayout title="Home | Pedi-Growth">
+      <PatientOnboarding />
       <div className="space-y-8 animate-in fade-in duration-500">
         
         {/* Header Section */}
-        <div className="flex items-center justify-between mt-2">
+        <div id="tour-welcome" className="flex items-center justify-between mt-2">
           <div>
             <p className="text-slate-400 text-sm font-medium mb-1">{t('welcome')}</p>
             <h1 className="text-3xl font-bold text-white tracking-tight" style={{ fontFamily: "'Noto Sans Bengali', 'Outfit', sans-serif" }}>
@@ -49,6 +51,7 @@ export default function PatientHome() {
           <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">{t('quick_actions')}</h2>
           <div className="grid grid-cols-2 gap-4">
             <button 
+              id="tour-record"
               onClick={() => router.push('/patient/capture')}
               className="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl p-4 text-left shadow-lg shadow-cyan-500/20 transform transition-transform active:scale-95"
             >
@@ -74,7 +77,7 @@ export default function PatientHome() {
 
         {/* Informational Banner */}
         <section>
-          <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-2xl p-4 flex gap-4 items-start">
+          <div id="tour-setup" className="bg-indigo-500/10 border border-indigo-500/20 rounded-2xl p-4 flex gap-4 items-start">
             <div className="bg-indigo-500/20 p-2 rounded-full shrink-0">
               <span className="material-icons text-indigo-400 text-xl">lightbulb</span>
             </div>

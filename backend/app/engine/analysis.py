@@ -15,7 +15,7 @@ Clinical Thresholds (Evidence-Based):
 - Trunk Sway (DMD): >15° variance (heuristic, requires validation)
 """
 from typing import List, Optional
-from app.schemas import DiagnosisResult, DiagnosisInfo
+from ..schemas import DiagnosisResult, DiagnosisInfo
 
 # =============================================================================
 # CLINICAL THRESHOLDS (Evidence-Based)

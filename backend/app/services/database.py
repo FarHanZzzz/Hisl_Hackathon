@@ -12,6 +12,11 @@ import re
 from ..dependencies import get_supabase
 
 
+def get_db():
+    """Get the Supabase client instance (convenience wrapper for routes)."""
+    return get_supabase()
+
+
 class PatientService:
     """CRUD for the patients table."""
     
@@ -120,7 +125,7 @@ class JobService:
     def list_all(self, status: str = None, limit: int = 50) -> List[Dict[str, Any]]:
         """List jobs, optionally filtered by status, ordered by newest first."""
         query = (self.db.table(self.table)
-                 .select("*, results(*), patients!patient_ref(patient_id, patient_name, notes)")
+                 .select("*, results(id, symmetry_index, is_high_risk, message), patients!patient_ref(patient_id, patient_name, notes)")
                  .order("created_at", desc=True)
                  .limit(limit))
         if status:
