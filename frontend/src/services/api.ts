@@ -6,7 +6,10 @@
 import axios from 'axios';
 import type { UploadResponse, CreateJobResponse, Job, PatientInput, AISummary } from '../types';
 
+const baseURL = process.env.NEXT_PUBLIC_API_URL || 'https://hisl-hackathon.onrender.com';
+
 const api = axios.create({
+  baseURL,
   headers: { 'Content-Type': 'application/json' },
   timeout: 90000, // Render free-tier cold starts can take ~60s
 });
