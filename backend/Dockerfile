@@ -13,7 +13,8 @@ ENV MEDIAPIPE_MODEL_PATH=/app/models/pose_landmarker_heavy.task
 # - curl: to download the MediaPipe model
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
-    libgl1-mesa-glx \
+    libgl1 \
+    libglx-mesa0 \
     libglib2.0-0 \
     libgles2 \
     libegl1 \
