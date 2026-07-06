@@ -538,7 +538,7 @@ export default function ResultsPage() {
       const checkVideo = async () => {
          // Use Next.js API rewrite to avoid CORS issues
          const baseUrl = '/api/results';
-         // Try MP4 first (newest format), then WebM
+         // Try processed video first (MP4 then WebM)
          for (const ext of ['mp4', 'webm']) {
             try {
                const url = `${baseUrl}/${job.id}_processed.${ext}`;
@@ -550,7 +550,19 @@ export default function ResultsPage() {
                }
             } catch {}
          }
-         // No video file found
+         // Fallback: try the original uploaded video
+         if (job.video_filename) {
+            try {
+               const origUrl = `/api/uploads/${job.video_filename}`;
+               const res = await fetch(origUrl, { method: 'HEAD' });
+               if (res.ok) {
+                  setVideoUrl(origUrl);
+                  setVideoError(false);
+                  return;
+               }
+            } catch {}
+         }
+         // No video file found at all
          setVideoUrl(null);
          setVideoError(true);
       };
@@ -911,9 +923,11 @@ export default function ResultsPage() {
                   <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/20">
                      <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                         <span className="material-icons text-primary-500 text-sm">videocam</span>
-                        Kinematic Overlay
+                        {videoUrl?.includes('_processed') ? 'Kinematic Overlay' : 'Gait Recording'}
                      </h3>
-                     <span className="px-2.5 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs font-bold tracking-wider">LATERAL VIEW</span>
+                     <span className="px-2.5 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs font-bold tracking-wider">
+                        {videoUrl?.includes('_processed') ? 'ANNOTATED' : 'ORIGINAL'}
+                     </span>
                   </div>
                   <div className="aspect-video bg-gray-100 dark:bg-gray-950 relative group flex-grow">
                      <div className="absolute inset-0 flex items-center justify-center">
