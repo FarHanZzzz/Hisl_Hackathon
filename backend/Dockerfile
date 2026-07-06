@@ -6,7 +6,6 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8000
 ENV MEDIAPIPE_MODEL_PATH=/app/models/pose_landmarker_lite.task
-ENV DISABLE_VIDEO_OUTPUT=1
 
 # Install system dependencies
 # - ffmpeg: required for video encoding/processing

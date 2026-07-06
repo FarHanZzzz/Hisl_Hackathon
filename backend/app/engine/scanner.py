@@ -300,6 +300,13 @@ def process_video(
     output_video_path = None
     video_writer = None
     temp_video_path = None
+    # Cap output resolution to 480p to reduce memory on free tier
+    out_w, out_h = width, height
+    max_height = int(os.getenv("MAX_VIDEO_HEIGHT", "480"))
+    if height > max_height:
+        scale = max_height / height
+        out_w = int(width * scale) & ~1  # Ensure even number
+        out_h = max_height
     if output_dir and not disable_video_output:
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -308,7 +315,9 @@ def process_video(
         temp_video_path = output_dir / f"{job_id}_temp.avi"
         output_video_path = output_dir / f"{job_id}_processed.mp4"
         fourcc = cv2.VideoWriter_fourcc(*"MJPG")
-        video_writer = cv2.VideoWriter(str(temp_video_path), fourcc, fps, (width, height))
+        # Adjust output FPS for frame skipping
+        out_fps = fps / int(os.getenv("FRAME_SKIP", "2")) if fps > 0 else 15
+        video_writer = cv2.VideoWriter(str(temp_video_path), fourcc, out_fps, (out_w, out_h))
     elif output_dir:
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -380,9 +389,14 @@ def process_video(
             left_knee_y_coords.append(l_knee_y)
             right_knee_y_coords.append(r_knee_y)
 
-            # Write processed frame
+            # Write processed frame (resized to output resolution)
             if video_writer:
-                video_writer.write(processed_frame)
+                if (out_w, out_h) != (width, height):
+                    resized = cv2.resize(processed_frame, (out_w, out_h))
+                    video_writer.write(resized)
+                    del resized
+                else:
+                    video_writer.write(processed_frame)
 
             # Release frame references to reduce memory pressure
             del frame, processed_frame
