@@ -26,20 +26,7 @@ function useRouteTheme() {
 
   useLayoutEffect(() => {
     const html = document.documentElement;
-
-    document.body.style.transition = 'none';
-
-    // Default to 'light' everywhere unless user prefers 'dark'
-    const stored = localStorage.getItem('pedigrowth-theme');
-    if (stored === 'dark') {
-      html.classList.add('dark');
-      // whats the purpose of this line? 
-    } else {
-      html.classList.remove('dark');
-    }
-
-    void document.body.offsetHeight;
-    document.body.style.transition = '';
+    html.classList.add('dark');
   }, [router.pathname]);
 }
 

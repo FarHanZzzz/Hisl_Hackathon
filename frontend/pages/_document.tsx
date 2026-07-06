@@ -49,19 +49,7 @@ export default function Document(props: any) {
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                var d = document.documentElement;
-                var path = window.location.pathname;
-                if (path === '/') {
-                  d.classList.add('dark');
-                } else {
-                  var theme = null;
-                  try { theme = localStorage.getItem('pedigrowth-theme'); } catch(e) {}
-                  if (theme === 'dark') {
-                    d.classList.add('dark');
-                  } else {
-                    d.classList.remove('dark');
-                  }
-                }
+                document.documentElement.classList.add('dark');
               })();
             `,
           }}

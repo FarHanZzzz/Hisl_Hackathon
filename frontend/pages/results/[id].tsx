@@ -727,21 +727,21 @@ export default function ResultsPage() {
                   </div>
                   <button
                      onClick={() => window.print()}
-                     className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                     className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors"
                   >
                      <span className="material-icons text-sm">print</span>
                      Print
                   </button>
                   <button
                      onClick={handleExportPdf}
-                     className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-primary-500/20"
+                     className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-cyan-500/20"
                   >
                      <span className="material-icons text-sm">download</span>
                      Export PDF
                   </button>
                   <button
                      onClick={handleShare}
-                     className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                     className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors"
                   >
                      <span className="material-icons text-sm">share</span>
                      Share
@@ -761,22 +761,22 @@ export default function ResultsPage() {
                   />
                </div>
 
-               <div className="shrink-0 w-full md:w-48 bg-white dark:bg-gray-900 text-gray-900 dark:text-white p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col items-center justify-center">
+               <div className="shrink-0 w-full md:w-48 bg-slate-900/40 text-slate-100 p-4 rounded-xl border border-cyan-500/20 shadow-sm flex flex-col items-center justify-center backdrop-blur-md">
                   <div className="text-center mb-3">
-                     <div className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-0.5">Symmetry Score</div>
-                     <div className="text-3xl font-bold text-gray-900 dark:text-white">{boundedScore}<span className="text-lg opacity-70">%</span></div>
+                     <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Symmetry Score</div>
+                     <div className="text-3xl font-bold text-white">{boundedScore}<span className="text-lg opacity-70">%</span></div>
                   </div>
                   <div className="w-24 h-24 relative flex items-center justify-center">
                      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                         <path
-                           className="text-gray-100 dark:text-gray-800"
+                           className="text-slate-800"
                            strokeWidth="3"
                            stroke="currentColor"
                            fill="none"
                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                         />
                         <path
-                           className={isHighRisk ? 'text-danger-500' : 'text-success-500'}
+                           className={isHighRisk ? 'text-red-500' : 'text-emerald-500'}
                            strokeDasharray={`${boundedScore}, 100`}
                            strokeWidth="3"
                            strokeLinecap="round"
@@ -786,7 +786,7 @@ export default function ResultsPage() {
                            style={{ animation: 'gauge-sweep 1.2s ease-out forwards' }}
                         />
                      </svg>
-                     <div className="absolute inset-0 flex items-center justify-center font-bold text-base text-gray-900 dark:text-white">
+                     <div className="absolute inset-0 flex items-center justify-center font-bold text-base text-white">
                         {boundedScore}
                      </div>
                   </div>
@@ -794,27 +794,27 @@ export default function ResultsPage() {
             </div>
 
             {/* Patient Info Bar (Horizontal) */}
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-6 py-4 flex flex-col gap-4 shadow-sm">
+            <div className="bg-slate-900/40 border border-cyan-500/20 rounded-xl px-6 py-4 flex flex-col gap-4 shadow-sm backdrop-blur-md">
                <div className="flex flex-wrap gap-x-12 gap-y-4 items-center">
                   <div className="flex flex-col">
-                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Patient ID</span>
-                     <span className="font-semibold text-gray-900 dark:text-white">{job.patients?.patient_id || job.patient_ref.substring(0, 8)}</span>
+                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Patient ID</span>
+                     <span className="font-semibold text-white">{job.patients?.patient_id || job.patient_ref.substring(0, 8)}</span>
                   </div>
                   {job.patients?.patient_name && (
                   <div className="flex flex-col">
-                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Patient Name</span>
-                     <span className="font-semibold text-gray-900 dark:text-white">{job.patients.patient_name}</span>
+                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Patient Name</span>
+                     <span className="font-semibold text-white">{job.patients.patient_name}</span>
                   </div>
                   )}
                   <div className="flex flex-col">
-                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Analysis Date</span>
-                     <span className="font-semibold text-gray-900 dark:text-white">{new Date(job.created_at).toLocaleDateString()}</span>
+                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Analysis Date</span>
+                     <span className="font-semibold text-white">{new Date(job.created_at).toLocaleDateString()}</span>
                   </div>
                </div>
                {job.patients?.notes && (
-                  <div className="pt-4 border-t border-gray-100 dark:border-gray-800 mt-2">
-                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><span className="material-icons text-sm">assignment</span>Clinical Notes</span>
-                     <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg border border-gray-100 dark:border-gray-800/80">{job.patients.notes}</p>
+                  <div className="pt-4 border-t border-slate-700/50 mt-2">
+                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><span className="material-icons text-sm">assignment</span>Clinical Notes</span>
+                     <p className="text-sm text-slate-300 leading-relaxed bg-slate-950/40 p-3 rounded-lg border border-cyan-500/10 mt-2">{job.patients.notes}</p>
                   </div>
                )}
             </div>
@@ -823,83 +823,83 @@ export default function ResultsPage() {
             <ParentInsightsPanel result={firstResult} />
 
             <div className={isTechnicianMode ? 'space-y-6' : 'hidden'}>
-            {/* Metrics Grid (4 Cards Horizontal) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-               {/* Metric 1 */}
-               <div className="bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between hover:border-primary-500/30 transition-colors">
-                  <div className="flex justify-between items-start mb-2">
-                     <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Symmetry Index</span>
-                     <span className="material-icons text-gray-300 dark:text-gray-600 text-lg">balance</span>
-                  </div>
-                  <div className="flex items-baseline gap-1 mt-2">
-                     <span className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">{firstResult.symmetry_index.toFixed(3)}</span>
-                     <span className="text-sm font-medium text-gray-400">Ratio</span>
-                  </div>
-               </div>
+             {/* Metrics Grid (4 Cards Horizontal) */}
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                {/* Metric 1 */}
+                <div className="bg-slate-900/40 p-5 rounded-xl border border-cyan-500/20 shadow-sm flex flex-col justify-between hover:border-cyan-500/40 transition-colors backdrop-blur-md">
+                   <div className="flex justify-between items-start mb-2">
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Symmetry Index</span>
+                      <span className="material-icons text-slate-500 text-lg">balance</span>
+                   </div>
+                   <div className="flex items-baseline gap-1 mt-2">
+                      <span className="text-3xl font-bold tracking-tight text-white">{firstResult.symmetry_index.toFixed(3)}</span>
+                      <span className="text-sm font-medium text-slate-400 ml-1">Ratio</span>
+                   </div>
+                </div>
 
-               {/* Metric 2 */}
-               <div className="bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between hover:border-primary-500/30 transition-colors">
-                  <div className="flex justify-between items-start mb-2">
-                     <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Range of Motion</span>
-                     <span className="material-icons text-gray-300 dark:text-gray-600 text-lg">open_in_full</span>
-                  </div>
-                  <div className="flex items-baseline gap-2 mt-2">
-                     <span className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{Math.round(firstResult.left_rom)}°<span className="text-sm font-normal text-gray-400 ml-1">L</span></span>
-                     <span className="text-gray-300 mx-1">|</span>
-                     <span className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{Math.round(firstResult.right_rom)}°<span className="text-sm font-normal text-gray-400 ml-1">R</span></span>
-                  </div>
-               </div>
+                {/* Metric 2 */}
+                <div className="bg-slate-900/40 p-5 rounded-xl border border-cyan-500/20 shadow-sm flex flex-col justify-between hover:border-cyan-500/40 transition-colors backdrop-blur-md">
+                   <div className="flex justify-between items-start mb-2">
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Range of Motion</span>
+                      <span className="material-icons text-slate-500 text-lg">open_in_full</span>
+                   </div>
+                   <div className="flex items-baseline gap-2 mt-2">
+                      <span className="text-2xl font-bold tracking-tight text-white">{Math.round(firstResult.left_rom)}°<span className="text-sm font-normal text-slate-400 ml-1">L</span></span>
+                      <span className="text-slate-700 mx-1">|</span>
+                      <span className="text-2xl font-bold tracking-tight text-white">{Math.round(firstResult.right_rom)}°<span className="text-sm font-normal text-slate-400 ml-1">R</span></span>
+                   </div>
+                </div>
 
-               {/* Metric 3 */}
-               <div className="bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between hover:border-primary-500/30 transition-colors">
-                  <div className="flex justify-between items-start mb-2">
-                     <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Max Flexion</span>
-                     <span className="material-icons text-gray-300 dark:text-gray-600 text-lg">straighten</span>
-                  </div>
-                  <div className="flex items-baseline gap-2 mt-2">
-                     <span className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{Math.round(firstResult.left_max_flexion)}°<span className="text-sm font-normal text-gray-400 ml-1">L</span></span>
-                     <span className="text-gray-300 mx-1">|</span>
-                     <span className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{Math.round(firstResult.right_max_flexion)}°<span className="text-sm font-normal text-gray-400 ml-1">R</span></span>
-                  </div>
-               </div>
+                {/* Metric 3 */}
+                <div className="bg-slate-900/40 p-5 rounded-xl border border-cyan-500/20 shadow-sm flex flex-col justify-between hover:border-cyan-500/40 transition-colors backdrop-blur-md">
+                   <div className="flex justify-between items-start mb-2">
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Max Flexion</span>
+                      <span className="material-icons text-slate-500 text-lg">straighten</span>
+                   </div>
+                   <div className="flex items-baseline gap-2 mt-2">
+                      <span className="text-2xl font-bold tracking-tight text-white">{Math.round(firstResult.left_max_flexion)}°<span className="text-sm font-normal text-slate-400 ml-1">L</span></span>
+                      <span className="text-slate-700 mx-1">|</span>
+                      <span className="text-2xl font-bold tracking-tight text-white">{Math.round(firstResult.right_max_flexion)}°<span className="text-sm font-normal text-slate-400 ml-1">R</span></span>
+                   </div>
+                </div>
 
-               {/* Metric 4 (Asymmetry/Risk Highlight) */}
-               <div className={`bg-white dark:bg-gray-900 p-5 rounded-xl border-2 ${isHighRisk ? 'border-danger-500 shadow-lg shadow-danger-500/10' : 'border-success-500 shadow-lg shadow-success-500/10'} flex flex-col justify-between`}>
-                  <div className="flex justify-between items-start mb-2">
-                     <span className={`text-xs font-bold ${isHighRisk ? 'text-danger-600 dark:text-danger-400' : 'text-success-600 dark:text-success-400'} uppercase tracking-wider font-bold`}>Asymmetry</span>
-                     <span className={`material-icons ${isHighRisk ? 'text-danger-500 animate-pulse' : 'text-success-500'} text-lg`}>
-                        {isHighRisk ? 'priority_high' : 'check_circle'}
-                     </span>
-                  </div>
-                  <div className="flex items-baseline gap-1 mt-2">
-                     <span className={`text-3xl font-bold tracking-tight ${isHighRisk ? 'text-danger-600 dark:text-danger-400' : 'text-success-600 dark:text-success-400'}`}>{firstResult.asymmetry_percentage.toFixed(1)}%</span>
-                  </div>
-               </div>
+                {/* Metric 4 (Asymmetry/Risk Highlight) */}
+                <div className={`bg-slate-900/40 p-5 rounded-xl border-2 backdrop-blur-md ${isHighRisk ? 'border-red-500/50 shadow-lg shadow-red-500/5' : 'border-emerald-500/50 shadow-lg shadow-emerald-500/5'} flex flex-col justify-between`}>
+                   <div className="flex justify-between items-start mb-2">
+                      <span className={`text-xs font-bold ${isHighRisk ? 'text-red-400' : 'text-emerald-400'} uppercase tracking-wider`}>Asymmetry</span>
+                      <span className={`material-icons ${isHighRisk ? 'text-red-500 animate-pulse' : 'text-emerald-500'} text-lg`}>
+                         {isHighRisk ? 'priority_high' : 'check_circle'}
+                      </span>
+                   </div>
+                   <div className="flex items-baseline gap-1 mt-2">
+                      <span className={`text-3xl font-bold tracking-tight ${isHighRisk ? 'text-red-400' : 'text-emerald-400'}`}>{firstResult.asymmetry_percentage.toFixed(1)}%</span>
+                   </div>
+                </div>
 
-               {/* Metric 5 (Data Quality Badge) */}
-               {(() => {
-                  const rate = firstResult.detection_rate;
-                  const quality = rate >= 90 ? 'high' : rate >= 70 ? 'medium' : 'low';
-                  const qConfig = {
-                     high: { bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', tc: 'text-green-700 dark:text-green-400', icon: 'signal_cellular_alt', label: 'HIGH FIDELITY' },
-                     medium: { bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800', tc: 'text-amber-700 dark:text-amber-400', icon: 'signal_cellular_alt_2_bar', label: 'MODERATE' },
-                     low: { bg: 'bg-red-50 dark:bg-red-900/20', border: 'border-red-200 dark:border-red-800', tc: 'text-red-700 dark:text-red-400', icon: 'signal_cellular_alt_1_bar', label: 'LOW QUALITY' },
-                  };
-                  const q = qConfig[quality];
-                  return (
-                     <div className={`${q.bg} p-5 rounded-xl border ${q.border} shadow-sm flex flex-col justify-between`}>
-                        <div className="flex justify-between items-start mb-2">
-                           <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Data Quality</span>
-                           <span className={`material-icons ${q.tc} text-lg`}>{q.icon}</span>
-                        </div>
-                        <div className="flex items-baseline gap-1 mt-2">
-                           <span className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">{Math.round(rate)}%</span>
-                        </div>
-                        <div className={`mt-2 text-[10px] font-bold ${q.tc} uppercase tracking-widest`}>{q.label}</div>
-                     </div>
-                  );
-               })()}
-            </div>
+                {/* Metric 5 (Data Quality Badge) */}
+                {(() => {
+                   const rate = firstResult.detection_rate;
+                   const quality = rate >= 90 ? 'high' : rate >= 70 ? 'medium' : 'low';
+                   const qConfig = {
+                      high: { bg: 'bg-emerald-950/20 backdrop-blur-md', border: 'border-emerald-500/30', tc: 'text-emerald-400', icon: 'signal_cellular_alt', label: 'HIGH FIDELITY' },
+                      medium: { bg: 'bg-amber-950/20 backdrop-blur-md', border: 'border-amber-500/30', tc: 'text-amber-400', icon: 'signal_cellular_alt_2_bar', label: 'MODERATE' },
+                      low: { bg: 'bg-red-950/20 backdrop-blur-md', border: 'border-red-500/30', tc: 'text-red-400', icon: 'signal_cellular_alt_1_bar', label: 'LOW QUALITY' },
+                   };
+                   const q = qConfig[quality];
+                   return (
+                      <div className={`${q.bg} p-5 rounded-xl border ${q.border} shadow-sm flex flex-col justify-between`}>
+                         <div className="flex justify-between items-start mb-2">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Data Quality</span>
+                            <span className={`material-icons ${q.tc} text-lg`}>{q.icon}</span>
+                         </div>
+                         <div className="flex items-baseline gap-1 mt-2">
+                            <span className="text-3xl font-bold tracking-tight text-white">{Math.round(rate)}%</span>
+                         </div>
+                         <div className={`mt-2 text-[10px] font-bold ${q.tc} uppercase tracking-widest`}>{q.label}</div>
+                      </div>
+                   );
+                })()}
+             </div>
 
             {/* Educational Note */}
             {isHighRisk && (
@@ -919,17 +919,17 @@ export default function ResultsPage() {
         {/* Video and Chart Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                {/* Kinematic Overlay Video */}
-               <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col">
-                  <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/20">
-                     <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                        <span className="material-icons text-primary-500 text-sm">videocam</span>
+               <div className="bg-slate-900/40 rounded-xl shadow-[0_4px_30px_rgba(0,0,0,0.3)] border border-cyan-500/20 overflow-hidden flex flex-col backdrop-blur-md">
+                  <div className="px-6 py-4 border-b border-cyan-500/10 flex justify-between items-center bg-slate-900/60">
+                     <h3 className="font-semibold text-white flex items-center gap-2">
+                        <span className="material-icons text-cyan-400 text-sm">videocam</span>
                         {videoUrl?.includes('_processed') ? 'Kinematic Overlay' : 'Gait Recording'}
                      </h3>
-                     <span className="px-2.5 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs font-bold tracking-wider">
+                     <span className="px-2.5 py-1 bg-slate-800 text-slate-300 rounded text-xs font-bold tracking-wider border border-slate-700">
                         {videoUrl?.includes('_processed') ? 'ANNOTATED' : 'ORIGINAL'}
                      </span>
                   </div>
-                  <div className="aspect-video bg-gray-100 dark:bg-gray-950 relative group flex-grow">
+                  <div className="aspect-video bg-slate-950 relative group flex-grow">
                      <div className="absolute inset-0 flex items-center justify-center">
                         {videoUrl && !videoError ? (
                            <video
@@ -942,7 +942,7 @@ export default function ResultsPage() {
                               <source src={`${videoUrl}#t=0.001`} type={videoUrl.endsWith('.webm') ? 'video/webm' : 'video/mp4'} />
                            </video>
                         ) : (
-                           <div className="flex flex-col items-center gap-3 text-gray-400">
+                           <div className="flex flex-col items-center gap-3 text-slate-500">
                               <span className="material-icons text-5xl opacity-50">slow_motion_video</span>
                               <p className="text-sm font-medium">
                                  {videoError ? 'Processed video not available for this analysis' : 'Loading video...'}
@@ -954,7 +954,7 @@ export default function ResultsPage() {
                </div>
 
                {/* Knee Flexion/Extension Chart */}
-               <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col">
+               <div className="bg-slate-900/40 rounded-xl shadow-[0_4px_30px_rgba(0,0,0,0.3)] border border-cyan-500/20 p-6 flex flex-col backdrop-blur-md">
                   <div className="flex justify-between items-center mb-4">
                      <div>
                         <h3 className="font-semibold text-gray-900 dark:text-white">Knee Flexion/Extension Angle</h3>
@@ -974,7 +974,7 @@ export default function ResultsPage() {
                   {firstResult.left_angle_series?.length > 0 ? (
                      <ResponsiveContainer width="100%" height={300}>
                         <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-                           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.5} />
+                           <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
                            <XAxis
                               dataKey="pct"
                               tick={{ fontSize: 10, fill: '#94a3b8' }}
@@ -987,7 +987,7 @@ export default function ResultsPage() {
                               label={{ value: 'Angle (°)', angle: -90, position: 'insideLeft', offset: 5, fontSize: 10, fill: '#94a3b8' }}
                            />
                            <Tooltip
-                              contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', fontSize: 12 }}
+                              contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(6,182,212,0.2)', borderRadius: '8px', fontSize: 12, color: '#f8fafc' }}
                               labelFormatter={(v: number) => `Gait Cycle: ${v}%`}
                               formatter={(value: number, name: string) => [`${value.toFixed(1)}°`, name]}
                            />
@@ -996,14 +996,14 @@ export default function ResultsPage() {
                         </LineChart>
                      </ResponsiveContainer>
                   ) : (
-                     <div className="flex-grow flex items-center justify-center bg-gray-50 dark:bg-gray-800/50 border border-dashed border-gray-200 dark:border-gray-700 rounded-lg min-h-[300px]">
-                        <p className="text-sm text-gray-400 font-medium">No angle data recorded for this analysis</p>
+                     <div className="flex-grow flex items-center justify-center bg-slate-950/40 border border-dashed border-slate-700 rounded-lg min-h-[300px]">
+                        <p className="text-sm text-slate-400 font-medium">No angle data recorded for this analysis</p>
                      </div>
                   )}
                    {/* Graph Insight */}
-                   <div className="mt-4 flex items-start gap-2.5 bg-sky-50 dark:bg-sky-950/20 px-4 py-3 rounded-lg border border-sky-100 dark:border-sky-900/30">
-                      <span className="material-icons text-sky-500 text-base mt-0.5 shrink-0">info</span>
-                      <p className="text-xs text-sky-700 dark:text-sky-300 leading-relaxed">
+                   <div className="mt-4 flex items-start gap-2.5 bg-cyan-950/20 px-4 py-3 rounded-lg border border-cyan-500/20">
+                      <span className="material-icons text-cyan-400 text-base mt-0.5 shrink-0">info</span>
+                      <p className="text-xs text-cyan-300 leading-relaxed">
                          <span className="font-semibold">What this graph shows: </span>
                          {firstResult.symmetry_index < 0.85 || firstResult.symmetry_index > 1.15
                             ? `The red and gray lines represent how each knee bends during walking. Notice how the two lines don't mirror each other well — there's a ${Math.round(firstResult.asymmetry_percentage ?? Math.abs(1 - firstResult.symmetry_index) * 100)}% difference, meaning one leg is bending differently from the other. In a balanced gait, these lines would closely overlap.`
@@ -1023,49 +1023,49 @@ export default function ResultsPage() {
                   isHighRisk={isHighRisk}
                />
             </div>
-            <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col justify-center">
-               <h3 className="text-sm font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-4">Bilateral Comparison</h3>
+            <div className="lg:col-span-2 bg-slate-900/40 rounded-xl shadow-[0_4px_30px_rgba(0,0,0,0.3)] border border-cyan-500/20 p-6 flex flex-col justify-center backdrop-blur-md">
+               <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">Bilateral Comparison</h3>
                <div className="grid grid-cols-2 gap-6">
                   {/* Left Leg Details */}
                   <div className="space-y-4">
                      <div className="flex items-center gap-2 mb-3">
                         <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                        <span className="text-sm font-bold text-gray-900 dark:text-white">Left Leg</span>
+                        <span className="text-sm font-bold text-white">Left Leg</span>
                      </div>
-                     <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 space-y-3">
+                     <div className="bg-slate-950/40 border border-slate-800/50 rounded-lg p-4 space-y-3">
                         <div className="flex justify-between items-center">
-                           <span className="text-xs font-medium text-gray-500">Max Flexion</span>
-                           <span className="text-lg font-bold text-gray-900 dark:text-white">{firstResult.left_max_flexion.toFixed(1)}°</span>
+                           <span className="text-xs font-medium text-slate-400">Max Flexion</span>
+                           <span className="text-lg font-bold text-white">{firstResult.left_max_flexion.toFixed(1)}°</span>
                         </div>
                         <div className="flex justify-between items-center">
-                           <span className="text-xs font-medium text-gray-500">Range of Motion</span>
-                           <span className="text-lg font-bold text-gray-900 dark:text-white">{firstResult.left_rom.toFixed(1)}°</span>
+                           <span className="text-xs font-medium text-slate-400">Range of Motion</span>
+                           <span className="text-lg font-bold text-white">{firstResult.left_rom.toFixed(1)}°</span>
                         </div>
-                        <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
                            <div className="h-full bg-red-500 rounded-full" style={{ width: `${Math.min(100, (firstResult.left_rom / 60) * 100)}%` }}></div>
                         </div>
-                        <p className="text-[10px] text-gray-400 uppercase tracking-widest">ROM vs Normal (60°)</p>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-widest">ROM vs Normal (60°)</p>
                      </div>
                   </div>
                   {/* Right Leg Details */}
                   <div className="space-y-4">
                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-3 h-3 rounded-full bg-gray-400"></div>
-                        <span className="text-sm font-bold text-gray-900 dark:text-white">Right Leg</span>
-                     </div>
-                     <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 space-y-3">
+                        <div className="w-3 h-3 rounded-full bg-slate-400"></div>
+                        <span className="text-sm font-bold text-white">Right Leg</span>
+                      </div>
+                     <div className="bg-slate-950/40 border border-slate-800/50 rounded-lg p-4 space-y-3">
                         <div className="flex justify-between items-center">
-                           <span className="text-xs font-medium text-gray-500">Max Flexion</span>
-                           <span className="text-lg font-bold text-gray-900 dark:text-white">{firstResult.right_max_flexion.toFixed(1)}°</span>
+                           <span className="text-xs font-medium text-slate-400">Max Flexion</span>
+                           <span className="text-lg font-bold text-white">{firstResult.right_max_flexion.toFixed(1)}°</span>
                         </div>
                         <div className="flex justify-between items-center">
-                           <span className="text-xs font-medium text-gray-500">Range of Motion</span>
-                           <span className="text-lg font-bold text-gray-900 dark:text-white">{firstResult.right_rom.toFixed(1)}°</span>
+                           <span className="text-xs font-medium text-slate-400">Range of Motion</span>
+                           <span className="text-lg font-bold text-white">{firstResult.right_rom.toFixed(1)}°</span>
                         </div>
-                        <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                           <div className="h-full bg-gray-400 rounded-full" style={{ width: `${Math.min(100, (firstResult.right_rom / 60) * 100)}%` }}></div>
+                        <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                           <div className="h-full bg-slate-400 rounded-full" style={{ width: `${Math.min(100, (firstResult.right_rom / 60) * 100)}%` }}></div>
                         </div>
-                        <p className="text-[10px] text-gray-400 uppercase tracking-widest">ROM vs Normal (60°)</p>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-widest">ROM vs Normal (60°)</p>
                      </div>
                   </div>
                </div>
@@ -1108,17 +1108,17 @@ export default function ResultsPage() {
             )}
 
             {/* AI Clinical Summary Card */}
-            <div className="bg-white dark:bg-[#18181b] rounded-xl shadow-sm border border-gray-100 dark:border-[#27272a] overflow-hidden">
+            <div className="bg-slate-900/40 rounded-xl shadow-[0_4px_30px_rgba(0,0,0,0.3)] border border-cyan-500/20 overflow-hidden backdrop-blur-md">
                {/* Header */}
-               <div className="px-6 py-4 border-b border-gray-100 dark:border-[#27272a] flex justify-between items-center bg-gray-50/50 dark:bg-[#18181b]">
-                  <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2.5 text-base">
-                     <span className="material-icons text-[#137fec]">auto_awesome</span>
+               <div className="px-6 py-4 border-b border-cyan-500/10 flex justify-between items-center bg-slate-900/60">
+                  <h3 className="font-bold text-white flex items-center gap-2.5 text-base">
+                     <span className="material-icons text-cyan-400">auto_awesome</span>
                      AI Clinical Summary
                   </h3>
                   <button
                      onClick={() => job?.id && fetchSummary(job.id)}
                      disabled={summaryLoading}
-                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-[#3f3f46] text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#27272a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 text-xs font-bold text-slate-300 hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                      <span className={`material-icons text-sm ${summaryLoading ? 'animate-spin' : ''}`}>
                         {summaryLoading ? 'progress_activity' : 'refresh'}
@@ -1180,56 +1180,56 @@ export default function ResultsPage() {
 
                            {/* Conclusiveness Dropdown */}
                            {summary.conclusiveness && (
-                              <div className="border border-gray-200 dark:border-[#3f3f46] rounded-lg overflow-hidden">
+                              <div className="border border-slate-800 rounded-lg overflow-hidden">
                                  <button
                                     onClick={() => setIsConclusivenessOpen(!isConclusivenessOpen)}
-                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-[#27272a] hover:bg-gray-100 dark:hover:bg-[#3f3f46] transition-colors flex items-center justify-between"
+                                    className="w-full px-4 py-3 bg-slate-950/40 hover:bg-slate-900/60 transition-colors flex items-center justify-between"
                                  >
                                     <div className="flex items-center gap-3">
-                                       <span className="material-icons text-[#137fec] text-sm">trending_up</span>
+                                       <span className="material-icons text-cyan-400 text-sm">trending_up</span>
                                        <div className="text-left">
-                                          <h4 className="text-[10px] font-bold text-gray-400 dark:text-[#a1a1aa] uppercase tracking-widest">Conclusiveness</h4>
-                                          <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">Confidence: <span className="font-bold text-gray-900 dark:text-white">{Math.round(summary.conclusiveness.confidence_percentage)}%</span></p>
+                                          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Conclusiveness</h4>
+                                          <p className="text-xs text-slate-400 mt-0.5">Confidence: <span className="font-bold text-white">{Math.round(summary.conclusiveness.confidence_percentage)}%</span></p>
                                        </div>
                                     </div>
-                                    <span className={`material-icons text-gray-400 dark:text-gray-500 transition-transform ${isConclusivenessOpen ? 'rotate-180' : ''}`}>expand_more</span>
+                                    <span className={`material-icons text-slate-400 transition-transform ${isConclusivenessOpen ? 'rotate-180' : ''}`}>expand_more</span>
                                  </button>
                                  <div className={`overflow-hidden transition-all duration-300 ${isConclusivenessOpen ? 'max-h-96' : 'max-h-0'}`}>
-                                    <div className="px-4 py-4 bg-white dark:bg-[#18181b] border-t border-gray-200 dark:border-[#3f3f46]">
-                                       <p className="text-sm text-gray-700 dark:text-[#d4d4d8] leading-relaxed">{summary.conclusiveness.confidence_reasoning}</p>
+                                    <div className="px-4 py-4 bg-slate-950/20 border-t border-slate-800">
+                                       <p className="text-sm text-slate-300 leading-relaxed">{summary.conclusiveness.confidence_reasoning}</p>
                                     </div>
                                  </div>
                               </div>
                            )}
 
                            {/* Details Dropdown */}
-                           <div className="border border-gray-200 dark:border-[#3f3f46] rounded-lg overflow-hidden">
+                           <div className="border border-slate-800 rounded-lg overflow-hidden">
                               <button
                                  onClick={() => setIsDetailsOpen(!isDetailsOpen)}
-                                 className="w-full px-4 py-3 bg-gray-50 dark:bg-[#27272a] hover:bg-gray-100 dark:hover:bg-[#3f3f46] transition-colors flex items-center justify-between"
+                                 className="w-full px-4 py-3 bg-slate-950/40 hover:bg-slate-900/60 transition-colors flex items-center justify-between"
                               >
                                  <div className="flex items-center gap-3">
-                                    <span className="material-icons text-[#137fec] text-sm">notes</span>
+                                    <span className="material-icons text-cyan-400 text-sm">notes</span>
                                     <div className="text-left">
-                                       <h4 className="text-[10px] font-bold text-gray-400 dark:text-[#a1a1aa] uppercase tracking-widest">Details</h4>
-                                       <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{summary.key_findings.length} key findings</p>
+                                       <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Details</h4>
+                                       <p className="text-xs text-slate-400 mt-0.5">{summary.key_findings.length} key findings</p>
                                     </div>
                                  </div>
-                                 <span className={`material-icons text-gray-400 dark:text-gray-500 transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`}>expand_more</span>
+                                 <span className={`material-icons text-slate-400 transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`}>expand_more</span>
                               </button>
                               <div className={`overflow-hidden transition-all duration-300 ${isDetailsOpen ? 'max-h-[1200px]' : 'max-h-0'}`}>
-                                 <div className="px-4 py-4 bg-white dark:bg-[#18181b] border-t border-gray-200 dark:border-[#3f3f46] space-y-6">
+                                 <div className="px-4 py-4 bg-slate-950/20 border-t border-slate-800 space-y-6">
                                     {/* Key Findings */}
                                     <div>
-                                       <h5 className="text-[10px] font-bold text-gray-400 dark:text-[#a1a1aa] uppercase tracking-widest mb-2.5">Key Findings</h5>
+                                       <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">Key Findings</h5>
                                        <ul className="space-y-2">
                                           {summary.key_findings.map((finding, i) => (
-                                             <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700 dark:text-[#d4d4d8]">
+                                             <li key={i} className="flex items-start gap-2.5 text-sm text-slate-300">
                                                 <span className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${finding.toLowerCase().includes('normal') || finding.toLowerCase().includes('within')
-                                                      ? 'bg-green-500'
+                                                      ? 'bg-emerald-500'
                                                       : finding.toLowerCase().includes('concern') || finding.toLowerCase().includes('risk') || finding.toLowerCase().includes('below') || finding.toLowerCase().includes('significant') || finding.toLowerCase().includes('reduced')
-                                                         ? 'bg-danger-500'
-                                                         : 'bg-[#137fec]'
+                                                         ? 'bg-red-500'
+                                                         : 'bg-cyan-500'
                                                    }`}></span>
                                                 <span className="leading-relaxed">{finding}</span>
                                              </li>
@@ -1239,22 +1239,22 @@ export default function ResultsPage() {
                                     {/* Risk Assessment */}
                                     <div>
                                        <div className="flex items-center gap-3 mb-2.5">
-                                          <h5 className="text-[10px] font-bold text-gray-400 dark:text-[#a1a1aa] uppercase tracking-widest">Risk Assessment</h5>
-                                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider ${isHighRisk
-                                                ? 'bg-danger-100 text-danger-700 dark:bg-danger-900/30 dark:text-danger-400'
-                                                : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                          <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Risk Assessment</h5>
+                                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider border ${isHighRisk
+                                                ? 'bg-red-950/40 text-red-400 border-red-500/25'
+                                                : 'bg-emerald-950/40 text-emerald-400 border-emerald-500/25'
                                              }`}>
                                              {isHighRisk ? 'HIGH RISK' : 'NORMAL'}
                                           </span>
                                        </div>
-                                       <p className="text-sm text-gray-700 dark:text-[#d4d4d8] leading-relaxed">{summary.risk_assessment}</p>
+                                       <p className="text-sm text-slate-300 leading-relaxed">{summary.risk_assessment}</p>
                                     </div>
                                     {/* Recommendations */}
                                     <div>
-                                       <h5 className="text-[10px] font-bold text-gray-400 dark:text-[#a1a1aa] uppercase tracking-widest mb-2.5">Recommendations</h5>
+                                       <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">Recommendations</h5>
                                        <ol className="space-y-2 list-decimal list-inside">
                                           {summary.recommendations.map((rec, i) => (
-                                             <li key={i} className="text-sm text-gray-700 dark:text-[#d4d4d8] leading-relaxed">
+                                             <li key={i} className="text-sm text-slate-300 leading-relaxed">
                                                 {rec}
                                              </li>
                                           ))}
@@ -1264,9 +1264,9 @@ export default function ResultsPage() {
                               </div>
                            </div>
                            {/* Disclaimer */}
-                           <div className="flex items-start gap-2 pt-4 border-t border-gray-100 dark:border-[#27272a]">
-                              <span className="material-icons text-gray-400 dark:text-[#52525b] text-sm mt-0.5">info</span>
-                              <p className="text-xs text-gray-400 dark:text-[#52525b] italic leading-relaxed">
+                           <div className="flex items-start gap-2 pt-4 border-t border-slate-800">
+                              <span className="material-icons text-slate-500 text-sm mt-0.5">info</span>
+                              <p className="text-xs text-slate-500 italic leading-relaxed">
                                  {summary.disclaimer}
                               </p>
                            </div>
@@ -1276,33 +1276,33 @@ export default function ResultsPage() {
                         <div className="space-y-5">
                            <div className="flex items-center justify-between gap-3">
                               <div>
-                                 <h4 className="text-[10px] font-bold text-gray-400 dark:text-[#a1a1aa] uppercase tracking-widest mb-2.5">Summary snapshot</h4>
-                                 <p className="text-sm text-gray-700 dark:text-[#d4d4d8] leading-relaxed">{summary.overview}</p>
+                                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">Summary snapshot</h4>
+                                 <p className="text-sm text-slate-300 leading-relaxed">{summary.overview}</p>
                               </div>
                               {summary.conclusiveness && (
-                                 <div className="min-w-[160px] rounded-lg border border-cyan-200 dark:border-cyan-900/40 bg-cyan-50 dark:bg-cyan-900/10 px-4 py-3 text-right">
-                                    <div className="text-[10px] font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-300">Confidence</div>
-                                    <div className="text-2xl font-bold text-cyan-900 dark:text-cyan-200">{Math.round(summary.conclusiveness.confidence_percentage)}%</div>
+                                 <div className="min-w-[160px] rounded-lg border border-cyan-500/25 bg-cyan-950/20 px-4 py-3 text-right">
+                                    <div className="text-[10px] font-bold uppercase tracking-widest text-cyan-400">Confidence</div>
+                                    <div className="text-2xl font-bold text-cyan-300">{Math.round(summary.conclusiveness.confidence_percentage)}%</div>
                                  </div>
                               )}
                            </div>
 
                            {summary.what_this_means && (
-                              <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/30 rounded-lg p-4">
-                                 <h4 className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                              <div className="bg-blue-950/20 border border-blue-500/20 rounded-lg p-4">
+                                 <h4 className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                                     <span className="material-icons text-sm">lightbulb</span>
                                     What This Means For You
                                  </h4>
-                                 <p className="text-sm text-blue-900 dark:text-blue-200 leading-relaxed">{summary.what_this_means}</p>
+                                 <p className="text-sm text-blue-300 leading-relaxed">{summary.what_this_means}</p>
                               </div>
                            )}
 
                            {summary.recommendations?.length > 0 && (
                               <div>
-                                 <h4 className="text-[10px] font-bold text-gray-400 dark:text-[#a1a1aa] uppercase tracking-widest mb-2.5">Top Recommendations</h4>
+                                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">Top Recommendations</h4>
                                  <ol className="space-y-2 list-decimal list-inside">
                                     {summary.recommendations.slice(0, 3).map((rec, i) => (
-                                       <li key={i} className="text-sm text-gray-700 dark:text-[#d4d4d8] leading-relaxed">
+                                       <li key={i} className="text-sm text-slate-300 leading-relaxed">
                                           {rec}
                                        </li>
                                     ))}
@@ -1310,8 +1310,8 @@ export default function ResultsPage() {
                               </div>
                            )}
 
-                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2 border-t border-gray-100 dark:border-[#27272a]">
-                              <p className="text-xs text-gray-400 dark:text-[#52525b] italic leading-relaxed">
+                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2 border-t border-slate-800">
+                              <p className="text-xs text-slate-500 italic leading-relaxed">
                                  Summary mode keeps the report concise. Switch to technician mode for the full technical breakdown.
                               </p>
                               <button
@@ -1333,8 +1333,8 @@ export default function ResultsPage() {
          {/* Share Toast Notification */}
          {showToast && (
             <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-bounce-in">
-               <div className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-5 py-3 rounded-xl shadow-2xl flex items-center gap-2.5 text-sm font-medium">
-                  <span className="material-icons text-success-500 dark:text-success-600 text-lg">check_circle</span>
+               <div className="bg-slate-900 border border-cyan-500/30 text-slate-100 px-5 py-3 rounded-xl shadow-2xl flex items-center gap-2.5 text-sm font-medium backdrop-blur-md">
+                  <span className="material-icons text-emerald-400 text-lg">check_circle</span>
                   Report link copied to clipboard!
                </div>
             </div>
