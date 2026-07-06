@@ -7,6 +7,8 @@ import cv2
 import numpy as np
 import subprocess
 import tempfile
+import os
+import gc
 from pathlib import Path
 from typing import Tuple, Optional, Callable
 import mediapipe as mp
@@ -292,10 +294,13 @@ def process_video(
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
     # Setup output video writer (optional)
+    # On Render free tier (512MB RAM), video writing causes OOM kills.
+    # Set DISABLE_VIDEO_OUTPUT=1 to skip annotated video generation.
+    disable_video_output = os.getenv("DISABLE_VIDEO_OUTPUT", "0") == "1"
     output_video_path = None
     video_writer = None
     temp_video_path = None
-    if output_dir:
+    if output_dir and not disable_video_output:
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
         # Write to a temporary AVI file first (OpenCV is reliable with raw AVI)
@@ -304,6 +309,9 @@ def process_video(
         output_video_path = output_dir / f"{job_id}_processed.mp4"
         fourcc = cv2.VideoWriter_fourcc(*"MJPG")
         video_writer = cv2.VideoWriter(str(temp_video_path), fourcc, fps, (width, height))
+    elif output_dir:
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
 
     # Data collection
     left_angles = []
@@ -325,11 +333,24 @@ def process_video(
     frames_processed = 0
     frames_detected = 0
 
+    # Frame skip: process every Nth frame to reduce CPU/memory on free tier
+    frame_skip = int(os.getenv("FRAME_SKIP", "2" if disable_video_output else "1"))
+    frame_index = 0
+
     try:
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
                 break
+
+            frame_index += 1
+
+            # Skip frames to reduce processing load
+            if frame_skip > 1 and (frame_index % frame_skip) != 0:
+                # Still count for progress but don't process
+                if progress_callback and total_frames > 0:
+                    progress_callback(frame_index / total_frames)
+                continue
 
             frames_processed += 1
 
@@ -363,15 +384,22 @@ def process_video(
             if video_writer:
                 video_writer.write(processed_frame)
 
+            # Release frame references to reduce memory pressure
+            del frame, processed_frame
+
             # Progress callback
             if progress_callback and total_frames > 0:
-                progress = frames_processed / total_frames
+                progress = frame_index / total_frames
                 progress_callback(progress)
 
     finally:
         cap.release()
         if video_writer:
             video_writer.release()
+
+    # Free MediaPipe model memory before post-processing
+    del scanner
+    gc.collect()
 
     # Post-process: Convert temp AVI to browser-compatible MP4 using ffmpeg
     if temp_video_path and temp_video_path.exists():

@@ -31,8 +31,9 @@ export default function Home() {
       // Step 3: Poll for results
       let completed = false;
       let consecutiveErrors = 0;
+      const MAX_RETRIES = 10;
       while (!completed) {
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise(resolve => setTimeout(resolve, 3000));
 
         try {
           const job = await getJob(job_id);
@@ -51,11 +52,18 @@ export default function Home() {
           } else if (job.status === 'failed') {
             throw new Error(job.error_message || 'Processing failed');
           }
-        } catch (err) {
+        } catch (err: any) {
+          // Don't count backend "failed" status as a network error
+          if (err?.message && !err.message.includes('Network Error') && !err.message.includes('timeout')) {
+            throw err; // This is a real processing failure, show it immediately
+          }
           consecutiveErrors++;
-          console.warn(`Polling error (attempt ${consecutiveErrors}/5):`, err);
-          if (consecutiveErrors >= 5) {
-            throw err; // Fail only after 5 consecutive failures
+          console.warn(`Polling error (attempt ${consecutiveErrors}/${MAX_RETRIES}):`, err);
+          if (consecutiveErrors >= MAX_RETRIES) {
+            throw new Error(
+              'The server is temporarily unavailable. Your analysis may still be processing. ' +
+              'Please check the Reports page in a few minutes.'
+            );
           }
         }
       }

@@ -6,6 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8000
 ENV MEDIAPIPE_MODEL_PATH=/app/models/pose_landmarker_lite.task
+ENV DISABLE_VIDEO_OUTPUT=1
 
 # Install system dependencies
 # - ffmpeg: required for video encoding/processing
@@ -33,12 +34,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the backend files
 COPY . .
 
-# Create directory for models and download the pose landmarker models (lite and heavy)
+# Create directory for models and download the pose landmarker model (lite only for free tier)
 RUN mkdir -p /app/models && \
     curl -L -o /app/models/pose_landmarker_lite.task \
-    https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task && \
-    curl -L -o /app/models/pose_landmarker_heavy.task \
-    https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task
+    https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task
 
 # Create uploads and results directories (Render Disk can be mounted here)
 RUN mkdir -p /app/uploads /app/results
