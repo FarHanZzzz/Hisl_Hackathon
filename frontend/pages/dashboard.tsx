@@ -30,24 +30,33 @@ export default function Home() {
 
       // Step 3: Poll for results
       let completed = false;
+      let consecutiveErrors = 0;
       while (!completed) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 1500));
 
-        const job = await getJob(job_id);
-        
-        // Map backend progress (0-1) to percentage string (0-100)
-        // If progress is not returned well, fake it smoothly
-        const serverProgress = Math.round((job.progress || 0) * 100);
-        setProgress(prev => Math.max(prev, serverProgress, 25)); // At least 25% once processing
+        try {
+          const job = await getJob(job_id);
+          consecutiveErrors = 0; // Reset error counter on success
+          
+          // Map backend progress (0-1) to percentage string (0-100)
+          const serverProgress = Math.round((job.progress || 0) * 100);
+          setProgress(prev => Math.max(prev, serverProgress, 25)); // At least 25% once processing
 
-        if (job.status === 'completed') {
-          setProgress(100);
-          completed = true;
-          setTimeout(() => {
-            router.push(`/results/${job.id}`);
-          }, 800);
-        } else if (job.status === 'failed') {
-          throw new Error(job.error_message || 'Processing failed');
+          if (job.status === 'completed') {
+            setProgress(100);
+            completed = true;
+            setTimeout(() => {
+              router.push(`/results/${job.id}`);
+            }, 800);
+          } else if (job.status === 'failed') {
+            throw new Error(job.error_message || 'Processing failed');
+          }
+        } catch (err) {
+          consecutiveErrors++;
+          console.warn(`Polling error (attempt ${consecutiveErrors}/5):`, err);
+          if (consecutiveErrors >= 5) {
+            throw err; // Fail only after 5 consecutive failures
+          }
         }
       }
     } catch (err) {

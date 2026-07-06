@@ -380,14 +380,20 @@ def process_video(
                 "ffmpeg", "-y",
                 "-i", str(temp_video_path),
                 "-c:v", "libx264",
-                "-preset", "fast",
+                "-preset", "superfast",
                 "-crf", "23",
                 "-pix_fmt", "yuv420p",
                 "-movflags", "+faststart",  # Enables progressive download in browser
                 "-an",  # No audio
                 str(output_video_path),
             ]
-            subprocess.run(ffmpeg_cmd, check=True, capture_output=True, timeout=300)
+            subprocess.run(
+                ffmpeg_cmd, 
+                check=True, 
+                stdout=subprocess.DEVNULL, 
+                stderr=subprocess.DEVNULL, 
+                timeout=300
+            )
             # Remove the temporary AVI file
             temp_video_path.unlink(missing_ok=True)
             # Also remove any old .webm file for this job
