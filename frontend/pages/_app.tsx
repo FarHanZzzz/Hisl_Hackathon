@@ -33,6 +33,7 @@ function useRouteTheme() {
     const stored = localStorage.getItem('pedigrowth-theme');
     if (stored === 'dark') {
       html.classList.add('dark');
+      // whats the purpose of this line? 
     } else {
       html.classList.remove('dark');
     }

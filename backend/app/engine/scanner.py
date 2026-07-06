@@ -56,21 +56,30 @@ class GaitScanner:
                        If None, looks in standard locations.
         """
         if model_path is None:
-            # Look for model in standard locations (from project root)
-            project_root = Path(__file__).resolve().parent.parent.parent.parent
-            possible_paths = [
-                project_root / "models" / "pose_landmarker_heavy.task",
-                project_root / "models" / "pose_landmarker_lite.task",
-            ]
-            for p in possible_paths:
-                if p.exists():
-                    model_path = str(p)
-                    break
+            # Look for model in environment variable first, then standard locations
+            import os
+            env_path = os.getenv("MEDIAPIPE_MODEL_PATH")
+            if env_path and Path(env_path).exists():
+                model_path = env_path
             else:
-                raise FileNotFoundError(
-                    "pose_landmarker_heavy.task not found. "
-                    "Please place it in the models/ directory."
-                )
+                project_root = Path(__file__).resolve().parent.parent.parent.parent
+                possible_paths = [
+                    project_root / "models" / "pose_landmarker_heavy.task",
+                    project_root / "models" / "pose_landmarker_lite.task",
+                    Path("models/pose_landmarker_heavy.task"),
+                    Path("models/pose_landmarker_lite.task"),
+                    Path("../models/pose_landmarker_heavy.task"),
+                    Path("../models/pose_landmarker_lite.task"),
+                ]
+                for p in possible_paths:
+                    if p.exists():
+                        model_path = str(p)
+                        break
+                else:
+                    raise FileNotFoundError(
+                        "pose_landmarker_heavy.task not found. "
+                        "Please place it in the models/ directory or set MEDIAPIPE_MODEL_PATH."
+                    )
 
         # Initialize Pose Landmarker
         base_options = python.BaseOptions(model_asset_path=model_path)

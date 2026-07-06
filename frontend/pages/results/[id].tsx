@@ -749,10 +749,10 @@ export default function ResultsPage() {
                   />
                </div>
 
-               <div className="shrink-0 w-full md:w-48 bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col items-center justify-center">
+               <div className="shrink-0 w-full md:w-48 bg-white dark:bg-gray-900 text-gray-900 dark:text-white p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col items-center justify-center">
                   <div className="text-center mb-3">
-                     <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Symmetry Score</div>
-                     <div className="text-3xl font-bold">{boundedScore}<span className="text-lg opacity-70">%</span></div>
+                     <div className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-0.5">Symmetry Score</div>
+                     <div className="text-3xl font-bold text-gray-900 dark:text-white">{boundedScore}<span className="text-lg opacity-70">%</span></div>
                   </div>
                   <div className="w-24 h-24 relative flex items-center justify-center">
                      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
@@ -774,7 +774,7 @@ export default function ResultsPage() {
                            style={{ animation: 'gauge-sweep 1.2s ease-out forwards' }}
                         />
                      </svg>
-                     <div className="absolute inset-0 flex items-center justify-center font-bold text-base">
+                     <div className="absolute inset-0 flex items-center justify-center font-bold text-base text-gray-900 dark:text-white">
                         {boundedScore}
                      </div>
                   </div>
