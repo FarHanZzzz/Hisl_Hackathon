@@ -86,7 +86,8 @@ export function JobHistoryTable() {
                    // Access the symmetry index from results
                    // symmetry_index is a value where 1.0 = perfect symmetry
                    // Convert to 0-100 score for UI display
-                   const symmetryValue = job.results.symmetry_index;
+                   const result = Array.isArray(job.results) ? job.results[0] : job.results;
+                   const symmetryValue = result?.symmetry_index;
                    const score = symmetryValue
                      ? Math.max(0, 100 - (Math.abs(1 - symmetryValue) * 100))
                      : 95; // Default for fallback

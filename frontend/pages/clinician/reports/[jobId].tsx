@@ -155,7 +155,7 @@ export default function ClinicianReportPage() {
     );
   }
 
-  if (error || !job || !job.results) {
+  if (error || !job || !job.results || (Array.isArray(job.results) && job.results.length === 0)) {
     return (
       <Layout>
         <div className="flex h-[60vh] items-center justify-center">

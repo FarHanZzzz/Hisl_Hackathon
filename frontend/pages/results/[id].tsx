@@ -667,7 +667,7 @@ export default function ResultsPage() {
       );
    }
 
-   if (error || !job || !job.results) {
+   if (error || !job || !job.results || (Array.isArray(job.results) && job.results.length === 0)) {
       return (
          <Layout>
             <div className="flex h-[50vh] items-center justify-center">
@@ -754,8 +754,8 @@ export default function ResultsPage() {
                <div className="flex-1 w-full">
                   <DiagnosisBanner
                      diagnosis={diagnosis}
-                     message={job.results.message || (isHighRisk ? 'Clinical review recommended.' : 'Gait patterns within normal limits.')}
-                     confidence={job.results.confidence || 0.95}
+                     message={firstResult?.message || (isHighRisk ? 'Clinical review recommended.' : 'Gait patterns within normal limits.')}
+                     confidence={firstResult?.confidence || 0.95}
                      symmetryIndex={firstResult.symmetry_index}
                      detectionRate={firstResult.detection_rate}
                   />

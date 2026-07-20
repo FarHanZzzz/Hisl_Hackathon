@@ -141,7 +141,8 @@ export default function ReportsPage() {
                 </thead>
                 <tbody className="divide-y divide-cyan-500/10 text-sm">
                   {filteredJobs.map((job) => {
-                    const symmetryValue = job.results?.symmetry_index;
+                    const result = Array.isArray(job.results) ? job.results[0] : job.results;
+                    const symmetryValue = result?.symmetry_index;
                     const symmetryScore = typeof symmetryValue === 'number'
                       ? Math.max(0, 100 - (Math.abs(1 - symmetryValue) * 100))
                       : null;
@@ -169,7 +170,7 @@ export default function ReportsPage() {
                           {boundedScore !== null ? `${boundedScore}%` : '--'}
                         </td>
                         <td className="px-6 py-4 text-slate-300">
-                          {job.results?.is_high_risk ? 'High risk' : job.status === 'completed' ? 'Normal' : '--'}
+                          {result?.is_high_risk ? 'High risk' : job.status === 'completed' ? 'Normal' : '--'}
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex justify-end gap-2">
